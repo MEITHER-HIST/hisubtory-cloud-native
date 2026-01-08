@@ -182,7 +182,7 @@ else:
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-HUGGINGFACE_TOKEN = "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"
+HF_TOKEN = os.getenv('HF_TOKEN', 'your-default-value-if-needed')
 
 LOGIN_URL = '/api/accounts/login/'
 LOGIN_REDIRECT_URL = '/'
