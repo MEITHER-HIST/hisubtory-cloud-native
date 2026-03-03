@@ -1,9 +1,7 @@
-# docker-compose.green.yml
 version: '3'
 services:
   app-green:
-    image: myrepo/myapp:latest
+    image: myrepo/myapp:${GITHUB_SHA}        # 커밋 SHA 기반 태그 (고유 버전)
     container_name: app-green
     ports:
       - "8081:3000"
-
