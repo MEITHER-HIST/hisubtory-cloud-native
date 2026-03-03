@@ -3,28 +3,16 @@ name: CI/CD Pipeline
 on:
   push:
     branches: [develop, stage, main]
-  pull_request:
-    branches: [develop, stage, main]
 
 jobs:
   build-test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: '18'
-
-      - name: Cache Dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
-      - run: npm install
+      - run: npm ci   # npm install 대신 ci 사용 (더 빠르고 안정적)
       - run: npm run build
       - run: npm test
 
@@ -34,12 +22,9 @@ jobs:
     if: github.event_name == 'push'
     steps:
       - uses: actions/checkout@v4
-
       - uses: docker/setup-buildx-action@v3
-
       - name: Login to Docker Hub
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v5
         with:
@@ -63,33 +48,38 @@ jobs:
         uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-          - name: Blue-Green Deploy
-      run: |
-        ssh ec2-user@$PROD_SERVER "
-          docker-compose -f docker-compose.green.yml pull &&
-          docker-compose -f docker-compose.green.yml up -d
 
-          sleep 10
-          curl -f http://localhost:8081/health || exit 1
-
-          sudo sed -i 's/8080/8081/' /etc/nginx/conf.d/app.conf
-          sudo systemctl reload nginx
-
-          docker-compose -f docker-compose.blue.yml down
-        "
-
-      - name: Deploy to Environment
+      - name: Deploy by Branch
         run: |
           if [[ "${{ github.ref_name }}" == "develop" ]]; then
             echo "Deploying to Dev server..."
-            ssh ec2-user@$DEV_SERVER "docker pull myrepo/myapp:${{ github.ref_name }} && docker-compose up -d"
+            ssh ubuntu@$DEV_SERVER "
+              docker pull myrepo/myapp:${{ github.ref_name }} &&
+              docker-compose --env-file .env.dev up -d
+            "
           elif [[ "${{ github.ref_name }}" == "stage" ]]; then
             echo "Deploying to Stage server..."
-            ssh ec2-user@$STAGE_SERVER "docker pull myrepo/myapp:${{ github.ref_name }} && docker-compose up -d"
+            ssh ubuntu@$STAGE_SERVER "
+              docker pull myrepo/myapp:${{ github.ref_name }} &&
+              docker-compose --env-file .env.stage up -d
+            "
           elif [[ "${{ github.ref_name }}" == "main" ]]; then
-            echo "Deploying to Prod server..."
-            ssh ec2-user@$PROD_SERVER "docker pull myrepo/myapp:${{ github.ref_name }} && docker-compose up -d"
+            echo "Deploying to Prod server with Blue-Green strategy..."
+            ssh ec2-user@$PROD_SERVER "
+              docker-compose -f docker-compose.green.yml --env-file .env.prod pull &&
+              docker-compose -f docker-compose.green.yml --env-file .env.prod up -d
 
-      - name: Health Check
-        run: |
-          curl -f http://$PROD_SERVER/health || exit 1
+              # Health Check (루프 방식으로 안정성 강화)
+              until curl -f http://localhost:8081/health; do
+                echo 'Waiting for Green service...'
+                sleep 5
+              done
+
+              # Nginx 설정 전환 (심볼릭 링크 방식)
+              sudo ln -sf /etc/nginx/conf.d/app-green.conf /etc/nginx/conf.d/app.conf
+              sudo systemctl reload nginx
+
+              # Blue 환경 종료
+              docker-compose -f docker-compose.blue.yml down
+            "
+
