@@ -1,9 +1,7 @@
-# docker-compose.blue.yml
 version: '3'
 services:
   app-blue:
-    image: myrepo/myapp:latest
+    image: myrepo/myapp:${GITHUB_REF_NAME}   # develop, stage, main 등 브랜치명 기반 태그
     container_name: app-blue
     ports:
       - "8080:3000"
-
