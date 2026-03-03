@@ -107,16 +107,12 @@ def must(name: str) -> str:
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.mysql",
-        "NAME": "hisubtory_db",
-        "USER": os.getenv("DB_USER", "admin"),
-        "PASSWORD": os.getenv("DB_PASSWORD", "hisadmin"),
-        "HOST": os.getenv("DB_HOST", "hisub-db.chmwc60iizys.ap-northeast-2.rds.amazonaws.com"),
-        "PORT": os.getenv("DB_PORT", "3306"),
-        "OPTIONS": {
-            "init_command": "SET sql_mode='STRICT_TRANS_TABLES'",
-            "charset": "utf8mb4",
-        },
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.getenv("DB_NAME", "postgres"),
+        "USER": os.getenv("DB_USER", "postgres"),
+        "PASSWORD": os.getenv("DB_PASSWORD", "hisubtory1234"),
+        "HOST": os.getenv("DB_HOST", "db.hisubtory-account.supabase.co"),
+        "PORT": os.getenv("DB_PORT", "5432"),
         "CONN_MAX_AGE": 0,  # 불안정한 연결을 위해 0으로 설정
     }
 }

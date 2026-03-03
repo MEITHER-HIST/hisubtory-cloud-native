@@ -23,6 +23,11 @@ services:
     expose:
       - "8000"
     env_file: .env
+    environment:
+      - OTEL_SERVICE_NAME=user-service
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4317
+    depends_on:
+      - jaeger
 
   # 3. Story Service
   story-service:
@@ -33,6 +38,11 @@ services:
     expose:
       - "8000"
     env_file: .env
+    environment:
+      - OTEL_SERVICE_NAME=story-service
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4317
+    depends_on:
+      - jaeger
 
   # 4. Activity Service
   activity-service:
@@ -43,12 +53,62 @@ services:
     expose:
       - "8000"
     env_file: .env
+    environment:
+      - OTEL_SERVICE_NAME=activity-service
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4317
     depends_on:
       - redis
+      - jaeger
 
-  # 5. Redis (북마크/최근 본 목록 캐시용)
+  # 5. Redis
   redis:
     image: redis:latest
     container_name: hisubtory-redis
     ports:
       - "6379:6379"
+
+  # 6. Jaeger
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: hisubtory-jaeger
+    ports:
+      - "16686:16686"
+      - "4317:4317"
+      - "4318:4318"
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+
+  # 7. Prometheus (Metrics Collector)
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: hisubtory-prometheus
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+
+  # 8. Loki (Log Aggregator)
+  loki:
+    image: grafana/loki:latest
+    container_name: hisubtory-loki
+    ports:
+      - "3100:3100"
+
+  # 9. Promtail (Log Collector)
+  promtail:
+    image: grafana/promtail:latest
+    container_name: hisubtory-promtail
+    volumes:
+      - ./monitoring/promtail.yml:/etc/promtail/config.yml
+
+
+  # 10. Grafana (Visualization Dashboard)
+  grafana:
+    image: grafana/grafana:latest
+    container_name: hisubtory-grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+      - loki
+      - jaeger
