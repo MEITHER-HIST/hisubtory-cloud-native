@@ -1,0 +1,20 @@
+FROM python:3.12-slim
+
+WORKDIR /app
+
+# 시스템 패키지 설치
+RUN apt-get update && apt-get install -y \
+    gcc \
+    default-libmysqlclient-dev \
+    pkg-config \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY user-service/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# 공통 모듈 및 서비스 소스 복사
+COPY subway/ ./subway/
+COPY user-service/ ./
+
+# Gunicorn으로 실행
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "project.wsgi:application"]
