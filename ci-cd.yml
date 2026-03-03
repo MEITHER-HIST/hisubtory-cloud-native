@@ -12,7 +12,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '18'
-      - run: npm ci   # npm install 대신 ci 사용 (더 빠르고 안정적)
+      - run: npm ci   
       - run: npm run build
       - run: npm test
 
