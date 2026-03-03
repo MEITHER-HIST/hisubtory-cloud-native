@@ -2,32 +2,18 @@
 set -euo pipefail
 
 APP_DIR="/home/ubuntu/HISUB/hisubtory"
-VENV_DIR="/home/ubuntu/HISUB/workenv"
 
-echo "[Start] Ensuring Gunicorn service..."
+echo "[Start] Starting Docker containers..."
+cd "$APP_DIR"
 
-if [ ! -f /etc/systemd/system/gunicorn.service ]; then
-  echo "[Start] Creating /etc/systemd/system/gunicorn.service"
-  sudo tee /etc/systemd/system/gunicorn.service >/dev/null <<EOF
-[Unit]
-Description=Gunicorn Daemon for Django
-After=network.target
+# 혹시 모를 포트 충돌 방지를 위해 시스템 기본 서비스 중지 (필요 시)
+sudo systemctl stop redis-server || true
 
-[Service]
-User=ubuntu
-Group=www-data
-WorkingDirectory=${APP_DIR}
-Environment="PATH=${VENV_DIR}/bin"
-ExecStart=${VENV_DIR}/bin/gunicorn --chdir ${APP_DIR} --workers 3 --bind 0.0.0.0:8000 project.wsgi:application
-Restart=on-failure
-RestartSec=3
+# Docker Compose 백그라운드 실행 및 강제 빌드
+sudo docker compose up -d --build
 
-[Install]
-WantedBy=multi-user.target
-EOF
-fi
+# 실행 상태 확인
+echo "[Start] Checking container status..."
+sudo docker ps
 
-sudo systemctl daemon-reload
-sudo systemctl enable gunicorn
-sudo systemctl restart gunicorn
-sudo systemctl status gunicorn --no-pager
+echo "[Start] Deployment Complete!"
