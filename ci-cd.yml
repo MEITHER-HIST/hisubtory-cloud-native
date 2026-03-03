@@ -7,14 +7,12 @@ on:
     branches: [develop, stage, main]
 
 jobs:
-  build:
+  build-test:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '18'
 
@@ -26,56 +24,31 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
 
-      - name: Install Dependencies
-        run: npm install
-
-      - name: Build
-        run: npm run build
-
-      - name: Upload Build Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-artifact
-          path: ./dist
-
-  test:
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Download Build Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: build-artifact
-          path: ./dist
-
-      - name: Run Tests
-        run: npm test
+      - run: npm install
+      - run: npm run build
+      - run: npm test
 
   docker-build:
     runs-on: ubuntu-latest
-    needs: test
-    if: github.event_name == 'push' # PR에서는 Docker 빌드 제외
+    needs: build-test
+    if: github.event_name == 'push'
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Docker
-        uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-buildx-action@v3
 
-      - name: Build Docker Image
-        run: |
-          docker build -t my-app:${{ github.sha }} .
+      - name: Login to Docker Hub
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
-      - name: Push Docker Image
-        run: |
-          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-          docker tag my-app:${{ github.sha }} myrepo/my-app:${{ github.sha }}
-          docker tag my-app:${{ github.sha }} myrepo/my-app:${{ github.ref_name }}
-          docker push myrepo/my-app:${{ github.sha }}
-          docker push myrepo/my-app:${{ github.ref_name }}
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            myrepo/myapp:${{ github.sha }}
+            myrepo/myapp:${{ github.ref_name }}
+            myrepo/myapp:latest
 
   deploy:
     runs-on: ubuntu-latest
@@ -95,17 +68,13 @@ jobs:
         run: |
           if [[ "${{ github.ref_name }}" == "develop" ]]; then
             echo "Deploying to Dev server..."
-            ssh user@$DEV_SERVER "docker pull myrepo/my-app:${{ github.ref_name }} && docker-compose up -d"
+            ssh ec2-user@$DEV_SERVER "docker pull myrepo/myapp:${{ github.ref_name }} && docker-compose up -d"
           elif [[ "${{ github.ref_name }}" == "stage" ]]; then
             echo "Deploying to Stage server..."
-            ssh user@$STAGE_SERVER "docker pull myrepo/my-app:${{ github.ref_name }} && docker-compose up -d"
+            ssh ec2-user@$STAGE_SERVER "docker pull myrepo/myapp:${{ github.ref_name }} && docker-compose up -d"
           elif [[ "${{ github.ref_name }}" == "main" ]]; then
-            echo "Deploying to Prod server with Blue-Green strategy..."
-            ssh user@$PROD_SERVER "
-              docker-compose -f docker-compose.blue.yml up -d &&
-              docker-compose -f docker-compose.green.yml down
-            "
-          fi
+            echo "Deploying to Prod server..."
+            ssh ec2-user@$PROD_SERVER "docker pull myrepo/myapp:${{ github.ref_name }} && docker-compose up -d"
 
       - name: Health Check
         run: |
