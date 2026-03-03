@@ -1,1 +1,9 @@
+# docker-compose.blue.yml
+version: '3'
+services:
+  app-blue:
+    image: myrepo/myapp:latest
+    container_name: app-blue
+    ports:
+      - "8080:3000"
 
