@@ -1,27 +1,22 @@
 #!/bin/bash
 set -euo pipefail
 
-APP_DIR="/home/ubuntu/HISUB/hisubtory"
-VENV_DIR="/home/ubuntu/HISUB/workenv"
-
-echo "[1/3] Ensuring virtual environment..."
-if [ ! -d "$VENV_DIR" ]; then
-  python3 -m venv "$VENV_DIR"
+echo "[Install] Checking Docker installation..."
+if ! command -v docker &> /dev/null; then
+    echo "[Install] Docker not found. Installing Docker..."
+    sudo apt-get update
+    sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+    sudo apt-get update
+    sudo apt-get install -y docker-ce docker-ce-cli containerd.io
+    sudo usermod -aG docker ubuntu
 fi
 
-echo "[2/3] Activating virtual environment..."
-# shellcheck disable=SC1090
-source "$VENV_DIR/bin/activate"
-
-echo "[3/3] Installing Python dependencies..."
-pip install --upgrade pip wheel setuptools
-
-# 프로젝트 requirements.txt가 있으면 그걸 우선 사용
-if [ -f "$APP_DIR/requirements.txt" ]; then
-  pip install -r "$APP_DIR/requirements.txt"
-else
-  # 최소 실행 패키지 (수업용)
-  pip install django gunicorn pymysql python-dotenv pillow
+echo "[Install] Checking Docker Compose installation..."
+if ! command -v docker-compose &> /dev/null && ! docker compose version &> /dev/null; then
+    echo "[Install] Docker Compose not found. Installing..."
+    sudo apt-get install -y docker-compose-plugin
 fi
 
 echo "[Install] Done."
