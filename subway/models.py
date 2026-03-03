@@ -6,6 +6,9 @@ class Line(models.Model):
     line_color = models.CharField(max_length=7, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        app_label = 'subway'
+
     def __str__(self):
         return self.line_name
 
@@ -17,6 +20,9 @@ class Station(models.Model):
     is_enabled = models.BooleanField(default=False)  # 추가
     created_at = models.DateTimeField(auto_now_add=True)
     image = models.ImageField(upload_to='stations/', null=True, blank=True)
+
+    class Meta:
+        app_label = 'subway'
 
     def __str__(self):
         return self.station_name

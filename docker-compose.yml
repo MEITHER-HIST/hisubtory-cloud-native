@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  # 1. API Gateway (Nginx) - 모든 요청의 입구
+  gateway:
+    image: nginx:latest
+    container_name: hisubtory-gateway
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - user-service
+      - story-service
+      - activity-service
+
+  # 2. User Service
+  user-service:
+    build:
+      context: .
+      dockerfile: ./user-service/Dockerfile
+    container_name: hisubtory-user
+    expose:
+      - "8000"
+    env_file: .env
+
+  # 3. Story Service
+  story-service:
+    build:
+      context: .
+      dockerfile: ./story-service/Dockerfile
+    container_name: hisubtory-story
+    expose:
+      - "8000"
+    env_file: .env
+
+  # 4. Activity Service
+  activity-service:
+    build:
+      context: .
+      dockerfile: ./activity-service/Dockerfile
+    container_name: hisubtory-activity
+    expose:
+      - "8000"
+    env_file: .env
+    depends_on:
+      - redis
+
+  # 5. Redis (북마크/최근 본 목록 캐시용)
+  redis:
+    image: redis:latest
+    container_name: hisubtory-redis
+    ports:
+      - "6379:6379"
