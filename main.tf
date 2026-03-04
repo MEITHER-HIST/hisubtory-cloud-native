@@ -50,3 +50,11 @@ module "rds" {
   db_username = var.db_username
   db_password = var.db_password
 }
+
+module "bastion" {
+  source = "./modules/bastion"
+
+  public_subnet_id = module.vpc.public_subnet_ids[0]
+  bastion_sg_id    = module.sg.bastion_sg_id
+  key_name         = var.key_name
+}
