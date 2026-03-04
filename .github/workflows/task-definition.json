@@ -1,5 +1,5 @@
 {
-  "family": "his-v2-app-task",
+  "family": "hisub-v2-app-task",
   "containerDefinitions": [
     {
       "name": "app",
@@ -37,6 +37,6 @@
   "networkMode": "awsvpc",
   "cpu": "256",
   "memory": "512",
-  "executionRoleArn": "arn:aws:iam::714454205561:role/ecsTaskExecutionRole",
-  "taskRoleArn": "arn:aws:iam::714454205561:role/ecsTaskRole"
+  "executionRoleArn": "arn:aws:iam::714454205561:role/hisub-v2-ecs-task-execution-role",
+  "taskRoleArn": "arn:aws:iam::714454205561:role/hisub-v2-ecs-task-role"
 }
