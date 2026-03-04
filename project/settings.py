@@ -29,14 +29,8 @@ SECRET_KEY = 'django-insecure-ti-prtjm(d_p7ve!r(g&4&(=+*_vn*x+*3z^ge567i72tr-5)1
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+ALLOWED_HOSTS = ["*"]
 
-ALLOWED_HOSTS = [
-    "ec2-3-36-115-132.ap-northeast-2.compute.amazonaws.com",
-    "hisub-alb-1329951961.ap-northeast-2.elb.amazonaws.com",
-    "hisub-nlb-240290227cb110fd.elb.ap-northeast-2.amazonaws.com",
-    "3.36.115.132",
-    "localhost",
-    "127.0.0.1",
     ".amazonaws.com",
     "10.0.0.125",
     "10.0.0.97",
