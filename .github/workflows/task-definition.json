@@ -1,5 +1,5 @@
 {
-  "family": "hisubtory-app-task",
+  "family": "hisub-v2-app-task",
   "containerDefinitions": [
     {
       "name": "app",
@@ -13,15 +13,7 @@
           "hostPort": 8000,
           "protocol": "tcp"
         }
-      ],
-      "logConfiguration": {
-        "logDriver": "awslogs",
-        "options": {
-          "awslogs-group": "/ecs/hisubtory-app",
-          "awslogs-region": "ap-northeast-2",
-          "awslogs-stream-prefix": "ecs"
-        }
-      }
+      ]
     }
   ],
   "requiresCompatibilities": [
@@ -30,6 +22,6 @@
   "networkMode": "awsvpc",
   "cpu": "256",
   "memory": "512",
-  "executionRoleArn": "arn:aws:iam::ACCOUNT_ID:role/ecsTaskExecutionRole",
-  "taskRoleArn": "arn:aws:iam::ACCOUNT_ID:role/ecsTaskRole"
+  "executionRoleArn": "arn:aws:iam::714454205561:role/ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::714454205561:role/ecsTaskRole"
 }
