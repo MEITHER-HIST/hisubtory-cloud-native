@@ -110,3 +110,43 @@ resource "aws_route_table_association" "private_c_assoc" {
   subnet_id      = aws_subnet.private_c.id
   route_table_id = aws_route_table.private.id
 }
+
+# Network ACL 생성 (Allow Only 구조)
+resource "aws_network_acl" "main" {
+  vpc_id = aws_vpc.main.id
+
+  subnet_ids = [
+    aws_subnet.public_a.id,
+    aws_subnet.public_c.id,
+    aws_subnet.private_a.id,
+    aws_subnet.private_c.id
+  ]
+
+  tags = {
+    Name = "hisubtory-nacl"
+  }
+}
+
+# Outbound Allow All
+resource "aws_network_acl_rule" "egress_allow_all" {
+  network_acl_id = aws_network_acl.main.id
+
+  egress      = true
+  rule_number = 100
+  protocol    = "-1"
+
+  cidr_block  = "0.0.0.0/0"
+  rule_action = "allow"
+}
+
+# Inbound Allow All
+resource "aws_network_acl_rule" "ingress_allow_all" {
+  network_acl_id = aws_network_acl.main.id
+
+  egress      = false
+  rule_number = 100
+  protocol    = "-1"
+
+  cidr_block  = "0.0.0.0/0"
+  rule_action = "allow"
+}

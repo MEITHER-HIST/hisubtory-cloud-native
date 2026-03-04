@@ -16,3 +16,7 @@ variable "target_group_arn" {
 
 variable "redis_endpoint" {}
 variable "rds_endpoint" {}
+
+variable "iam_profile_name" {
+  type = string
+}
