@@ -1,6 +1,6 @@
 resource "aws_elasticache_subnet_group" "redis_subnet" {
   name       = "redis-subnet"
-  subnet_ids = var.private_subnet_ids
+  subnet_ids = var.data_subnet_ids
 }
 
 resource "aws_elasticache_cluster" "redis" {

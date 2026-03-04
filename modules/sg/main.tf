@@ -29,51 +29,19 @@ resource "aws_security_group" "alb_sg" {
 }
 
 ##################################################
-# Frontend SG (Web Server)
+# ECS App SG
 ##################################################
 
-resource "aws_security_group" "frontend_sg" {
-  name   = "hisubtory-frontend-sg"
+resource "aws_security_group" "ecs_app_sg" {
+  name   = "hisubtory-ecs-app-sg"
   vpc_id = var.vpc_id
 
-  # ALB → Web (3000)
+  # ALB → ECS App (80)
   ingress {
-    from_port       = 3000
-    to_port         = 3000
+    from_port       = 80
+    to_port         = 80
     protocol        = "tcp"
     security_groups = [aws_security_group.alb_sg.id]
-  }
-
-  # Bastion → Web SSH 허용
-  ingress {
-    description     = "SSH from bastion"
-    from_port       = 22
-    to_port         = 22
-    protocol        = "tcp"
-    security_groups = [aws_security_group.bastion_sg.id]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-}
-
-##################################################
-# Backend SG
-##################################################
-
-resource "aws_security_group" "backend_sg" {
-  name   = "hisubtory-backend-sg"
-  vpc_id = var.vpc_id
-
-  ingress {
-    from_port       = 8000
-    to_port         = 8000
-    protocol        = "tcp"
-    security_groups = [aws_security_group.frontend_sg.id]
   }
 
   egress {
@@ -92,11 +60,12 @@ resource "aws_security_group" "rds_sg" {
   name   = "hisubtory-rds-sg"
   vpc_id = var.vpc_id
 
+  # ECS App → RDS (3306)
   ingress {
     from_port       = 3306
     to_port         = 3306
     protocol        = "tcp"
-    security_groups = [aws_security_group.backend_sg.id]
+    security_groups = [aws_security_group.ecs_app_sg.id]
   }
 
   egress {
@@ -115,11 +84,12 @@ resource "aws_security_group" "redis_sg" {
   name   = "hisubtory-redis-sg"
   vpc_id = var.vpc_id
 
+  # ECS App → Redis (6379)
   ingress {
     from_port       = 6379
     to_port         = 6379
     protocol        = "tcp"
-    security_groups = [aws_security_group.backend_sg.id]
+    security_groups = [aws_security_group.ecs_app_sg.id]
   }
 
   egress {
@@ -131,7 +101,7 @@ resource "aws_security_group" "redis_sg" {
 }
 
 ##################################################
-# Bastion SG
+# Bastion SG (Optional - Keep for emergency)
 ##################################################
 
 resource "aws_security_group" "bastion_sg" {
