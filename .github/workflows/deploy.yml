@@ -7,9 +7,9 @@ on:
 
 env:
   AWS_REGION: ap-northeast-2
-  ECR_REPOSITORY: hisub-v2-app
-  ECS_SERVICE: hisub-v2-service
-  ECS_CLUSTER: hisub-v2-cluster
+  ECR_REPOSITORY: hisubtory-app
+  ECS_SERVICE: hisubtory-service
+  ECS_CLUSTER: hisubtory-cluster
   ECS_TASK_DEFINITION: .github/workflows/task-definition.json
   CONTAINER_NAME: app
 

@@ -5,7 +5,7 @@ variable "region" {
 variable "project_name" {
   description = "Project name to use for resource naming"
   type        = string
-  default     = "hisub-v2"
+  default     = "hisubtory"
 }
 
 variable "instance_type" {
