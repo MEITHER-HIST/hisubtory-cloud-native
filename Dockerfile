@@ -15,4 +15,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Gunicorn으로 실행
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "project.wsgi:application"]
+CMD ["gunicorn", "--bind", "0.0.0.0:80", "project.wsgi:application"]
