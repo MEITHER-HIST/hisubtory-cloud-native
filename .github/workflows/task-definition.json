@@ -15,10 +15,12 @@
         }
       ],
       "environment": [
-        { "name": "DB_HOST", "value": "hisub-v2-db.cnwkq8oe8jr5.ap-northeast-2.rds.amazonaws.com" },
+        { "name": "DB_HOST", "value": "hisubtory-db.cnwkq8oe8jr5.ap-northeast-2.rds.amazonaws.com" },
         { "name": "DB_NAME", "value": "hisubtory_db" },
         { "name": "DB_USER", "value": "admin" },
-        { "name": "DB_PORT", "value": "3306" }
+        { "name": "DB_PORT", "value": "3306" },
+        { "name": "REDIS_HOST", "value": "hisubtory-redis.rkthpz.0001.apn2.cache.amazonaws.com" },
+        { "name": "REDIS_PORT", "value": "6379" }
       ],
       "logConfiguration": {
         "logDriver": "awslogs",
