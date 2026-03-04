@@ -2,6 +2,11 @@ variable "region" {
   default = "ap-northeast-2"
 }
 
+variable "project_name" {
+  description = "Project name to use for resource naming"
+  type        = string
+  default     = "hisub-v2"
+}
 
 variable "instance_type" {
   type = string

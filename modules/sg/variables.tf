@@ -3,6 +3,9 @@ variable "vpc_id" {
 }
 
 variable "my_ip" {
-  description = "My public IP for SSH access"
-  type        = string
+  type = string
+}
+
+variable "project_name" {
+  type = string
 }

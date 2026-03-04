@@ -3,7 +3,7 @@ resource "aws_vpc" "main" {
   cidr_block = var.vpc_cidr
 
   tags = {
-    Name = "hisubtory-vpc"
+    Name = "${var.project_name}-vpc"
   }
 }
 
@@ -14,7 +14,7 @@ resource "aws_subnet" "public_a" {
   availability_zone = "ap-northeast-2a"
 
   tags = {
-    Name = "hisubtory-public-a"
+    Name = "${var.project_name}-public-a"
   }
 }
 
@@ -25,7 +25,7 @@ resource "aws_subnet" "public_c" {
   availability_zone = "ap-northeast-2c"
 
   tags = {
-    Name = "hisubtory-public-c"
+    Name = "${var.project_name}-public-c"
   }
 }
 
@@ -36,7 +36,7 @@ resource "aws_subnet" "private_a" {
   availability_zone = "ap-northeast-2a"
 
   tags = {
-    Name = "hisubtory-private-a"
+    Name = "${var.project_name}-private-a"
   }
 }
 
@@ -47,7 +47,7 @@ resource "aws_subnet" "private_c" {
   availability_zone = "ap-northeast-2c"
 
   tags = {
-    Name = "hisubtory-private-c"
+    Name = "${var.project_name}-private-c"
   }
 }
 
@@ -58,7 +58,7 @@ resource "aws_subnet" "data_a" {
   availability_zone = "ap-northeast-2a"
 
   tags = {
-    Name = "hisubtory-data-a"
+    Name = "${var.project_name}-data-a"
   }
 }
 
@@ -69,7 +69,7 @@ resource "aws_subnet" "data_c" {
   availability_zone = "ap-northeast-2c"
 
   tags = {
-    Name = "hisubtory-data-c"
+    Name = "${var.project_name}-data-c"
   }
 }
 
@@ -155,7 +155,7 @@ resource "aws_network_acl" "main" {
   ]
 
   tags = {
-    Name = "hisubtory-nacl"
+    Name = "${var.project_name}-nacl"
   }
 }
 

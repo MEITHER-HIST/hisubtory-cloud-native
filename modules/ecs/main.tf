@@ -1,11 +1,11 @@
 # ECS Cluster
 resource "aws_ecs_cluster" "main" {
-  name = "hisubtory-cluster"
+  name = "${var.project_name}-cluster"
 }
 
 # ECS Task Execution Role (IAM)
 resource "aws_iam_role" "ecs_task_execution_role" {
-  name = "hisubtory-ecs-task-execution-role"
+  name = "${var.project_name}-ecs-task-execution-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -28,7 +28,7 @@ resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_policy" {
 
 # ECS Task Definition (Fargate)
 resource "aws_ecs_task_definition" "app" {
-  family                   = "hisubtory-app-task"
+  family                   = "${var.project_name}-app-task"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
   cpu                      = "256"
@@ -55,7 +55,7 @@ resource "aws_ecs_task_definition" "app" {
 
 # ECS Service (Fargate)
 resource "aws_ecs_service" "main" {
-  name            = "hisubtory-service"
+  name            = "${var.project_name}-service"
   cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.app.arn
   desired_count   = 2

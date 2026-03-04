@@ -3,7 +3,7 @@
 ##################################################
 
 resource "aws_security_group" "alb_sg" {
-  name   = "hisubtory-alb-sg"
+  name   = "${var.project_name}-alb-sg"
   vpc_id = var.vpc_id
 
   ingress {
@@ -33,7 +33,7 @@ resource "aws_security_group" "alb_sg" {
 ##################################################
 
 resource "aws_security_group" "ecs_app_sg" {
-  name   = "hisubtory-ecs-app-sg"
+  name   = "${var.project_name}-ecs-app-sg"
   vpc_id = var.vpc_id
 
   # ALB → ECS App (80)
@@ -57,7 +57,7 @@ resource "aws_security_group" "ecs_app_sg" {
 ##################################################
 
 resource "aws_security_group" "rds_sg" {
-  name   = "hisubtory-rds-sg"
+  name   = "${var.project_name}-rds-sg"
   vpc_id = var.vpc_id
 
   # ECS App → RDS (3306)
@@ -81,7 +81,7 @@ resource "aws_security_group" "rds_sg" {
 ##################################################
 
 resource "aws_security_group" "redis_sg" {
-  name   = "hisubtory-redis-sg"
+  name   = "${var.project_name}-redis-sg"
   vpc_id = var.vpc_id
 
   # ECS App → Redis (6379)
@@ -105,7 +105,7 @@ resource "aws_security_group" "redis_sg" {
 ##################################################
 
 resource "aws_security_group" "bastion_sg" {
-  name   = "bastion-sg"
+  name   = "${var.project_name}-bastion-sg"
   vpc_id = var.vpc_id
 
   ingress {
