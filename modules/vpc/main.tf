@@ -51,6 +51,28 @@ resource "aws_subnet" "private_c" {
   }
 }
 
+# Private Data Subnet (DB/Redis 전용 영역) - AZ-a
+resource "aws_subnet" "data_a" {
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = "10.0.5.0/24"
+  availability_zone = "ap-northeast-2a"
+
+  tags = {
+    Name = "hisubtory-data-a"
+  }
+}
+
+# Private Data Subnet (DB/Redis 전용 영역) - AZ-c
+resource "aws_subnet" "data_c" {
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = "10.0.6.0/24"
+  availability_zone = "ap-northeast-2c"
+
+  tags = {
+    Name = "hisubtory-data-c"
+  }
+}
+
 # Internet Gateway (외부 인터넷 연결)
 resource "aws_internet_gateway" "igw" {
   vpc_id = aws_vpc.main.id
@@ -108,6 +130,16 @@ resource "aws_route_table_association" "private_a_assoc" {
 
 resource "aws_route_table_association" "private_c_assoc" {
   subnet_id      = aws_subnet.private_c.id
+  route_table_id = aws_route_table.private.id
+}
+
+resource "aws_route_table_association" "data_a_assoc" {
+  subnet_id      = aws_subnet.data_a.id
+  route_table_id = aws_route_table.private.id
+}
+
+resource "aws_route_table_association" "data_c_assoc" {
+  subnet_id      = aws_subnet.data_c.id
   route_table_id = aws_route_table.private.id
 }
 

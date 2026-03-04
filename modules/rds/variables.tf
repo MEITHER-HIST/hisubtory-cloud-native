@@ -1,4 +1,4 @@
-variable "private_subnet_ids" {
+variable "data_subnet_ids" {
   type = list(string)
 }
 
