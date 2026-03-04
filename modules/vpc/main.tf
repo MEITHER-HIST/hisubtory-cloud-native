@@ -3,7 +3,7 @@ resource "aws_vpc" "main" {
   cidr_block = var.vpc_cidr
 
   tags = {
-    Name = "hisubtory-vpc"
+    Name = "${var.project_name}-vpc"
   }
 }
 
@@ -14,7 +14,7 @@ resource "aws_subnet" "public_a" {
   availability_zone = "ap-northeast-2a"
 
   tags = {
-    Name = "hisubtory-public-a"
+    Name = "${var.project_name}-public-a"
   }
 }
 
@@ -25,7 +25,7 @@ resource "aws_subnet" "public_c" {
   availability_zone = "ap-northeast-2c"
 
   tags = {
-    Name = "hisubtory-public-c"
+    Name = "${var.project_name}-public-c"
   }
 }
 
@@ -36,7 +36,7 @@ resource "aws_subnet" "private_a" {
   availability_zone = "ap-northeast-2a"
 
   tags = {
-    Name = "hisubtory-private-a"
+    Name = "${var.project_name}-private-a"
   }
 }
 
@@ -47,7 +47,29 @@ resource "aws_subnet" "private_c" {
   availability_zone = "ap-northeast-2c"
 
   tags = {
-    Name = "hisubtory-private-c"
+    Name = "${var.project_name}-private-c"
+  }
+}
+
+# Private Data Subnet (DB/Redis 전용 영역) - AZ-a
+resource "aws_subnet" "data_a" {
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = "10.0.5.0/24"
+  availability_zone = "ap-northeast-2a"
+
+  tags = {
+    Name = "${var.project_name}-data-a"
+  }
+}
+
+# Private Data Subnet (DB/Redis 전용 영역) - AZ-c
+resource "aws_subnet" "data_c" {
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = "10.0.6.0/24"
+  availability_zone = "ap-northeast-2c"
+
+  tags = {
+    Name = "${var.project_name}-data-c"
   }
 }
 
@@ -109,4 +131,54 @@ resource "aws_route_table_association" "private_a_assoc" {
 resource "aws_route_table_association" "private_c_assoc" {
   subnet_id      = aws_subnet.private_c.id
   route_table_id = aws_route_table.private.id
+}
+
+resource "aws_route_table_association" "data_a_assoc" {
+  subnet_id      = aws_subnet.data_a.id
+  route_table_id = aws_route_table.private.id
+}
+
+resource "aws_route_table_association" "data_c_assoc" {
+  subnet_id      = aws_subnet.data_c.id
+  route_table_id = aws_route_table.private.id
+}
+
+# Network ACL 생성 (Allow Only 구조)
+resource "aws_network_acl" "main" {
+  vpc_id = aws_vpc.main.id
+
+  subnet_ids = [
+    aws_subnet.public_a.id,
+    aws_subnet.public_c.id,
+    aws_subnet.private_a.id,
+    aws_subnet.private_c.id
+  ]
+
+  tags = {
+    Name = "${var.project_name}-nacl"
+  }
+}
+
+# Outbound Allow All
+resource "aws_network_acl_rule" "egress_allow_all" {
+  network_acl_id = aws_network_acl.main.id
+
+  egress      = true
+  rule_number = 100
+  protocol    = "-1"
+
+  cidr_block  = "0.0.0.0/0"
+  rule_action = "allow"
+}
+
+# Inbound Allow All
+resource "aws_network_acl_rule" "ingress_allow_all" {
+  network_acl_id = aws_network_acl.main.id
+
+  egress      = false
+  rule_number = 100
+  protocol    = "-1"
+
+  cidr_block  = "0.0.0.0/0"
+  rule_action = "allow"
 }
