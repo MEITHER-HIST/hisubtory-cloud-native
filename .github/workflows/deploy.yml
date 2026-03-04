@@ -1,38 +1,60 @@
-name: Deploy Django App via CodeDeploy
+name: Deploy to Amazon ECS
 
 on:
   push:
     branches:
-      - main
       - feat/do
+
+env:
+  AWS_REGION: ap-northeast-2
+  ECR_REPOSITORY: hisubtory-repo
+  ECS_SERVICE: hisubtory-service
+  ECS_CLUSTER: hisubtory-cluster
+  ECS_TASK_DEFINITION: .github/workflows/task-definition.json
+  CONTAINER_NAME: app
 
 jobs:
   deploy:
+    name: Deploy
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repsitory
-        uses: actions/checkout@v4
-      - name: Set up AWS CLI
-        uses: aws-actions/configure-aws-credentials@v4
-        with: 
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ap-northeast-2
+    - name: Checkout
+      uses: actions/checkout@v4
 
-      - name: Create deployment package
-        run: |
-          zip -r hisubBE-deploy.zip . \
-            -x "*.git*" ".github/*" "__pycache__/*" "*.pyc" ".DS_Store" "media/*" "db.sqlite3" "venv/*"
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
 
-      - name: Upload to S3
-        run: |
-          aws s3 cp hisubBE-deploy.zip s3://${{ secrets.S3_BUCKET }}/hisubBE-deploy.zip
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Deploy with CodeDeploy
-        run: | 
-          aws deploy create-deployment \
-            --application-name ${{ secrets.CODEDEPLOY_APPLICATION }} \
-            --deployment-group-name ${{ secrets.CODEDEPLOY_DEPLOYMENT_GROUP }} \
-            --s3-location bucket=${{ secrets.S3_BUCKET }},key=hisubBE-deploy.zip,bundleType=zip \
-            --region ap-northeast-2
+    - name: Build, tag, and push image to Amazon ECR
+      id: build-image
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        IMAGE_TAG: ${{ github.sha }}
+      run: |
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+    - name: Fill in the new image ID in the Amazon ECS task definition
+      id: task-def
+      uses: aws-actions/amazon-ecs-render-task-definition@v1
+      with:
+        task-definition: ${{ env.ECS_TASK_DEFINITION }}
+        container-name: ${{ env.CONTAINER_NAME }}
+        image: ${{ steps.build-image.outputs.image }}
+
+    - name: Deploy Amazon ECS task definition
+      uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+      with:
+        task-definition: ${{ steps.task-def.outputs.task-definition }}
+        service: ${{ env.ECS_SERVICE }}
+        cluster: ${{ env.ECS_CLUSTER }}
+        wait-for-service-stability: true
