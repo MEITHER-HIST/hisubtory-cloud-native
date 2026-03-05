@@ -8,6 +8,7 @@ def health(request):
     return HttpResponse("ok", content_type="text/plain")
 
 urlpatterns = [
+    path("", health),
     path("health/", health),
     path("health", health),
     path("admin/", admin.site.urls),
