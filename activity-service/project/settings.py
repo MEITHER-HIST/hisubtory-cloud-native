@@ -31,65 +31,65 @@ SECRET_KEY = 'django-insecure-ti-prtjm(d_p7ve!r(g&4&(=+*_vn*x+*3z^ge567i72tr-5)1
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    "ec2-3-36-115-132.ap-northeast-2.compute.amazonaws.com",
-    "hisub-alb-1329951961.ap-northeast-2.elb.amazonaws.com",
-    "hisub-nlb-240290227cb110fd.elb.ap-northeast-2.amazonaws.com",
-    "3.36.115.132",
-    "localhost",
-    "127.0.0.1",
-    ".amazonaws.com",
-    "10.0.0.125",
-    "10.0.0.97",
-    "10.0.0.216",
-    ".elb.amazonaws.com",
-    'ServerA'
+"ec2-3-36-115-132.ap-northeast-2.compute.amazonaws.com",
+"hisub-alb-1329951961.ap-northeast-2.elb.amazonaws.com",
+"hisub-nlb-240290227cb110fd.elb.ap-northeast-2.amazonaws.com",
+"3.36.115.132",
+"localhost",
+"127.0.0.1",
+".amazonaws.com",
+"10.0.0.125",
+"10.0.0.97",
+"10.0.0.216",
+".elb.amazonaws.com",
+'ServerA'
 ]
 
 
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    # 'accounts',
-    # 'corsheaders',
-    'subway',   
-    'stories',
-    'library',
-    'pages',
-    # 'rest_framework',
-    # 'storages',
+'django.contrib.admin',
+'django.contrib.auth',
+'django.contrib.contenttypes',
+'django.contrib.sessions',
+'django.contrib.messages',
+'django.contrib.staticfiles',
+# 'accounts',
+# 'corsheaders',
+'subway',   
+'stories',
+'library',
+'pages',
+# 'rest_framework',
+# 'storages',
 ]
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+'corsheaders.middleware.CorsMiddleware',
+'django.middleware.security.SecurityMiddleware',
+'django.contrib.sessions.middleware.SessionMiddleware',
+'django.middleware.common.CommonMiddleware',
+'django.middleware.csrf.CsrfViewMiddleware',
+'django.contrib.auth.middleware.AuthenticationMiddleware',
+'django.contrib.messages.middleware.MessageMiddleware',
+'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
 ROOT_URLCONF = 'project.urls'
 
 TEMPLATES = [
-    {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
-            ],
-        },
-    },
+{
+'BACKEND': 'django.template.backends.django.DjangoTemplates',
+'DIRS': [],
+'APP_DIRS': True,
+'OPTIONS': {
+'context_processors': [
+'django.template.context_processors.request',
+'django.contrib.auth.context_processors.auth',
+'django.contrib.messages.context_processors.messages',
+],
+},
+},
 ]
 
 WSGI_APPLICATION = 'project.wsgi.application'
@@ -99,44 +99,44 @@ WSGI_APPLICATION = 'project.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 def must(name: str) -> str:
-    v = os.getenv(name)
-    if not v:
-        raise RuntimeError(f"Missing env: {name}")
-    return v
+v = os.getenv(name)
+if not v:
+raise RuntimeError(f"Missing env: {name}")
+return v
 
 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.mysql",
-        "NAME": "hisubtory_db",
-        "USER": os.getenv("DB_USER", "admin"),
-        "PASSWORD": os.getenv("DB_PASSWORD", "SECRET_REPLACED"),
-        "HOST": os.getenv("DB_HOST", "hisub-db.chmwc60iizys.ap-northeast-2.rds.amazonaws.com"),
-        "PORT": os.getenv("DB_PORT", "3306"),
-        "OPTIONS": {
-            "init_command": "SET sql_mode='STRICT_TRANS_TABLES'",
-            "charset": "utf8mb4",
-        },
-        "CONN_MAX_AGE": 0,  # 불안정한 연결을 위해 0으로 설정
-    }
+"default": {
+"ENGINE": "django.db.backends.mysql",
+"NAME": "hisubtory_db",
+"USER": os.getenv("DB_USER", "admin"),
+"PASSWORD": os.getenv("DB_PASSWORD", "SECRET_REPLACED"),
+"HOST": os.getenv("DB_HOST", "hisub-db.chmwc60iizys.ap-northeast-2.rds.amazonaws.com"),
+"PORT": os.getenv("DB_PORT", "3306"),
+"OPTIONS": {
+"init_command": "SET sql_mode='STRICT_TRANS_TABLES'",
+"charset": "utf8mb4",
+},
+"CONN_MAX_AGE": 0,  # 불안정한 연결을 위해 0으로 설정
+}
 }
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+{
+'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+},
+{
+'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+},
+{
+'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+},
+{
+'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+},
 ]
 
 
@@ -174,13 +174,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # CSRF_COOKIE_SECURE = True
 # SECURE_SSL_REDIRECT = False
 if DEBUG:
-    SESSION_COOKIE_SECURE = False
-    CSRF_COOKIE_SECURE = False
-    SECURE_SSL_REDIRECT = False
+SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = False
+SECURE_SSL_REDIRECT = False
 else:
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
-    SECURE_SSL_REDIRECT = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+SECURE_SSL_REDIRECT = True
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
@@ -196,9 +196,9 @@ AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY", "")
 
 AWS_S3_CUSTOM_DOMAIN = os.getenv("AWS_S3_CUSTOM_DOMAIN", "").strip()
 MEDIA_URL = (
-    f"https://{AWS_S3_CUSTOM_DOMAIN}/media/"
-    if AWS_S3_CUSTOM_DOMAIN
-    else "/media/"
+f"https://{AWS_S3_CUSTOM_DOMAIN}/media/"
+if AWS_S3_CUSTOM_DOMAIN
+else "/media/"
 )
 
 MEDIA_LOCATION = "media"
@@ -210,50 +210,50 @@ AWS_S3_FILE_OVERWRITE = False
 
 
 STORAGES = {
-    # MEDIA(업로드)만 S3로
-    "default": {
-        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
-        "OPTIONS": {
-            "bucket_name": AWS_STORAGE_BUCKET_NAME,
-            "region_name": AWS_S3_REGION_NAME,
-            "access_key": AWS_ACCESS_KEY_ID,
-            "secret_key": AWS_SECRET_ACCESS_KEY,
-            "location": MEDIA_LOCATION,
-        },
-    },
+# MEDIA(업로드)만 S3로
+"default": {
+"BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+"OPTIONS": {
+"bucket_name": AWS_STORAGE_BUCKET_NAME,
+"region_name": AWS_S3_REGION_NAME,
+"access_key": AWS_ACCESS_KEY_ID,
+"secret_key": AWS_SECRET_ACCESS_KEY,
+"location": MEDIA_LOCATION,
+},
+},
 
-    # STATIC은 일단 로컬 유지(원하면 나중에 S3로도 가능)
-    "staticfiles": {
-        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
-    },
+# STATIC은 일단 로컬 유지(원하면 나중에 S3로도 가능)
+"staticfiles": {
+"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+},
 }
 
 # MEDIA_URL
 if AWS_S3_CUSTOM_DOMAIN:
-    MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{MEDIA_LOCATION}/"
+MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{MEDIA_LOCATION}/"
 else:
-    MEDIA_URL = f"https://{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com/{MEDIA_LOCATION}/"
+MEDIA_URL = f"https://{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com/{MEDIA_LOCATION}/"
 
 CSRF_TRUSTED_ORIGINS = [
-    "http://hisub-alb-1329951961.ap-northeast-2.elb.amazonaws.com",
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-    "http://localhost:8000",
-    "http://127.0.0.1:8000",
-    "http://127.0.0.1",
-    "http://10.0.0.58",
-    "http://10.0.0.134",
+"http://hisub-alb-1329951961.ap-northeast-2.elb.amazonaws.com",
+"http://localhost:5173",
+"http://127.0.0.1:5173",
+"http://localhost:8000",
+"http://127.0.0.1:8000",
+"http://127.0.0.1",
+"http://10.0.0.58",
+"http://10.0.0.134",
 ]
 
 # CORS 및 CSRF 설정 (하나로 통합)
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-    "http://hisub-alb-1329951961.ap-northeast-2.elb.amazonaws.com",
+"http://localhost:5173",
+"http://127.0.0.1:5173",
+"http://hisub-alb-1329951961.ap-northeast-2.elb.amazonaws.com",
 ]
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = list(default_headers) + [
-    "x-csrftoken",
+"x-csrftoken",
 ]
 
 # 세션 쿠키 설정 (브라우저가 쿠키를 잘 구울 수 있게 도와줌)
@@ -262,12 +262,12 @@ SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_SAMESITE = 'Lax'
 
 REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": (
-        "rest_framework.authentication.SessionAuthentication",
-    ),
-    "DEFAULT_PERMISSION_CLASSES": (
-        "rest_framework.permissions.AllowAny",
-    ),
+"DEFAULT_AUTHENTICATION_CLASSES": (
+"rest_framework.authentication.SessionAuthentication",
+),
+"DEFAULT_PERMISSION_CLASSES": (
+"rest_framework.permissions.AllowAny",
+),
 }
 
 REDIS_HOST = os.getenv("REDIS_HOST", "clustercfg.hisub-redis.lkssu5.apn2.cache.amazonaws.com")
@@ -277,14 +277,14 @@ REDIS_DB   = os.getenv("REDIS_DB", "0")
 REDIS_URL = os.getenv("REDIS_URL", f"redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}")
 # Redis (WSL에서 뜬 Redis를 윈도우 Django가 localhost로 접근)
 CACHES = {
-    "default": {
-        "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": REDIS_URL,
-        "OPTIONS": {
-            "CLIENT_CLASS": "django_redis.client.DefaultClient",
-            "ssl_cert_reqs": None,
-        },
-    }
+"default": {
+"BACKEND": "django_redis.cache.RedisCache",
+"LOCATION": REDIS_URL,
+"OPTIONS": {
+"CLIENT_CLASS": "django_redis.client.DefaultClient",
+"ssl_cert_reqs": None,
+},
+}
 }
 
 # 세션을 DB가 아니라 캐시(=Redis)에 저장
