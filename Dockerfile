@@ -14,5 +14,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
+ENV PYTHONPATH="/app:/app/activity-service:/app/user-service:/app/story-service"
+
 # Gunicorn으로 실행 (로그 설정 추가)
 CMD ["gunicorn", "--bind", "0.0.0.0:80", "--workers", "2", "--timeout", "120", "--access-logfile", "-", "--error-logfile", "-", "project.wsgi:application"]

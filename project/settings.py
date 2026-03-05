@@ -29,14 +29,14 @@ SECRET_KEY = 'django-insecure-ti-prtjm(d_p7ve!r(g&4&(=+*_vn*x+*3z^ge567i72tr-5)1
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-ALLOWED_HOSTS = ["*"]
-
+ALLOWED_HOSTS = [
+    "*",
     ".amazonaws.com",
     "10.0.0.125",
     "10.0.0.97",
     "10.0.0.216",
     ".elb.amazonaws.com",
-    'ServerA'
+    "ServerA"
 ]
 
 
@@ -265,7 +265,7 @@ REDIS_HOST = os.getenv("REDIS_HOST", "clustercfg.hisub-redis.lkssu5.apn2.cache.a
 REDIS_PORT = os.getenv("REDIS_PORT", "6379")
 REDIS_DB   = os.getenv("REDIS_DB", "0")
 
-REDIS_URL = os.getenv("REDIS_URL", f"rediss://{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}")  # TLS면 rediss
+REDIS_URL = os.getenv("REDIS_URL", f"redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}")
 # Redis (WSL에서 뜬 Redis를 윈도우 Django가 localhost로 접근)
 CACHES = {
     "default": {
