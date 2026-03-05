@@ -20,7 +20,8 @@
         { "name": "DB_USER", "value": "admin" },
         { "name": "DB_PORT", "value": "3306" },
         { "name": "REDIS_HOST", "value": "hisubtory-redis.rkthpz.0001.apn2.cache.amazonaws.com" },
-        { "name": "REDIS_PORT", "value": "6379" }
+        { "name": "REDIS_PORT", "value": "6379" },
+        { "name": "DB_PASSWORD", "value": "REPLACE_ME_PASSWORD" }
       ],
       "logConfiguration": {
         "logDriver": "awslogs",
