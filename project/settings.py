@@ -51,7 +51,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'accounts',
     'corsheaders',
-    'subway',   
+    'subway',
     'stories',
     'library',
     'pages',
