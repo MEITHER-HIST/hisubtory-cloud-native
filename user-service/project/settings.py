@@ -179,5 +179,6 @@ CACHES = {
     }
 }
 
-SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+# 세션 저장 설정 (로컬 테스트 시에는 'django.contrib.sessions.backends.db' 사용)
+SESSION_ENGINE = os.getenv("SESSION_ENGINE", "django.contrib.sessions.backends.cache")
 SESSION_CACHE_ALIAS = "default"
