@@ -1,6 +1,5 @@
 name: Deploy to Amazon ECS
 
-# Trigger update
 on:
   push:
     branches:
@@ -62,7 +61,6 @@ jobs:
         with open('.github/workflows/task-definition.json', 'r') as f:
             data = json.load(f)
         
-        # 주입할 환경변수 맵핑
         secrets_map = {
             'DB_PASSWORD': os.environ.get('DB_PASSWORD', '').strip(),
             'SB_DB_PASSWORD': os.environ.get('SB_DB_PASSWORD', 'hisubtory1234').strip(),
