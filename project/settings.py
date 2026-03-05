@@ -81,8 +81,18 @@ DATABASES = {
         "HOST": os.getenv("DB_HOST", "localhost"),
         "PORT": os.getenv("DB_PORT", "5432"),
         "CONN_MAX_AGE": 0,
+    },
+    "mysql": {
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": os.getenv("MYSQL_DB_NAME", "hisubtory_db"),
+        "USER": os.getenv("MYSQL_DB_USER", "admin"),
+        "PASSWORD": os.getenv("MYSQL_DB_PASSWORD", "hisadmin"),
+        "HOST": os.getenv("MYSQL_DB_HOST", "localhost"),
+        "PORT": os.getenv("MYSQL_DB_PORT", "3306"),
     }
 }
+
+DATABASE_ROUTERS = ['project.router.DatabaseRouter']
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},

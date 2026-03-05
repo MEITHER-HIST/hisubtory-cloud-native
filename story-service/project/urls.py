@@ -9,6 +9,7 @@ def health(request):
 
 urlpatterns = [
     # 1. 시스템 및 어드민
+    path("", health),
     path("health/", health),
     path("admin/", admin.site.urls),
 
