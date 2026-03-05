@@ -25,6 +25,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'accounts',
     'corsheaders',
+    'subway',
+    'stories',
+    'library',
+    'pages',
     'rest_framework',
     'storages',
 ]
