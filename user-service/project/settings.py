@@ -73,6 +73,9 @@ DATABASES = {
         "PASSWORD": os.getenv("SB_DB_PASSWORD", "hisubtory1234"),
         "HOST": os.getenv("SB_DB_HOST", "localhost"),
         "PORT": os.getenv("SB_DB_PORT", "5432"),
+        "OPTIONS": {
+            "connect_timeout": 10,
+        },
         "CONN_MAX_AGE": 0,
     },
     "mysql": {
