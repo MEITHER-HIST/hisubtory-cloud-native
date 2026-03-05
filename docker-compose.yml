@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  # 1. API Gateway (Nginx) - 모든 요청의 입구
+  # 1. API Gateway (Nginx)
   gateway:
     image: nginx:latest
     container_name: hisubtory-gateway
@@ -25,9 +25,10 @@ services:
     env_file: .env
     environment:
       - OTEL_SERVICE_NAME=user-service
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4317
     depends_on:
       - jaeger
+      - db-postgres
+      - db-mysql
 
   # 3. Story Service
   story-service:
@@ -40,9 +41,9 @@ services:
     env_file: .env
     environment:
       - OTEL_SERVICE_NAME=story-service
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4317
     depends_on:
       - jaeger
+      - db-mysql
 
   # 4. Activity Service
   activity-service:
@@ -55,10 +56,10 @@ services:
     env_file: .env
     environment:
       - OTEL_SERVICE_NAME=activity-service
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4317
     depends_on:
       - redis
       - jaeger
+      - db-mysql
 
   # 5. Redis
   redis:
@@ -67,7 +68,30 @@ services:
     ports:
       - "6379:6379"
 
-  # 6. Jaeger
+  # 6. Database: PostgreSQL (for Supabase compat)
+  db-postgres:
+    image: postgres:15
+    container_name: hisubtory-db-pg
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: hisubtory1234
+    ports:
+      - "5432:5432"
+
+  # 7. Database: MySQL
+  db-mysql:
+    image: mysql:8.0
+    container_name: hisubtory-db-mysql
+    environment:
+      MYSQL_DATABASE: hisubtory_db
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: mysql_password
+    ports:
+      - "3306:3306"
+
+  # 8. Jaeger
   jaeger:
     image: jaegertracing/all-in-one:latest
     container_name: hisubtory-jaeger
@@ -78,7 +102,7 @@ services:
     environment:
       - COLLECTOR_OTLP_ENABLED=true
 
-  # 7. Prometheus (Metrics Collector)
+  # 9. Prometheus
   prometheus:
     image: prom/prometheus:latest
     container_name: hisubtory-prometheus
@@ -87,22 +111,21 @@ services:
     ports:
       - "9090:9090"
 
-  # 8. Loki (Log Aggregator)
+  # 10. Loki
   loki:
     image: grafana/loki:latest
     container_name: hisubtory-loki
     ports:
       - "3100:3100"
 
-  # 9. Promtail (Log Collector)
+  # 11. Promtail
   promtail:
     image: grafana/promtail:latest
     container_name: hisubtory-promtail
     volumes:
       - ./monitoring/promtail.yml:/etc/promtail/config.yml
 
-
-  # 10. Grafana (Visualization Dashboard)
+  # 12. Grafana
   grafana:
     image: grafana/grafana:latest
     container_name: hisubtory-grafana
