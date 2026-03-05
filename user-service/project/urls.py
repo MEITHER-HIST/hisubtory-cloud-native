@@ -18,17 +18,18 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("favicon.ico", lambda r: HttpResponse(status=204)),
 
-    # 2. API 전용 경로 (리액트가 사용하는 경로)
+    # 2. API 전용 경로
     path("api/accounts/", include("accounts.urls_api")),
-    # path("api/pages/", include("pages.urls_api")), # 위에서 만든 urls_api를 연결
-    # path("api/stories/", include("stories.urls")),
-    # path("api/library/", include("library.urls")),
+    path("api/stories/", include("stories.urls_api")),
+    path("api/library/", include("library.urls")),
+    # pages는 activity-service에서 담당하므로 Nginx가 라우팅하지만, 
+    # 로컬 개발 편의를 위해 포함 (activity-service가 PYTHONPATH에 있어야 함)
+    path("api/pages/", include("pages.urls_api")),
 
-    # 3. HTML/Legacy 경로 (기존 템플릿 페이지)
+    # 3. HTML/Legacy 경로
     path("accounts/", include("accounts.urls")),
-    # path("stories/", include("stories.urls")),
-    # path("library/", include("library.urls")),
-    # path("", include("pages.urls")),
+    path("stories/", include("stories.urls")),
+    path("library/", include("library.urls")),
 ]
 
 if settings.DEBUG:
