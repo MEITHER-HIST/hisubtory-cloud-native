@@ -4,6 +4,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.http import HttpResponse
 
+# Final deployment trigger with updated AWS keys
 def health(request):
     return HttpResponse("ok", content_type="text/plain")
 
