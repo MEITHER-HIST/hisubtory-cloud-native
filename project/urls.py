@@ -8,8 +8,8 @@ def health(request):
     return HttpResponse("ok", content_type="text/plain")
 
 urlpatterns = [
-    # 1. 시스템 및 어드민
     path("health/", health),
+    path("health", health),
     path("admin/", admin.site.urls),
 
     # 2. API 전용 경로 (리액트가 사용하는 경로)
