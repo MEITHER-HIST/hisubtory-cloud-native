@@ -50,7 +50,10 @@ ROOT_URLCONF = 'project.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR],
+        'DIRS': [
+            BASE_DIR,
+            os.path.join(BASE_DIR, "activity-service"), # pages 앱 템플릿 위치
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -82,7 +85,7 @@ DATABASES = {
         "ENGINE": "django.db.backends.mysql",
         "NAME": os.getenv("DB_NAME", "hisubtory_db"),
         "USER": os.getenv("DB_USER", "admin"),
-        "PASSWORD": os.getenv("DB_PASSWORD", ""),
+        "PASSWORD": os.getenv("DB_PASSWORD", "mysql_password"),
         "HOST": os.getenv("DB_HOST", "db-mysql"),
         "PORT": os.getenv("DB_PORT", "3306"),
     }

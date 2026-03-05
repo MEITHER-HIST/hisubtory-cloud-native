@@ -83,7 +83,7 @@ ROOT_URLCONF = 'project.urls'
 TEMPLATES = [
 {
 'BACKEND': 'django.template.backends.django.DjangoTemplates',
-'DIRS': [],
+'DIRS': [BASE_DIR],
 'APP_DIRS': True,
 'OPTIONS': {
 'context_processors': [
@@ -102,18 +102,18 @@ WSGI_APPLICATION = 'project.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 def must(name: str) -> str:
-v = os.getenv(name)
-if not v:
-raise RuntimeError(f"Missing env: {name}")
-return v
+    v = os.getenv(name)
+    if not v:
+        raise RuntimeError(f"Missing env: {name}")
+    return v
 
 
 DATABASES = {
 "default": {
 "ENGINE": "django.db.backends.mysql",
-"NAME": "hisubtory_db",
+"NAME": os.getenv("DB_NAME", "hisubtory_db"),
 "USER": os.getenv("DB_USER", "admin"),
-"PASSWORD": os.getenv("DB_PASSWORD", "SECRET_REPLACED"),
+"PASSWORD": os.getenv("DB_PASSWORD", "mysql_password"),
 "HOST": os.getenv("DB_HOST", "db-mysql"),
 "PORT": os.getenv("DB_PORT", "3306"),
 "OPTIONS": {
@@ -188,14 +188,14 @@ SECURE_SSL_REDIRECT = True
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-HF_TOKEN = os.getenv('HF_TOKEN', 'your-default-value-if-needed')
+HF_TOKEN = os.getenv('HF_TOKEN', 'dummy')
 
 LOGIN_URL = '/api/accounts/login/'
 LOGIN_REDIRECT_URL = '/'
 AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME", "hisub-s3-bucket")
 AWS_S3_REGION_NAME = os.getenv("AWS_S3_REGION_NAME", "ap-northeast-2")
-AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID", "")
-AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY", "")
+AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID", "dummy")
+AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY", "dummy")
 
 AWS_S3_CUSTOM_DOMAIN = os.getenv("AWS_S3_CUSTOM_DOMAIN", "").strip()
 MEDIA_URL = (
