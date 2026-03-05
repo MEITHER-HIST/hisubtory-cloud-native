@@ -64,8 +64,11 @@ jobs:
         # 주입할 환경변수 맵핑
         secrets_map = {
             'DB_PASSWORD': os.environ.get('DB_PASSWORD', '').strip(),
-            'SB_DB_PASSWORD': os.environ.get('SB_DB_PASSWORD', '').strip(),
+            'SB_DB_PASSWORD': os.environ.get('SB_DB_PASSWORD', 'hisubtory1234').strip(),
             'SB_DB_USER': 'postgres.jlvhwihvmivvihffhxse',
+            'SB_DB_HOST': 'aws-1-ap-northeast-2.pooler.supabase.com',
+            'SB_DB_PORT': '5432',
+            'SB_DB_NAME': 'postgres',
             'REDIS_HOST': os.environ.get('REDIS_HOST', '').strip(),
             'AWS_ACCESS_KEY_ID': os.environ.get('AWS_ACCESS_KEY_ID', '').strip(),
             'AWS_SECRET_ACCESS_KEY': os.environ.get('AWS_SECRET_ACCESS_KEY', '').strip(),
