@@ -21,32 +21,56 @@ def csrf_api_view(request):
 
 @require_POST
 def signup_api_view(request):
-    supabase = get_supabase_client()
-    email = request.POST.get("email")
-    ...
     try:
+        supabase = get_supabase_client()
+        email = request.POST.get("email")
+        password = request.POST.get("password")
+        username = request.POST.get("username")
+        
+        if not email or not password:
+            return JsonResponse({"success": False, "message": "Email and password are required"}, status=400)
+            
         # Supabase 회원가입 요청
         res = supabase.auth.sign_up({
             "email": email, 
             "password": password,
             "options": {"data": {"username": username}}
         })
-        ...
+        return JsonResponse({
+            "success": True, 
+            "id": res.user.id, 
+            "email": res.user.email,
+            "message": "Signup successful."
+        })
+    except Exception as e:
+        return JsonResponse({"success": False, "message": str(e)}, status=400)
 
 @require_POST
 def login_api_view(request):
-    supabase = get_supabase_client()
-    email = request.POST.get("email")
-    ...
     try:
+        supabase = get_supabase_client()
+        email = request.POST.get("email")
+        password = request.POST.get("password")
+        
+        if not email or not password:
+            return JsonResponse({"success": False, "message": "Email and password are required"}, status=400)
+            
         # Supabase 로그인 요청
         res = supabase.auth.sign_in_with_password({"email": email, "password": password})
-        ...
+        return JsonResponse({
+            "success": True,
+            "access_token": res.session.access_token,
+            "user": {
+                "id": res.user.id,
+                "email": res.user.email
+            }
+        })
+    except Exception as e:
+        return JsonResponse({"success": False, "message": str(e)}, status=401)
 
 @require_POST
 def logout_api_view(request):
     # Supabase 로그아웃 (서버 측 세션 종료)
-    # 주의: 클라이언트가 가진 JWT 토큰을 무효화하려면 Supabase 설정이 필요할 수 있습니다.
     try:
         supabase = get_supabase_client()
         supabase.auth.sign_out()
