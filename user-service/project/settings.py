@@ -50,7 +50,7 @@ ROOT_URLCONF = 'project.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -71,7 +71,7 @@ DATABASES = {
         "NAME": os.getenv("SB_DB_NAME", "postgres"),
         "USER": os.getenv("SB_DB_USER", "postgres"),
         "PASSWORD": os.getenv("SB_DB_PASSWORD", "hisubtory1234"),
-        "HOST": os.getenv("SB_DB_HOST", "localhost"),
+        "HOST": os.getenv("SB_DB_HOST", "db-postgres"),
         "PORT": os.getenv("SB_DB_PORT", "5432"),
         "OPTIONS": {
             "connect_timeout": 10,
@@ -83,7 +83,7 @@ DATABASES = {
         "NAME": os.getenv("DB_NAME", "hisubtory_db"),
         "USER": os.getenv("DB_USER", "admin"),
         "PASSWORD": os.getenv("DB_PASSWORD", ""),
-        "HOST": os.getenv("DB_HOST", "localhost"),
+        "HOST": os.getenv("DB_HOST", "db-mysql"),
         "PORT": os.getenv("DB_PORT", "3306"),
     }
 }
@@ -164,7 +164,7 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 # Redis Cache 설정
-REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
+REDIS_HOST = os.getenv("REDIS_HOST", "redis")
 REDIS_PORT = os.getenv("REDIS_PORT", "6379")
 REDIS_URL = os.getenv("REDIS_URL", f"redis://{REDIS_HOST}:{REDIS_PORT}/0")
 

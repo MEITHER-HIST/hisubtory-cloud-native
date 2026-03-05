@@ -3,16 +3,21 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from django.http import HttpResponse
+from django.shortcuts import render
 
 # Final deployment trigger with updated AWS keys
 def health(request):
     return HttpResponse("ok", content_type="text/plain")
 
+def index(request):
+    return render(request, "main.html")
+
 urlpatterns = [
-    path("", health),
+    path("", index, name="index"),
     path("health/", health),
     path("health", health),
     path("admin/", admin.site.urls),
+    path("favicon.ico", lambda r: HttpResponse(status=204)),
 
     # 2. API 전용 경로 (리액트가 사용하는 경로)
     path("api/accounts/", include("accounts.urls_api")),
