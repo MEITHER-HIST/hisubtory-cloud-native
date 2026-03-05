@@ -14,6 +14,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
+RUN python manage.py collectstatic --noinput
+
 ENV PYTHONPATH="/app:/app/activity-service:/app/user-service:/app/story-service"
 
 # Gunicorn으로 실행 (로그 설정 추가)
