@@ -13,17 +13,18 @@ RUN apt-get update && apt-get install -y \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# 전체 소스 복사 (root 기준)
 COPY . .
 
-# collectstatic 실행 시 필요한 최소한의 환경 변수 제공 및 PYTHONPATH 설정
-RUN PYTHONPATH="/app:/app/activity-service:/app/user-service:/app/story-service" \
-    SUPABASE_URL="https://dummy.co" \
+# collectstatic 및 PYTHONPATH 설정
+ENV PYTHONPATH="/app:/app/user-service:/app/activity-service:/app/story-service"
+
+# 정적 파일 수집 (더미 환경변수 제공)
+RUN SUPABASE_URL="https://dummy.co" \
     SUPABASE_KEY="dummy" \
     AWS_ACCESS_KEY_ID="dummy" \
     AWS_SECRET_ACCESS_KEY="dummy" \
-    python manage.py collectstatic --noinput
+    python user-service/manage.py collectstatic --noinput
 
-ENV PYTHONPATH="/app:/app/activity-service:/app/user-service:/app/story-service"
-
-# 마이그레이션 실행 후 Gunicorn 시작
-CMD ["sh", "-c", "PYTHONPATH=$PYTHONPATH:/app/user-service python user-service/manage.py migrate --database=default && gunicorn --bind 0.0.0.0:80 --workers 2 --timeout 120 --access-logfile - --error-logfile - project.wsgi:application"]
+# 마이그레이션 실행 후 Gunicorn 시작 (user-service 기준)
+CMD ["sh", "-c", "python user-service/manage.py migrate --noinput && gunicorn --bind 0.0.0.0:80 --workers 2 --timeout 120 project.wsgi:application"]

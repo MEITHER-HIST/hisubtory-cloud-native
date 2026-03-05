@@ -42,7 +42,8 @@ ALLOWED_HOSTS = [
 "10.0.0.97",
 "10.0.0.216",
 ".elb.amazonaws.com",
-'ServerA'
+'ServerA',
+"*"
 ]
 
 
@@ -113,7 +114,7 @@ DATABASES = {
 "NAME": "hisubtory_db",
 "USER": os.getenv("DB_USER", "admin"),
 "PASSWORD": os.getenv("DB_PASSWORD", "SECRET_REPLACED"),
-"HOST": os.getenv("DB_HOST", "localhost"),
+"HOST": os.getenv("DB_HOST", "db-mysql"),
 "PORT": os.getenv("DB_PORT", "3306"),
 "OPTIONS": {
 "init_command": "SET sql_mode='STRICT_TRANS_TABLES'",
@@ -272,7 +273,7 @@ REST_FRAMEWORK = {
 ),
 }
 
-REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
+REDIS_HOST = os.getenv("REDIS_HOST", "redis")
 REDIS_PORT = os.getenv("REDIS_PORT", "6379")
 REDIS_DB   = os.getenv("REDIS_DB", "0")
 
