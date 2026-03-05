@@ -13,6 +13,7 @@ class Webtoon(models.Model):
     class Meta:
         db_table = "webtoons"
         managed = False
+        app_label = 'stories'
 
 class Episode(models.Model):
     episode_id = models.BigAutoField(primary_key=True)
@@ -29,6 +30,7 @@ class Episode(models.Model):
     class Meta:
         db_table = "episodes"
         managed = False
+        app_label = 'stories'
 
 class Cut(models.Model):
     cut_id = models.BigAutoField(primary_key=True)
@@ -41,6 +43,7 @@ class Cut(models.Model):
     class Meta:
         db_table = "cuts"
         managed = False
+        app_label = 'stories'
 
 # 📌 명세 6번: 역과 직접 연결된 에피소드 테이블 (station_id 존재)
 class StoriesEpisode(models.Model):
@@ -56,3 +59,4 @@ class StoriesEpisode(models.Model):
     class Meta:
         db_table = "stories_episode"
         managed = False
+        app_label = 'stories'
