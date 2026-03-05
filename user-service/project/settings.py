@@ -68,20 +68,20 @@ WSGI_APPLICATION = 'project.wsgi.application'
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.getenv("DB_NAME", "postgres"),
-        "USER": os.getenv("DB_USER", "postgres"),
-        "PASSWORD": os.getenv("DB_PASSWORD", "hisubtory1234"),
-        "HOST": os.getenv("DB_HOST", "localhost"),
-        "PORT": os.getenv("DB_PORT", "5432"),
+        "NAME": os.getenv("SB_DB_NAME", "postgres"),
+        "USER": os.getenv("SB_DB_USER", "postgres"),
+        "PASSWORD": os.getenv("SB_DB_PASSWORD", "hisubtory1234"),
+        "HOST": os.getenv("SB_DB_HOST", "localhost"),
+        "PORT": os.getenv("SB_DB_PORT", "5432"),
         "CONN_MAX_AGE": 0,
     },
     "mysql": {
         "ENGINE": "django.db.backends.mysql",
-        "NAME": os.getenv("MYSQL_DB_NAME", "hisubtory_db"),
-        "USER": os.getenv("MYSQL_DB_USER", "admin"),
-        "PASSWORD": os.getenv("MYSQL_DB_PASSWORD", "hisadmin"),
-        "HOST": os.getenv("MYSQL_DB_HOST", "localhost"),
-        "PORT": os.getenv("MYSQL_DB_PORT", "3306"),
+        "NAME": os.getenv("DB_NAME", "hisubtory_db"),
+        "USER": os.getenv("DB_USER", "admin"),
+        "PASSWORD": os.getenv("DB_PASSWORD", ""),
+        "HOST": os.getenv("DB_HOST", "localhost"),
+        "PORT": os.getenv("DB_PORT", "3306"),
     }
 }
 

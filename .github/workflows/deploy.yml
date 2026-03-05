@@ -46,6 +46,7 @@ jobs:
     - name: Inject Secrets into task-definition.json
       env:
         DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        SB_DB_PASSWORD: ${{ secrets.DB_PASSWORD }} # 임시로 같은 비밀번호 사용하거나 별도 Secret 등록 필요
         REDIS_HOST: ${{ secrets.REDIS_HOST }}
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -63,6 +64,7 @@ jobs:
         # 주입할 환경변수 맵핑
         secrets_map = {
             'DB_PASSWORD': os.environ.get('DB_PASSWORD', '').strip(),
+            'SB_DB_PASSWORD': os.environ.get('SB_DB_PASSWORD', '').strip(),
             'REDIS_HOST': os.environ.get('REDIS_HOST', '').strip(),
             'AWS_ACCESS_KEY_ID': os.environ.get('AWS_ACCESS_KEY_ID', '').strip(),
             'AWS_SECRET_ACCESS_KEY': os.environ.get('AWS_SECRET_ACCESS_KEY', '').strip(),
