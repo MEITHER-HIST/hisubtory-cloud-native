@@ -14,7 +14,13 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-RUN python manage.py collectstatic --noinput
+# collectstatic 실행 시 필요한 최소한의 환경 변수 제공 및 PYTHONPATH 설정
+RUN PYTHONPATH="/app:/app/activity-service:/app/user-service:/app/story-service" \
+    SUPABASE_URL="https://dummy.co" \
+    SUPABASE_KEY="dummy" \
+    AWS_ACCESS_KEY_ID="dummy" \
+    AWS_SECRET_ACCESS_KEY="dummy" \
+    python manage.py collectstatic --noinput
 
 ENV PYTHONPATH="/app:/app/activity-service:/app/user-service:/app/story-service"
 
