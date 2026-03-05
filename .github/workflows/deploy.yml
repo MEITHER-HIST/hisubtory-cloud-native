@@ -48,12 +48,20 @@ jobs:
         DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
       run: |
         python3 -c "
-        import os
+        import os, json
         with open('.github/workflows/task-definition.json', 'r') as f:
-            content = f.read()
-        updated = content.replace('REPLACE_ME_PASSWORD', os.environ['DB_PASSWORD'])
+            data = json.load(f)
+        
+        # 비밀번호를 환경변수에서 가져와 공백 제거 후 주입
+        pwd = os.environ['DB_PASSWORD'].strip()
+        
+        for container in data.get('containerDefinitions', []):
+            for env_var in container.get('environment', []):
+                if env_var.get('name') == 'DB_PASSWORD':
+                    env_var['value'] = pwd
+        
         with open('.github/workflows/task-definition.json', 'w') as f:
-            f.write(updated)
+            json.dump(data, f, indent=2)
         "
 
     - name: Fill in the new image ID in the Amazon ECS task definition
