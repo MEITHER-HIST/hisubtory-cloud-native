@@ -8,6 +8,9 @@ https://docs.djangoproject.com/en/5.2/howto/deployment/wsgi/
 """
 
 import os
+import sys
+sys.path.append("/usr/local/lib/python3.12/site-packages")
+sys.path.append("/app")
 from django.core.wsgi import get_wsgi_application
 from opentelemetry import trace
 from opentelemetry.instrumentation.django import DjangoInstrumentor

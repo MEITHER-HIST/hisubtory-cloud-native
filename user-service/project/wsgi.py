@@ -8,7 +8,14 @@ https://docs.djangoproject.com/en/5.2/howto/deployment/wsgi/
 """
 
 import os
+import sys
+
+# 패키지 경로 강제 추가
+sys.path.append("/usr/local/lib/python3.12/site-packages")
+sys.path.append("/app")
+
 from django.core.wsgi import get_wsgi_application
+
 from opentelemetry import trace
 from opentelemetry.instrumentation.django import DjangoInstrumentor
 from opentelemetry.sdk.trace import TracerProvider

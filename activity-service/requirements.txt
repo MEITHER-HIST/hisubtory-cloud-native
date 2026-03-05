@@ -27,8 +27,13 @@ wheel==0.45.1
 Pillow==12.0.0
 
 gunicorn
+pydantic>=2.0.0
+opentelemetry-api
 opentelemetry-sdk
+opentelemetry-instrumentation
 opentelemetry-instrumentation-django
-
-# Activity 전용 추가 (Redis 연동용)
+opentelemetry-exporter-otlp
+opentelemetry-exporter-otlp-proto-grpc
 django-redis
+django-cors-headers
+whitenoise

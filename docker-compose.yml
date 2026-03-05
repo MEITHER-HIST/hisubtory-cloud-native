@@ -66,7 +66,7 @@ services:
     image: redis:latest
     container_name: hisubtory-redis
     ports:
-      - "6379:6379"
+      - "6380:6379"
 
   # 6. Database: PostgreSQL (for Supabase compat)
   db-postgres:
@@ -77,7 +77,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: hisubtory1234
     ports:
-      - "5432:5432"
+      - "5433:5432"
 
   # 7. Database: MySQL
   db-mysql:
@@ -89,7 +89,7 @@ services:
       MYSQL_USER: admin
       MYSQL_PASSWORD: mysql_password
     ports:
-      - "3306:3306"
+      - "3307:3306"
 
   # 8. Jaeger
   jaeger:
