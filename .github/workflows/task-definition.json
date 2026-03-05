@@ -20,7 +20,7 @@
         { "name": "DB_USER", "value": "admin" },
         { "name": "DB_PORT", "value": "3306" },
         { "name": "DB_PASSWORD", "value": "REPLACE_ME_DB_PASSWORD" },
-        { "name": "SB_DB_HOST", "value": "db.jlvhwihvmivvihffhxse.supabase.co" },
+        { "name": "SB_DB_HOST", "value": "aws-0-ap-northeast-2.pooler.supabase.com" },
         { "name": "SB_DB_NAME", "value": "postgres" },
         { "name": "SB_DB_USER", "value": "postgres.jlvhwihvmivvihffhxse" },
         { "name": "SB_DB_PORT", "value": "6543" },
