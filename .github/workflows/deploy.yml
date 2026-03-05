@@ -65,6 +65,7 @@ jobs:
         secrets_map = {
             'DB_PASSWORD': os.environ.get('DB_PASSWORD', '').strip(),
             'SB_DB_PASSWORD': os.environ.get('SB_DB_PASSWORD', '').strip(),
+            'SB_DB_USER': 'postgres.jlvhwihvmivvihffhxse',
             'REDIS_HOST': os.environ.get('REDIS_HOST', '').strip(),
             'AWS_ACCESS_KEY_ID': os.environ.get('AWS_ACCESS_KEY_ID', '').strip(),
             'AWS_SECRET_ACCESS_KEY': os.environ.get('AWS_SECRET_ACCESS_KEY', '').strip(),
