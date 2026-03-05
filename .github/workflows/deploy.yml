@@ -44,8 +44,17 @@ jobs:
         echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
     - name: Inject DB_PASSWORD into task-definition.json
+      env:
+        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
       run: |
-        sed -i "s/REPLACE_ME_PASSWORD/${{ secrets.DB_PASSWORD }}/g" .github/workflows/task-definition.json
+        python3 -c "
+        import os
+        with open('.github/workflows/task-definition.json', 'r') as f:
+            content = f.read()
+        updated = content.replace('REPLACE_ME_PASSWORD', os.environ['DB_PASSWORD'])
+        with open('.github/workflows/task-definition.json', 'w') as f:
+            f.write(updated)
+        "
 
     - name: Fill in the new image ID in the Amazon ECS task definition
       id: task-def
