@@ -22,6 +22,42 @@ variable "redis_endpoint" {
   type = string
 }
 
+variable "s3_bucket_name" {
+  type = string
+}
+
+variable "aws_region" {
+  type = string
+}
+
+variable "db_username" {
+  type = string
+}
+
+variable "db_password" {
+  type = string
+}
+
+variable "supabase_url" {
+  type = string
+}
+
+variable "supabase_key" {
+  type = string
+}
+
+variable "aws_access_key" {
+  type = string
+}
+
+variable "aws_secret_key" {
+  type = string
+}
+
+variable "django_secret_key" {
+  type = string
+}
+
 variable "project_name" {
   type = string
 }

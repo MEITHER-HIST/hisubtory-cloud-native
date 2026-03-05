@@ -111,7 +111,7 @@ DATABASES = {
 "NAME": "hisubtory_db",
 "USER": os.getenv("DB_USER", "admin"),
 "PASSWORD": os.getenv("DB_PASSWORD", "SECRET_REPLACED"),
-"HOST": os.getenv("DB_HOST", "hisub-db.chmwc60iizys.ap-northeast-2.rds.amazonaws.com"),
+"HOST": os.getenv("DB_HOST", "localhost"),
 "PORT": os.getenv("DB_PORT", "3306"),
 "OPTIONS": {
 "init_command": "SET sql_mode='STRICT_TRANS_TABLES'",
@@ -270,7 +270,7 @@ REST_FRAMEWORK = {
 ),
 }
 
-REDIS_HOST = os.getenv("REDIS_HOST", "clustercfg.hisub-redis.lkssu5.apn2.cache.amazonaws.com")
+REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
 REDIS_PORT = os.getenv("REDIS_PORT", "6379")
 REDIS_DB   = os.getenv("REDIS_DB", "0")
 

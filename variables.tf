@@ -25,3 +25,26 @@ variable "db_password" {
   type      = string
   sensitive = true
 }
+
+variable "supabase_url" {
+  type = string
+}
+
+variable "supabase_key" {
+  type      = string
+  sensitive = true
+}
+
+variable "aws_access_key" {
+  type = string
+}
+
+variable "aws_secret_key" {
+  type      = string
+  sensitive = true
+}
+
+variable "django_secret_key" {
+  type      = string
+  sensitive = true
+}

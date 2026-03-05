@@ -44,6 +44,31 @@ resource "aws_iam_role" "ecs_task_role" {
   })
 }
 
+resource "aws_iam_role_policy" "ecs_s3_policy" {
+  name = "${var.project_name}-ecs-s3-policy"
+  role = aws_iam_role.ecs_task_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "s3:PutObject",
+          "s3:GetObject",
+          "s3:ListBucket",
+          "s3:DeleteObject",
+          "s3:PutObjectAcl"
+        ]
+        Effect   = "Allow"
+        Resource = [
+          "arn:aws:s3:::${var.s3_bucket_name}",
+          "arn:aws:s3:::${var.s3_bucket_name}/*"
+        ]
+      }
+    ]
+  })
+}
+
 # ECS Task Definition (Fargate)
 resource "aws_ecs_task_definition" "app" {
   family                   = "${var.project_name}-app-task"
@@ -52,6 +77,7 @@ resource "aws_ecs_task_definition" "app" {
   cpu                      = "256"
   memory                   = "512"
   execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
+  task_role_arn            = aws_iam_role.ecs_task_role.arn
 
   container_definitions = jsonencode([
     {
@@ -65,7 +91,17 @@ resource "aws_ecs_task_definition" "app" {
       ]
       environment = [
         { name = "DB_HOST", value = var.rds_endpoint },
-        { name = "REDIS_HOST", value = var.redis_endpoint }
+        { name = "DB_USER", value = var.db_username },
+        { name = "DB_PASSWORD", value = var.db_password },
+        { name = "REDIS_HOST", value = var.redis_endpoint },
+        { name = "AWS_STORAGE_BUCKET_NAME", value = var.s3_bucket_name },
+        { name = "AWS_S3_REGION_NAME", value = var.aws_region },
+        { name = "AWS_ACCESS_KEY_ID", value = var.aws_access_key },
+        { name = "AWS_SECRET_ACCESS_KEY", value = var.aws_secret_key },
+        { name = "SUPABASE_URL", value = var.supabase_url },
+        { name = "SUPABASE_KEY", value = var.supabase_key },
+        { name = "SECRET_KEY", value = var.django_secret_key },
+        { name = "DEBUG", value = "False" }
       ]
     }
   ])

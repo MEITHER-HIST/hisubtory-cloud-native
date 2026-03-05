@@ -111,7 +111,7 @@ DATABASES = {
 "NAME": os.getenv("DB_NAME", "postgres"),
 "USER": os.getenv("DB_USER", "postgres"),
 "PASSWORD": os.getenv("DB_PASSWORD", "hisubtory1234"),
-"HOST": os.getenv("DB_HOST", "db.hisubtory-account.supabase.co"),
+"HOST": os.getenv("DB_HOST", "localhost"),
 "PORT": os.getenv("DB_PORT", "5432"),
 "CONN_MAX_AGE": 0,  # 불안정한 연결을 위해 0으로 설정
 }
@@ -263,7 +263,7 @@ REST_FRAMEWORK = {
 ),
 }
 
-REDIS_HOST = os.getenv("REDIS_HOST", "clustercfg.hisub-redis.lkssu5.apn2.cache.amazonaws.com")
+REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
 REDIS_PORT = os.getenv("REDIS_PORT", "6379")
 REDIS_DB   = os.getenv("REDIS_DB", "0")
 
