@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from corsheaders.defaults import default_headers
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-load_dotenv(BASE_DIR / ".env")
+# load_dotenv(BASE_DIR / ".env") # 제거: ECS 환경변수 우선 적용을 위해
 
 # MySQL 드라이버 설치 (다른 서비스와의 호환성 및 라이브러리 의존성 해결용)
 pymysql.version_info = (2, 2, 1, 'final', 0)
