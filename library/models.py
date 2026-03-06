@@ -12,7 +12,7 @@ class UserViewedEpisode(models.Model):
     class Meta:
         db_table = "library_userviewedepisode"
         unique_together = ('user', 'episode')
-        managed = False
+        managed = True
         app_label = 'library'
 
     def __str__(self):
@@ -27,7 +27,7 @@ class Bookmark(models.Model):
     class Meta:
         db_table = "library_bookmark"
         unique_together = ('user', 'episode')
-        managed = False
+        managed = True
         app_label = 'library'
 
     def __str__(self):

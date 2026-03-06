@@ -23,6 +23,8 @@ from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
 from opentelemetry.sdk.resources import Resource
 
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'project.settings')
+
 # Tracing 서비스 이름 설정
 resource = Resource(attributes={
     "service.name": os.getenv("OTEL_SERVICE_NAME", "user-service")
@@ -37,7 +39,5 @@ trace.set_tracer_provider(provider)
 
 # Django 자동 추적 활성화
 DjangoInstrumentor().instrument()
-
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'project.settings')
 
 application = get_wsgi_application()

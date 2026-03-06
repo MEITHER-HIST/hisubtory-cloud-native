@@ -15,6 +15,14 @@ DEBUG = os.getenv("DEBUG", "True") == "True"
 
 ALLOWED_HOSTS = ["*", "ServerA", "localhost", "127.0.0.1"]
 
+# 세션 쿠키 설정 통일
+SESSION_COOKIE_NAME = os.getenv('SESSION_COOKIE_NAME', 'hisubtory_sessionid')
+SESSION_COOKIE_DOMAIN = os.getenv('SESSION_COOKIE_DOMAIN', None)
+SESSION_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SECURE = os.getenv('SESSION_COOKIE_SECURE', 'False') == 'True'
+CSRF_COOKIE_SECURE = SESSION_COOKIE_SECURE
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -30,9 +38,11 @@ INSTALLED_APPS = [
     'pages',
     'rest_framework',
     'storages',
+    'django_prometheus',
 ]
 
 MIDDLEWARE = [
+    'django_prometheus.middleware.PrometheusBeforeMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
@@ -42,6 +52,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django_prometheus.middleware.PrometheusAfterMiddleware',
 ]
 
 ROOT_URLCONF = 'project.urls'
@@ -71,6 +82,9 @@ DATABASES = {
         "PASSWORD": os.getenv("SB_DB_PASSWORD", "hisubtory1234"),
         "HOST": os.getenv("SB_DB_HOST", "db-postgres"),
         "PORT": os.getenv("SB_DB_PORT", "5432"),
+        "OPTIONS": {
+            "connect_timeout": 10,
+        },
         "CONN_MAX_AGE": 0,
     },
     "mysql": {

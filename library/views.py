@@ -81,30 +81,39 @@ def _make_item_from_episode(episode: Any) -> Dict[str, Any]:
 def get_user_history_api(request):
     """최근 본 기록 10개와 내 이야기(북마크) 데이터를 반환"""
     user = request.user
+    from stories.models import Episode
 
     # 1) 최근 본 이야기 10개
-    viewed_qs = (
-        UserViewedEpisode.objects.filter(user=user)
-        .select_related("episode__webtoon__station")
+    viewed_records = (
+        UserViewedEpisode.objects.using('default').filter(user=user)
         .order_by("-viewed_at")[:10]
     )
+    viewed_episode_ids = [v.episode_id for v in viewed_records]
+    # MySQL에서 에피소드 정보 일괄 조회
+    episodes_mysql = Episode.objects.using('mysql').filter(episode_id__in=viewed_episode_ids).select_related("webtoon__station")
+    episode_map = {e.episode_id: e for e in episodes_mysql}
+
+    recent_data = []
+    for v in viewed_records:
+        ep = episode_map.get(v.episode_id)
+        if ep:
+            recent_data.append(_make_item_from_episode(ep))
 
     # 2) 저장한 이야기(북마크)
-    bookmark_qs = (
-        Bookmark.objects.filter(user=user)
-        .select_related("episode__webtoon__station")
+    bookmark_records = (
+        Bookmark.objects.using('default').filter(user=user)
         .order_by("-created_at")
     )
+    bookmark_episode_ids = [b.episode_id for b in bookmark_records]
+    # MySQL에서 에피소드 정보 일괄 조회
+    bookmarks_mysql = Episode.objects.using('mysql').filter(episode_id__in=bookmark_episode_ids).select_related("webtoon__station")
+    bookmark_map = {e.episode_id: e for e in bookmarks_mysql}
 
-    recent_data = [
-        _make_item_from_episode(v.episode)
-        for v in viewed_qs if getattr(v, "episode", None)
-    ]
-
-    saved_data = [
-        _make_item_from_episode(b.episode)
-        for b in bookmark_qs if getattr(b, "episode", None)
-    ]
+    saved_data = []
+    for b in bookmark_records:
+        ep = bookmark_map.get(b.episode_id)
+        if ep:
+            saved_data.append(_make_item_from_episode(ep))
 
     return Response(
         {"recent": recent_data, "saved": saved_data},

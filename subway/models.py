@@ -20,6 +20,7 @@ class Station(models.Model):
     is_enabled = models.BooleanField(default=False)  # 추가
     created_at = models.DateTimeField(auto_now_add=True)
     image = models.ImageField(upload_to='stations/', null=True, blank=True)
+    lines = models.ManyToManyField(Line, related_name='stations', blank=True)
 
     class Meta:
         app_label = 'subway'

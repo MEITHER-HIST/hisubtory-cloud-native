@@ -1,6 +1,6 @@
 from django.http import JsonResponse
 from django.views.decorators.http import require_GET, require_POST
-from django.db import connection
+from django.db import connections
 import random
 import json
 from django.views.decorators.csrf import csrf_exempt
@@ -41,9 +41,10 @@ def me_api_view(request):
     })
 
 def _station_ids_for_line(line_id: int) -> list[int]:
-    with connection.cursor() as cursor:
-        cursor.execute("SELECT station_id FROM subway_station_lines WHERE line_id=%s", [line_id])
-        return [row[0] for row in cursor.fetchall()]
+    line = Line.objects.filter(id=line_id).first()
+    if not line:
+        return []
+    return list(line.stations.values_list('id', flat=True))
 
 @require_GET
 def main_api_view(request):
@@ -64,9 +65,15 @@ def main_api_view(request):
     is_auth = request.user.is_authenticated
     viewed_station_ids = set()
     if is_auth:
+        # Avoid cross-database JOIN by splitting the query
+        # Evaluation is forced using list() to avoid ValueError for cross-database subqueries
+        viewed_episode_ids = list(UserViewedEpisode.objects.using('default').filter(
+            user=request.user
+        ).values_list("episode_id", flat=True))
+        
         viewed_station_ids = set(
-            UserViewedEpisode.objects.filter(user=request.user)
-            .values_list("episode__webtoon__station_id", flat=True)
+            Episode.objects.using('mysql').filter(episode_id__in=viewed_episode_ids)
+            .values_list("webtoon__station_id", flat=True)
         )
 
     station_list = []
@@ -105,18 +112,31 @@ def pick_episode_api_view(request):
     if not station_id:
         return JsonResponse({"success": False, "message": "station_id_required"}, status=400)
 
-    ep = None
-    # 1. 로그인 유저인 경우: 가장 최근에 본 에피소드 우선
-    if request.user.is_authenticated:
-        last_viewed = UserViewedEpisode.objects.filter(
-            user=request.user, episode__webtoon__station_id=station_id
-        ).select_related('episode').order_by('-viewed_at').first()
-        if last_viewed:
-            ep = last_viewed.episode
+    # 1. 해당 역의 모든 에피소드 ID 조회 (MySQL)
+    station_episode_ids = list(Episode.objects.using('mysql').filter(
+        webtoon__station_id=station_id
+    ).values_list('episode_id', flat=True))
 
-    # 2. 비로그인 유저이거나 본 기록이 없는 경우: 해당 역의 첫 에피소드
+    if not station_episode_ids:
+        return JsonResponse({"success": False, "message": "no_episode"}, status=404)
+
+    ep = None
+    # 2. 로그인 유저인 경우: 해당 역의 에피소드 중 가장 최근에 본 것 찾기 (PostgreSQL)
+    if request.user.is_authenticated:
+        last_viewed_record = UserViewedEpisode.objects.using('default').filter(
+            user=request.user, 
+            episode_id__in=station_episode_ids
+        ).order_by('-viewed_at').first()
+        
+        if last_viewed_record:
+            # MySQL에서 해당 에피소드 객체 가져오기
+            ep = Episode.objects.using('mysql').filter(episode_id=last_viewed_record.episode_id).first()
+
+    # 3. 비로그인 유저이거나 본 기록이 없는 경우: 해당 역의 첫 에피소드 (MySQL)
     if not ep:
-        ep = Episode.objects.filter(webtoon__station_id=station_id).order_by('episode_num').first()
+        ep = Episode.objects.using('mysql').filter(
+            webtoon__station_id=station_id
+        ).order_by('episode_num').first()
     
     if not ep:
         return JsonResponse({"success": False, "message": "no_episode"}, status=404)

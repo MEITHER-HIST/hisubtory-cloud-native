@@ -4,6 +4,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.http import HttpResponse
 from django.shortcuts import render
+from django_prometheus import exports
 
 def health(request):
     return HttpResponse("ok", content_type="text/plain")
@@ -17,8 +18,11 @@ urlpatterns = [
     path("health/", health),
     path("admin/", admin.site.urls),
     path("favicon.ico", lambda r: HttpResponse(status=204)),
+    path("metrics", exports.ExportToDjangoView, name="prometheus-metrics"),
+    path("metrics/", exports.ExportToDjangoView),
 
     # 2. API 전용 경로
+
     path("api/accounts/", include("accounts.urls_api")),
     path("api/stories/", include("stories.urls_api")),
     path("api/library/", include("library.urls")),
