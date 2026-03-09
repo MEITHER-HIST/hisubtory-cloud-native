@@ -6,11 +6,27 @@ variable "ecs_app_sg_id" {
   type = string
 }
 
-variable "target_group_arn" {
+variable "user_tg_arn" {
   type = string
 }
 
-variable "repository_url" {
+variable "story_tg_arn" {
+  type = string
+}
+
+variable "activity_tg_arn" {
+  type = string
+}
+
+variable "user_repo_url" {
+  type = string
+}
+
+variable "story_repo_url" {
+  type = string
+}
+
+variable "activity_repo_url" {
   type = string
 }
 

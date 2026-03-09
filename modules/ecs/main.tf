@@ -69,9 +69,25 @@ resource "aws_iam_role_policy" "ecs_s3_policy" {
   })
 }
 
-# ECS Task Definition (Fargate)
-resource "aws_ecs_task_definition" "app" {
-  family                   = "${var.project_name}-app-task"
+# CloudWatch Log Groups for debugging
+resource "aws_cloudwatch_log_group" "user" {
+  name              = "/ecs/${var.project_name}-user"
+  retention_in_days = 7
+}
+
+resource "aws_cloudwatch_log_group" "story" {
+  name              = "/ecs/${var.project_name}-story"
+  retention_in_days = 7
+}
+
+resource "aws_cloudwatch_log_group" "activity" {
+  name              = "/ecs/${var.project_name}-activity"
+  retention_in_days = 7
+}
+
+# ECS Task Definitions for each service
+resource "aws_ecs_task_definition" "user" {
+  family                   = "${var.project_name}-user-task"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
   cpu                      = "256"
@@ -82,47 +98,140 @@ resource "aws_ecs_task_definition" "app" {
   container_definitions = jsonencode([
     {
       name      = "app"
-      image     = var.repository_url
-      portMappings = [
-        {
-          containerPort = 80
-          hostPort      = 80
+      image     = var.user_repo_url
+      portMappings = [{ containerPort = 80, hostPort = 80 }]
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          "awslogs-group"         = aws_cloudwatch_log_group.user.name
+          "awslogs-region"        = var.aws_region
+          "awslogs-stream-prefix" = "ecs"
         }
-      ]
+      }
       environment = [
         { name = "DB_HOST", value = var.rds_endpoint },
-        { name = "DB_USER", value = var.db_username },
-        { name = "DB_PASSWORD", value = var.db_password },
         { name = "REDIS_HOST", value = var.redis_endpoint },
-        { name = "AWS_STORAGE_BUCKET_NAME", value = var.s3_bucket_name },
-        { name = "AWS_S3_REGION_NAME", value = var.aws_region },
-        { name = "AWS_ACCESS_KEY_ID", value = var.aws_access_key },
-        { name = "AWS_SECRET_ACCESS_KEY", value = var.aws_secret_key },
-        { name = "SUPABASE_URL", value = var.supabase_url },
-        { name = "SUPABASE_KEY", value = var.supabase_key },
-        { name = "SECRET_KEY", value = var.django_secret_key },
-        { name = "DEBUG", value = "False" }
+        { name = "SERVICE_NAME", value = "user" }
       ]
     }
   ])
 }
 
-# ECS Service (Fargate)
-resource "aws_ecs_service" "main" {
-  name            = "${var.project_name}-service"
+resource "aws_ecs_task_definition" "story" {
+  family                   = "${var.project_name}-story-task"
+  network_mode             = "awsvpc"
+  requires_compatibilities = ["FARGATE"]
+  cpu                      = "256"
+  memory                   = "512"
+  execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
+  task_role_arn            = aws_iam_role.ecs_task_role.arn
+
+  container_definitions = jsonencode([
+    {
+      name      = "app"
+      image     = var.story_repo_url
+      portMappings = [{ containerPort = 80, hostPort = 80 }]
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          "awslogs-group"         = aws_cloudwatch_log_group.story.name
+          "awslogs-region"        = var.aws_region
+          "awslogs-stream-prefix" = "ecs"
+        }
+      }
+      environment = [
+        { name = "DB_HOST", value = var.rds_endpoint },
+        { name = "REDIS_HOST", value = var.redis_endpoint },
+        { name = "SERVICE_NAME", value = "story" }
+      ]
+    }
+  ])
+}
+
+resource "aws_ecs_task_definition" "activity" {
+  family                   = "${var.project_name}-activity-task"
+  network_mode             = "awsvpc"
+  requires_compatibilities = ["FARGATE"]
+  cpu                      = "256"
+  memory                   = "512"
+  execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
+  task_role_arn            = aws_iam_role.ecs_task_role.arn
+
+  container_definitions = jsonencode([
+    {
+      name      = "app"
+      image     = var.activity_repo_url
+      portMappings = [{ containerPort = 80, hostPort = 80 }]
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          "awslogs-group"         = aws_cloudwatch_log_group.activity.name
+          "awslogs-region"        = var.aws_region
+          "awslogs-stream-prefix" = "ecs"
+        }
+      }
+      environment = [
+        { name = "DB_HOST", value = var.rds_endpoint },
+        { name = "REDIS_HOST", value = var.redis_endpoint },
+        { name = "SERVICE_NAME", value = "activity" }
+      ]
+    }
+  ])
+}
+
+# ECS Services for each service
+resource "aws_ecs_service" "user" {
+  name            = "${var.project_name}-user-service"
   cluster         = aws_ecs_cluster.main.id
-  task_definition = aws_ecs_task_definition.app.arn
-  desired_count   = 2
+  task_definition = aws_ecs_task_definition.user.arn
+  desired_count   = 1
   launch_type     = "FARGATE"
 
   network_configuration {
     subnets         = var.private_subnet_ids
     security_groups = [var.ecs_app_sg_id]
-    assign_public_ip = false
   }
 
   load_balancer {
-    target_group_arn = var.target_group_arn
+    target_group_arn = var.user_tg_arn
+    container_name   = "app"
+    container_port   = 80
+  }
+}
+
+resource "aws_ecs_service" "story" {
+  name            = "${var.project_name}-story-service"
+  cluster         = aws_ecs_cluster.main.id
+  task_definition = aws_ecs_task_definition.story.arn
+  desired_count   = 1
+  launch_type     = "FARGATE"
+
+  network_configuration {
+    subnets         = var.private_subnet_ids
+    security_groups = [var.ecs_app_sg_id]
+  }
+
+  load_balancer {
+    target_group_arn = var.story_tg_arn
+    container_name   = "app"
+    container_port   = 80
+  }
+}
+
+resource "aws_ecs_service" "activity" {
+  name            = "${var.project_name}-activity-service"
+  cluster         = aws_ecs_cluster.main.id
+  task_definition = aws_ecs_task_definition.activity.arn
+  desired_count   = 1
+  launch_type     = "FARGATE"
+
+  network_configuration {
+    subnets         = var.private_subnet_ids
+    security_groups = [var.ecs_app_sg_id]
+  }
+
+  load_balancer {
+    target_group_arn = var.activity_tg_arn
     container_name   = "app"
     container_port   = 80
   }

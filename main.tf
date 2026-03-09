@@ -33,8 +33,12 @@ module "ecs" {
   source             = "./modules/ecs"
   private_subnet_ids = module.vpc.private_subnet_ids
   ecs_app_sg_id      = module.sg.ecs_app_sg_id
-  target_group_arn   = module.alb.target_group_arn
-  repository_url     = module.ecr.repository_url
+  user_tg_arn        = module.alb.user_tg_arn
+  story_tg_arn       = module.alb.story_tg_arn
+  activity_tg_arn    = module.alb.activity_tg_arn
+  user_repo_url      = module.ecr.user_repo_url
+  story_repo_url     = module.ecr.story_repo_url
+  activity_repo_url  = module.ecr.activity_repo_url
   rds_endpoint       = module.rds.db_endpoint
   redis_endpoint     = module.redis.redis_endpoint
   s3_bucket_name     = module.s3.bucket_name
@@ -64,4 +68,23 @@ module "rds" {
   db_username     = var.db_username
   db_password     = var.db_password
   project_name    = var.project_name
+}
+
+module "apigateway" {
+  source       = "./modules/apigateway"
+  project_name = var.project_name
+  alb_dns_name = "http://${module.alb.alb_dns_name}"
+}
+
+# module "waf" {
+#   source       = "./modules/waf"
+#   project_name = var.project_name
+#   alb_arn      = module.alb.alb_arn
+# }
+
+module "monitoring" {
+  source             = "./modules/monitoring_tf"
+  project_name       = var.project_name
+  alb_arn_suffix     = module.alb.alb_arn_suffix
+  user_tg_arn_suffix = module.alb.user_tg_arn_suffix
 }
