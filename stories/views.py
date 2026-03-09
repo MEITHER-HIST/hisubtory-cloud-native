@@ -40,7 +40,7 @@ class WebtoonListView(generics.ListAPIView):
             ).values_list('webtoon_id', flat=True))
             
             for item in data:
-                item['is_viewed'] = item['webtoon_id'] in viewed_webtoon_ids
+                item['is_viewed'] = item.get('webtoon_id') in viewed_webtoon_ids
         else:
             for item in data:
                 item['is_viewed'] = False
@@ -105,14 +105,11 @@ class StationStoryView(APIView):
                 # 문자열 이름인 경우: Station 모델의 station_name 필드에서 검색
                 episodes = Episode.objects.filter(webtoon__station__station_name__contains=decoded_name)
             
-            # 3. 공개된 에피소드만
-            episodes = episodes.filter(is_published=True)
-            
-            # 4. 현재 에피소드 제외
+            # 3. 현재 에피소드 제외
             if exclude_id and str(exclude_id).isdigit():
                 episodes = episodes.exclude(episode_id=int(exclude_id))
                 
-            # 5. 랜덤 추출
+            # 4. 랜덤 추출
             episode = episodes.order_by('?').first()
             
             if not episode:
@@ -121,19 +118,19 @@ class StationStoryView(APIView):
                     "message": "새로운 에피소드를 준비 중이에요!"
                 })
             
-            # 6. 응답 구성
+            # 5. 응답 구성
             return Response({
                 "success": True,
                 "episode_id": episode.episode_id,
                 "episode_num": episode.episode_num,
                 "subtitle": episode.subtitle,
-                "history_summary": episode.history_summary,
                 "webtoon_id": episode.webtoon_id
             })
 
         except Exception as e:
             # 에러 로그 출력 (터미널에서 확인 가능)
-            print(f"[ERROR] StationStoryView: {str(e)}")
+            import sys
+            sys.stderr.write(f"[ERROR] StationStoryView: {str(e)}\n")
             return Response({"success": False, "error": "데이터 처리 중 오류가 발생했습니다."}, status=500)
 
 # ✅ 3. 에피소드 컷 리스트

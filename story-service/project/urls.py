@@ -9,21 +9,17 @@ def health(request):
     return HttpResponse("ok", content_type="text/plain")
 
 urlpatterns = [
-    # 1. API 전용 경로
+    # Nginx가 /api/stories/ 를 떼지 않고 그대로 전달하므로, 
+    # 여기서도 /api/stories/ 로 시작하는 경로를 받아야 합니다.
     path("api/stories/", include("stories.urls")),
+    
+    # 만약 Nginx 설정에 따라 /api/stories/가 이미 제거된 상태라면 아래 경로가 작동합니다.
+    path("", include("stories.urls")),
 
-    # 2. 시스템 및 모니터링
+    # 시스템 및 모니터링
     path("metrics", exports.ExportToDjangoView, name="prometheus-metrics"),
     path("metrics/", exports.ExportToDjangoView),
     path("health/", health),
-    path("", health),
-    # path("api/library/", include("library.urls")),
-
-    # 3. HTML/Legacy 경로 (기존 템플릿 페이지)
-    # path("accounts/", include("accounts.urls")),
-    path("stories/", include("stories.urls")),
-    # path("library/", include("library.urls")),
-    # path("", include("pages.urls")),
 ]
 
 if settings.DEBUG:
