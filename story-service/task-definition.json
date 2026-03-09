@@ -1,11 +1,21 @@
 {
     "family": "hisubtory-story-task",
+    "executionRoleArn": "arn:aws:iam::714454205561:role/hisubtory-ecs-task-execution-role",
+    "taskRoleArn": "arn:aws:iam::714454205561:role/hisubtory-ecs-task-role",
     "containerDefinitions": [
         {
             "name": "app",
             "image": "714454205561.dkr.ecr.ap-northeast-2.amazonaws.com/hisubtory-story:latest",
             "portMappings": [{ "containerPort": 80, "hostPort": 80, "protocol": "tcp" }],
-            "essential": true
+            "essential": true,
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "/ecs/hisubtory-story",
+                    "awslogs-region": "ap-northeast-2",
+                    "awslogs-stream-prefix": "ecs"
+                }
+            }
         }
     ],
     "requiresCompatibilities": ["FARGATE"],
