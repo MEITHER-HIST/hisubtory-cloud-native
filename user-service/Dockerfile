@@ -8,6 +8,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 COPY user-service/requirements.txt .
 RUN pip install --no-cache-dir --default-timeout=1000 -r requirements.txt
+RUN python manage.py collectstatic --noinput || true
 
 # Copy shared apps from root context
 COPY accounts/ ./accounts/
@@ -21,4 +22,4 @@ COPY supabase/ ./supabase/
 COPY user-service/ .
 
 ENV PYTHONPATH="/app"
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "project.wsgi:application"]
+CMD ["gunicorn", "--bind", "0.0.0.0:80", "project.wsgi:application"]
