@@ -1,13 +1,13 @@
 name: Deploy to Amazon ECS (Story Service)
 on:
   push:
-    branches: [ de ]
+    branches: [ feat/do ]
 env:
   AWS_REGION: ap-northeast-2
   ECR_REPOSITORY: hisubtory-story
   ECS_SERVICE: hisubtory-story-service
   ECS_CLUSTER: hisubtory-cluster
-  ECS_TASK_DEFINITION: teampro/hisubtory/task-definition.json
+  ECS_TASK_DEFINITION: story-service/task-definition.json
   CONTAINER_NAME: app
 jobs:
   deploy:
@@ -30,7 +30,7 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker build -f teampro/hisubtory/story-service/Dockerfile -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG teampro/hisubtory/
+          docker build -f story-service/story-service/Dockerfile -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG story-service/
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
       - name: Fill in the new image ID in the Amazon ECS task definition
