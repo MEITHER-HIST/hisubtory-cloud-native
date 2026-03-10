@@ -34,6 +34,6 @@ RUN if [ -d "story_config" ]; then mv story_config project; fi
 
 ENV PYTHONPATH=/app
 # Static 파일 수집 (필요시)
-RUN mkdir -p /app/staticfiles && python manage.py collectstatic --noinput || true
+RUN SB_DB_PASSWORD=dummy python manage.py collectstatic --noinput || true
 
 CMD ["gunicorn", "--bind", "0.0.0.0:80", "project.wsgi:application"]
