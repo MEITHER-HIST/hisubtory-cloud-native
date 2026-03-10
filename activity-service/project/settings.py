@@ -157,7 +157,7 @@ if DEBUG:
 else:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
-    SECURE_SSL_REDIRECT = True
+    SECURE_SSL_REDIRECT = False
 
 # Redis Cache 설정
 REDIS_HOST = os.getenv("REDIS_HOST", "redis")
