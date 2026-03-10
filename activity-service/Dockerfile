@@ -1,27 +1,39 @@
-FROM python:3.12-slim-bookworm
-
+# 1. Build Stage
+FROM python:3.12-slim AS builder
 WORKDIR /app
-
-# 시스템 의존성 설치
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get install -y \
     gcc \
     default-libmysqlclient-dev \
     pkg-config \
     && rm -rf /var/lib/apt/lists/*
+COPY activity-service/requirements.txt .
+RUN pip install --user --no-cache-dir -r requirements.txt
 
-# 패키지 설치 전 파일 복사
-COPY requirements.txt .
-COPY subway/ ./subway/
+# 2. Run Stage
+FROM python:3.12-slim
+WORKDIR /app
+RUN apt-get update && apt-get install -y \
+    default-libmysqlclient-dev \
+    && rm -rf /var/lib/apt/lists/*
+COPY --from=builder /root/.local /root/.local
+ENV PATH=/root/.local/bin:$PATH
+
+# 공유 모듈 복사 (루트 컨텍스트에서 실행됨)
+COPY accounts/ ./accounts/
 COPY stories/ ./stories/
 COPY library/ ./library/
 COPY pages/ ./pages/
-COPY accounts/ ./accounts/
+COPY subway/ ./subway/
+COPY supabase/ ./supabase/
+
+# 서비스 특정 코드 복사
 COPY activity-service/ ./
 
-# 모든 파일이 복사된 후 패키지 설치
-RUN pip install --no-cache-dir --default-timeout=1000 -r requirements.txt
+# 설정 폴더 이름을 project로 통일 (이미 존재하면 건너뜀)
+RUN if [ -d "activity_config" ]; then mv activity_config project; fi
 
-# PYTHONPATH 설정
-ENV PYTHONPATH="/app"
+ENV PYTHONPATH=/app
+# Static 파일 수집 (필요시)
+RUN mkdir -p /app/staticfiles && python manage.py collectstatic --noinput || true
 
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "project.wsgi:application"]
+CMD ["gunicorn", "--bind", "0.0.0.0:80", "project.wsgi:application"]

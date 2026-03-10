@@ -1,15 +1,16 @@
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin
-from .models import User, OAuthAccount
+from .models import User
 
 @admin.register(User)
-class CustomUserAdmin(UserAdmin):
-    # 어드민 목록에 보일 필드 설정
-    list_display = ('username', 'email', 'is_staff', 'created_at')
-    # 상세 페이지에서 수정 가능한 필드 세트
-    fieldsets = UserAdmin.fieldsets + (
-        ('추가 정보', {'fields': ('created_at', 'updated_at')}),
+class UserAdmin(admin.ModelAdmin):
+    list_display = ('username', 'email', 'is_staff', 'is_active', 'created_at')
+    search_fields = ('username', 'email')
+    ordering = ('-created_at',)
+    
+    fieldsets = (
+        (None, {'fields': ('username', 'password')}),
+        ('Personal Info', {'fields': ('first_name', 'last_name', 'email')}),
+        ('Status', {'fields': ('is_active', 'is_staff', 'is_superuser')}),
+        ('Important dates', {'fields': ('last_login', 'date_joined', 'created_at', 'updated_at')}),
     )
-    readonly_fields = ('created_at', 'updated_at')
-
-admin.site.register(OAuthAccount)
+    readonly_fields = ('created_at', 'updated_at', 'date_joined', 'last_login')

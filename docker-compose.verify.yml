@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  gateway:
+    image: nginx:latest
+    container_name: hisubtory-gateway-verify
+    ports:
+      - "8081:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ./front:/usr/share/nginx/html:ro
+    depends_on:
+      - user-service
+      - story-service
+      - activity-service
+
+  user-service:
+    image: 714454205561.dkr.ecr.ap-northeast-2.amazonaws.com/hisubtory-user:22e01b49f67c0c1ffbbbba03bd55431eec8e9ed0
+    container_name: hisubtory-user
+    expose:
+      - "8000"
+    env_file: .env
+    environment:
+      - OTEL_SERVICE_NAME=user-service
+
+  story-service:
+    image: 714454205561.dkr.ecr.ap-northeast-2.amazonaws.com/hisubtory-story:22e01b49f67c0c1ffbbbba03bd55431eec8e9ed0
+    container_name: hisubtory-story
+    expose:
+      - "8000"
+    env_file: .env
+    environment:
+      - OTEL_SERVICE_NAME=story-service
+
+  activity-service:
+    image: 714454205561.dkr.ecr.ap-northeast-2.amazonaws.com/hisubtory-activity:22e01b49f67c0c1ffbbbba03bd55431eec8e9ed0
+    container_name: hisubtory-activity
+    expose:
+      - "8000"
+    env_file: .env
+    environment:
+      - OTEL_SERVICE_NAME=activity-service
+
+  redis:
+    image: redis:latest
+    container_name: hisubtory-redis-verify
+    ports:
+      - "6380:6379"
+
+  db-mysql:
+    image: mysql:8.0
+    container_name: hisubtory-db-mysql-verify
+    environment:
+      MYSQL_DATABASE: hisubtory_db
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: mysql_password
+    ports:
+      - "3307:3306"

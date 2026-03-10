@@ -71,38 +71,73 @@ def signup_api_view(request):
 @csrf_exempt
 @require_POST
 def login_api_view(request):
+    from django.contrib.auth import authenticate
     try:
         data = get_request_data(request)
-        email = data.get("email")
+        identifier = data.get("email") or data.get("username")
         password = data.get("password")
         
-        sys.stderr.write(f"DEBUG: Login attempt for {email}\n")
+        sys.stderr.write(f"DEBUG: Login attempt for {identifier}\n")
 
-        if not email or not password:
-            return JsonResponse({"success": False, "error": "Email and password are required"}, status=400)
+        if not identifier or not password:
+            return JsonResponse({"success": False, "error": "Email/Username and password are required"}, status=400)
             
-        supabase = get_supabase_client()
-        # 최신 버전 표준 호출 방식 (credentials 키워드 제거)
-        res = supabase.auth.sign_in_with_password({"email": email, "password": password})
-        
-        # Django 세션 처리
-        try:
-            user = User.objects.get(email=email)
-        except User.DoesNotExist:
-            user = User.objects.create_user(username=email.split('@')[0], email=email)
-        
-        login(request, user)
+        # 1. Django 로컬 인증 먼저 시도 (admin 등 로컬 유저 대응)
+        user = authenticate(request, username=identifier, password=password)
+        if not user:
+            # 이메일로 찾아서 인증 시도
+            try:
+                user_obj = User.objects.get(email=identifier)
+                user = authenticate(request, username=user_obj.username, password=password)
+            except User.DoesNotExist:
+                pass
 
-        return JsonResponse({
-            "success": True,
-            "access_token": res.session.access_token,
-            "user": {"id": user.id, "username": user.username, "email": user.email}
-        })
+        if user:
+            login(request, user)
+            # Supabase 토큰 발급 시도 (필요한 경우)
+            access_token = None
+            try:
+                supabase = get_supabase_client()
+                # 이메일 형식이면 Supabase 로그인 시도
+                sb_email = user.email if "@" in user.email else f"{user.username}@example.com"
+                res = supabase.auth.sign_in_with_password({"email": sb_email, "password": password})
+                access_token = res.session.access_token
+            except:
+                pass
+
+            return JsonResponse({
+                "success": True,
+                "access_token": access_token,
+                "user": {"id": user.id, "username": user.username, "email": user.email}
+            })
+
+        # 2. Django 인증 실패 시 Supabase 인증 시도
+        try:
+            supabase = get_supabase_client()
+            res = supabase.auth.sign_in_with_password({"email": identifier, "password": password})
+            
+            # Django DB와 동기화
+            try:
+                user = User.objects.get(email=identifier)
+            except User.DoesNotExist:
+                user = User.objects.create_user(username=identifier.split('@')[0], email=identifier)
+            
+            login(request, user)
+            return JsonResponse({
+                "success": True,
+                "access_token": res.session.access_token,
+                "user": {"id": user.id, "username": user.username, "email": user.email}
+            })
+        except Exception as sb_e:
+            err_msg = str(sb_e)
+            sys.stderr.write(f"ERROR Supabase Login: {err_msg}\n")
+            # Supabase 에러 메시지에 따라 분기 처리하거나 실제 에러 반환 (디버깅 용)
+            return JsonResponse({"success": False, "error": f"Supabase Login Error: {err_msg}"}, status=401)
+
     except Exception as e:
         err_msg = str(e)
         sys.stderr.write(f"ERROR Login: {err_msg}\n")
-        # 이메일 인증 안 됨 등의 구체적 사유 포함
-        return JsonResponse({"success": False, "error": err_msg}, status=401)
+        return JsonResponse({"success": False, "error": err_msg}, status=500)
 
 @csrf_exempt
 @require_POST
