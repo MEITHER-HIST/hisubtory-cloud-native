@@ -25,6 +25,7 @@ COPY library/ ./library/
 COPY pages/ ./pages/
 COPY subway/ ./subway/
 COPY supabase/ ./supabase/
+COPY main.html ./main.html
 
 # 서비스 특정 코드 복사
 COPY user-service/ ./
