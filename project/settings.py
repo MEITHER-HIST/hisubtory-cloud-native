@@ -18,11 +18,8 @@ DEBUG = True
 ALLOWED_HOSTS = [
     "*",
     ".amazonaws.com",
-    "10.0.0.125",
-    "10.0.0.97",
-    "10.0.0.216",
     ".elb.amazonaws.com",
-    "ServerA"
+    "hisubtory-alb-258264007.ap-northeast-2.elb.amazonaws.com"
 ]
 
 INSTALLED_APPS = [
