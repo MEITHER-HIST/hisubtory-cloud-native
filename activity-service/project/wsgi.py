@@ -17,8 +17,11 @@ from django.core.wsgi import get_wsgi_application
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'project.settings')
 
+print(f"DEBUG: ENABLE_OTEL is {os.getenv('ENABLE_OTEL')}")
+
 # OpenTelemetry 설정 (ENABLE_OTEL이 True일 때만 활성화)
 if os.getenv("ENABLE_OTEL", "False") == "True":
+    print("DEBUG: Initializing OpenTelemetry...")
     try:
         from opentelemetry import trace
         from opentelemetry.instrumentation.django import DjangoInstrumentor
@@ -43,5 +46,7 @@ if os.getenv("ENABLE_OTEL", "False") == "True":
         DjangoInstrumentor().instrument()
     except Exception as e:
         print(f"Failed to initialize OpenTelemetry: {e}")
+else:
+    print("DEBUG: OpenTelemetry is disabled.")
 
 application = get_wsgi_application()
