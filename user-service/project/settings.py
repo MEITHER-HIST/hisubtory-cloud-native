@@ -63,7 +63,6 @@ TEMPLATES = [
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
             BASE_DIR,
-            os.path.join(BASE_DIR, "activity-service"), # pages 앱 템플릿 위치
         ],
         'APP_DIRS': True,
         'OPTIONS': {

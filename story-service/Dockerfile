@@ -18,11 +18,22 @@ RUN apt-get update && apt-get install -y \
 COPY --from=builder /root/.local /root/.local
 ENV PATH=/root/.local/bin:$PATH
 
+# 공유 모듈 복사 (루트 컨텍스트에서 실행됨)
+COPY accounts/ ./accounts/
+COPY stories/ ./stories/
+COPY library/ ./library/
+COPY pages/ ./pages/
 COPY subway/ ./subway/
+COPY supabase/ ./supabase/
+
+# 서비스 특정 코드 복사
 COPY story-service/ ./
 
 # 설정 폴더 이름을 project로 통일 (이미 존재하면 건너뜀)
 RUN if [ -d "story_config" ]; then mv story_config project; fi
 
 ENV PYTHONPATH=/app
+# Static 파일 수집 (필요시)
+RUN python manage.py collectstatic --noinput || true
+
 CMD ["gunicorn", "--bind", "0.0.0.0:80", "project.wsgi:application"]
