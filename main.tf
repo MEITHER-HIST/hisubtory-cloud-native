@@ -13,6 +13,10 @@ module "ecr" {
   source = "./modules/ecr"
 }
 
+module "s3" {
+  source = "./modules/s3"
+}
+
 module "alb" {
   source = "./modules/alb"
 
@@ -26,8 +30,16 @@ module "ecs" {
 
   private_subnet_ids = module.vpc.private_subnet_ids
   ecs_app_sg_id      = module.sg.ecs_app_sg_id
-  target_group_arn   = module.alb.target_group_arn
-  repository_url     = module.ecr.repository_url
+  
+  user_target_group_arn = module.alb.user_target_group_arn
+  user_repository_url   = module.ecr.user_repository_url
+
+  story_target_group_arn = module.alb.story_target_group_arn
+  story_repository_url   = module.ecr.story_repository_url
+
+  activity_target_group_arn = module.alb.activity_target_group_arn
+  activity_repository_url   = module.ecr.activity_repository_url
+
   rds_endpoint       = module.rds.db_endpoint
   redis_endpoint     = module.redis.redis_endpoint
 
