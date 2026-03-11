@@ -163,4 +163,8 @@ def me_api_view(request):
             "username": request.user.username,
             "email": request.user.email
         })
-    return JsonResponse({"success": False, "is_authenticated": False}, status=401)
+    return JsonResponse({
+        "success": True, 
+        "is_authenticated": False,
+        "message": "User is not authenticated"
+    }, status=200)

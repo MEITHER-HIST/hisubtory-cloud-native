@@ -37,7 +37,31 @@ variable "supabase_url" {
 variable "supabase_key" {
   type      = string
   sensitive = true
-  default   = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impsdmh3aWh2bWl2dmloZmZoeHNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwODUzMzksImV4cCI6MjA4NzY2MTMzOX0.3333V0vn-TNXJgZ9eRScnb-kQ8FK8QO8J1YTdL4bEpA"
+}
+
+variable "sb_db_name" {
+  type    = string
+  default = "postgres"
+}
+
+variable "sb_db_user" {
+  type    = string
+  default = "postgres.jlvhwihvmivvihffhxse"
+}
+
+variable "sb_db_password" {
+  type      = string
+  sensitive = true
+}
+
+variable "sb_db_host" {
+  type    = string
+  default = "aws-1-ap-northeast-2.pooler.supabase.com"
+}
+
+variable "sb_db_port" {
+  type    = string
+  default = "5432"
 }
 
 variable "aws_access_key" {

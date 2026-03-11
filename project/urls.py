@@ -19,9 +19,8 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("favicon.ico", lambda r: HttpResponse(status=204)),
 
-    # 2. API 전용 경로 (리액트가 사용하는 경로)
-    path("api/accounts/", include("accounts.urls_api")),
-    path("api/pages/", include("pages.urls_api")), # 위에서 만든 urls_api를 연결
+    # 2. API 전용 경로
+    path("api/pages/", include("pages.urls")),
     path("api/stories/", include("stories.urls")),
     path("api/library/", include("library.urls")),
 

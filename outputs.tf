@@ -21,3 +21,7 @@ output "ecs_task_execution_role_arn" {
 output "ecs_task_role_arn" {
   value = module.ecs.ecs_task_role_arn
 }
+
+output "rds_endpoint" {
+  value = module.rds.db_endpoint
+}

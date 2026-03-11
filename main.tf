@@ -36,9 +36,11 @@ module "ecs" {
   user_tg_arn        = module.alb.user_tg_arn
   story_tg_arn       = module.alb.story_tg_arn
   activity_tg_arn    = module.alb.activity_tg_arn
+  web_tg_arn         = module.alb.web_tg_arn
   user_repo_url      = module.ecr.user_repo_url
   story_repo_url     = module.ecr.story_repo_url
   activity_repo_url  = module.ecr.activity_repo_url
+  web_repo_url       = module.ecr.web_repo_url
   rds_endpoint       = module.rds.db_endpoint
   redis_endpoint     = module.redis.redis_endpoint
   s3_bucket_name     = module.s3.bucket_name
@@ -47,6 +49,11 @@ module "ecs" {
   db_password        = var.db_password
   supabase_url       = var.supabase_url
   supabase_key       = var.supabase_key
+  sb_db_name         = var.sb_db_name
+  sb_db_user         = var.sb_db_user
+  sb_db_password     = var.sb_db_password
+  sb_db_host         = var.sb_db_host
+  sb_db_port         = var.sb_db_port
   aws_access_key     = var.aws_access_key
   aws_secret_key     = var.aws_secret_key
   django_secret_key  = var.django_secret_key

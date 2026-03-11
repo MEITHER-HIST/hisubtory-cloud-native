@@ -15,3 +15,9 @@ resource "aws_ecr_repository" "activity" {
   image_tag_mutability = "MUTABLE"
   force_delete         = true
 }
+
+resource "aws_ecr_repository" "web" {
+  name                 = "${var.project_name}-web"
+  image_tag_mutability = "MUTABLE"
+  force_delete         = true
+}

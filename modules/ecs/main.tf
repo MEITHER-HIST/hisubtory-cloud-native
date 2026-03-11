@@ -98,7 +98,7 @@ resource "aws_ecs_task_definition" "user" {
   container_definitions = jsonencode([
     {
       name      = "app"
-      image     = var.user_repo_url
+      image     = "${var.user_repo_url}:0ada924c9b4d7447c5d70ada9d286ae285604b59"
       portMappings = [{ containerPort = 80, hostPort = 80 }]
       logConfiguration = {
         logDriver = "awslogs"
@@ -110,8 +110,21 @@ resource "aws_ecs_task_definition" "user" {
       }
       environment = [
         { name = "DB_HOST", value = var.rds_endpoint },
+        { name = "DB_PORT", value = "3306" },
+        { name = "DB_NAME", value = "hisubtory_db" },
+        { name = "DB_USER", value = var.db_username },
+        { name = "DB_PASSWORD", value = var.db_password },
         { name = "REDIS_HOST", value = var.redis_endpoint },
-        { name = "SERVICE_NAME", value = "user" }
+        { name = "SERVICE_NAME", value = "user" },
+        { name = "SECRET_KEY", value = var.django_secret_key },
+        { name = "SUPABASE_URL", value = var.supabase_url },
+        { name = "SUPABASE_KEY", value = var.supabase_key },
+        { name = "SB_DB_NAME", value = var.sb_db_name },
+        { name = "SB_DB_USER", value = var.sb_db_user },
+        { name = "SB_DB_PASSWORD", value = var.sb_db_password },
+        { name = "SB_DB_HOST", value = var.sb_db_host },
+        { name = "SB_DB_PORT", value = var.sb_db_port },
+        { name = "DEBUG", value = "True" }
       ]
     }
   ])
@@ -129,7 +142,7 @@ resource "aws_ecs_task_definition" "story" {
   container_definitions = jsonencode([
     {
       name      = "app"
-      image     = var.story_repo_url
+      image     = "${var.story_repo_url}:fcf8202d042d08666e03e6f10cceb960da1fa5d5"
       portMappings = [{ containerPort = 80, hostPort = 80 }]
       logConfiguration = {
         logDriver = "awslogs"
@@ -141,8 +154,21 @@ resource "aws_ecs_task_definition" "story" {
       }
       environment = [
         { name = "DB_HOST", value = var.rds_endpoint },
+        { name = "DB_PORT", value = "3306" },
+        { name = "DB_NAME", value = "hisubtory_db" },
+        { name = "DB_USER", value = var.db_username },
+        { name = "DB_PASSWORD", value = var.db_password },
         { name = "REDIS_HOST", value = var.redis_endpoint },
-        { name = "SERVICE_NAME", value = "story" }
+        { name = "SERVICE_NAME", value = "story" },
+        { name = "SECRET_KEY", value = var.django_secret_key },
+        { name = "SUPABASE_URL", value = var.supabase_url },
+        { name = "SUPABASE_KEY", value = var.supabase_key },
+        { name = "SB_DB_NAME", value = var.sb_db_name },
+        { name = "SB_DB_USER", value = var.sb_db_user },
+        { name = "SB_DB_PASSWORD", value = var.sb_db_password },
+        { name = "SB_DB_HOST", value = var.sb_db_host },
+        { name = "SB_DB_PORT", value = var.sb_db_port },
+        { name = "DEBUG", value = "True" }
       ]
     }
   ])
@@ -160,7 +186,7 @@ resource "aws_ecs_task_definition" "activity" {
   container_definitions = jsonencode([
     {
       name      = "app"
-      image     = var.activity_repo_url
+      image     = "${var.activity_repo_url}:fcf8202d042d08666e03e6f10cceb960da1fa5d5"
       portMappings = [{ containerPort = 80, hostPort = 80 }]
       logConfiguration = {
         logDriver = "awslogs"
@@ -172,14 +198,75 @@ resource "aws_ecs_task_definition" "activity" {
       }
       environment = [
         { name = "DB_HOST", value = var.rds_endpoint },
+        { name = "DB_PORT", value = "3306" },
+        { name = "DB_NAME", value = "hisubtory_db" },
+        { name = "DB_USER", value = var.db_username },
+        { name = "DB_PASSWORD", value = var.db_password },
         { name = "REDIS_HOST", value = var.redis_endpoint },
-        { name = "SERVICE_NAME", value = "activity" }
+        { name = "SERVICE_NAME", value = "activity" },
+        { name = "SECRET_KEY", value = var.django_secret_key },
+        { name = "SUPABASE_URL", value = var.supabase_url },
+        { name = "SUPABASE_KEY", value = var.supabase_key },
+        { name = "SB_DB_NAME", value = var.sb_db_name },
+        { name = "SB_DB_USER", value = var.sb_db_user },
+        { name = "SB_DB_PASSWORD", value = var.sb_db_password },
+        { name = "SB_DB_HOST", value = var.sb_db_host },
+        { name = "SB_DB_PORT", value = var.sb_db_port },
+        { name = "DEBUG", value = "True" }
       ]
     }
   ])
 }
 
-# ECS Services for each service
+resource "aws_ecs_task_definition" "web" {
+  family                   = "${var.project_name}-web-task"
+  network_mode             = "awsvpc"
+  requires_compatibilities = ["FARGATE"]
+  cpu                      = "256"
+  memory                   = "512"
+  execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
+  task_role_arn            = aws_iam_role.ecs_task_role.arn
+
+  container_definitions = jsonencode([
+    {
+      name      = "app"
+      image     = "${var.web_repo_url}:1773131378"
+      portMappings = [{ containerPort = 80, hostPort = 80 }]
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          "awslogs-group"         = aws_cloudwatch_log_group.web.name
+          "awslogs-region"        = var.aws_region
+          "awslogs-stream-prefix" = "ecs"
+        }
+      }
+    }
+  ])
+}
+
+resource "aws_cloudwatch_log_group" "web" {
+  name              = "/ecs/${var.project_name}-web"
+  retention_in_days = 7
+}
+
+resource "aws_ecs_service" "web" {
+  name            = "${var.project_name}-web-service"
+  cluster         = aws_ecs_cluster.main.id
+  task_definition = aws_ecs_task_definition.web.arn
+  desired_count   = 1
+  launch_type     = "FARGATE"
+
+  network_configuration {
+    subnets         = var.private_subnet_ids
+    security_groups = [var.ecs_app_sg_id]
+  }
+
+  load_balancer {
+    target_group_arn = var.web_tg_arn
+    container_name   = "app"
+    container_port   = 80
+  }
+}
 resource "aws_ecs_service" "user" {
   name            = "${var.project_name}-user-service"
   cluster         = aws_ecs_cluster.main.id

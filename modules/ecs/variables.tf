@@ -18,6 +18,10 @@ variable "activity_tg_arn" {
   type = string
 }
 
+variable "web_tg_arn" {
+  type = string
+}
+
 variable "user_repo_url" {
   type = string
 }
@@ -27,6 +31,10 @@ variable "story_repo_url" {
 }
 
 variable "activity_repo_url" {
+  type = string
+}
+
+variable "web_repo_url" {
   type = string
 }
 
@@ -54,11 +62,37 @@ variable "db_password" {
   type = string
 }
 
+variable "django_secret_key" {
+  type = string
+}
+
 variable "supabase_url" {
   type = string
 }
 
 variable "supabase_key" {
+  type      = string
+  sensitive = true
+}
+
+variable "sb_db_name" {
+  type = string
+}
+
+variable "sb_db_user" {
+  type = string
+}
+
+variable "sb_db_password" {
+  type      = string
+  sensitive = true
+}
+
+variable "sb_db_host" {
+  type = string
+}
+
+variable "sb_db_port" {
   type = string
 }
 
@@ -67,10 +101,6 @@ variable "aws_access_key" {
 }
 
 variable "aws_secret_key" {
-  type = string
-}
-
-variable "django_secret_key" {
   type = string
 }
 
