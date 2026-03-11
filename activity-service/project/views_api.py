@@ -7,7 +7,9 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import get_user_model, login, logout
 # from subway.models import Line, Station
 # from stories.models import Episode, Webtoon
-from library.models import UserViewedEpisode, Line, Station, Episode, Webtoon
+from library.models import UserViewedEpisode
+from subway.models import Line, Station
+from stories.models import Episode, Webtoon
 
 User = get_user_model()
 
