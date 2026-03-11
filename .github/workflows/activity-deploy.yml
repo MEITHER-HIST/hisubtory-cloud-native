@@ -1,4 +1,4 @@
-name: Deploy to Amazon ECS (Activity Service - Unified API)
+name: Unified Deployment (Activity Service)
 on:
   push:
     branches: [ feat/do ]
