@@ -1,3 +1,6 @@
+SECRET_KEY = 'django-insecure-emergency-force-key-fixed-12345'
+DEBUG = True
+ALLOWED_HOSTS = ['*']
 import os
 import pymysql
 from pathlib import Path
