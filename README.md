@@ -1,4 +1,4 @@
-# 🚇 Hisubtory (하이섭토리) - Cloud Native Infrastructure
+# 🚇 Hisubtory (히섭토리) - Cloud Native Infrastructure
 
 본 저장소는 지하철 역 기반 스토리텔링 서비스 'Hisubtory'의 마이크로서비스 인프라 및 배포 환경을 관리합니다.
 

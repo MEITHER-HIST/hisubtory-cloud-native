@@ -162,7 +162,7 @@ if DEBUG:
 else:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
-    SECURE_SSL_REDIRECT = True
+    SECURE_SSL_REDIRECT = False
 
 CSRF_TRUSTED_ORIGINS = [
     "http://hisubtory-alb-265224020.ap-northeast-2.elb.amazonaws.com",
