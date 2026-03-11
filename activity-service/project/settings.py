@@ -11,9 +11,9 @@ pymysql.version_info = (2, 2, 1, 'final', 0)
 pymysql.install_as_MySQLdb()
 
 SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-ti-prtjm(d_p7ve!r(g&4&(=+*_vn*x+*3z^ge567i72tr-5)1")
-DEBUG = os.getenv("DEBUG", "True") == "True"
+DEBUG = True
 
-ALLOWED_HOSTS = ["*", "ServerA", "localhost", "127.0.0.1"]
+ALLOWED_HOSTS = ['*']
 
 # 세션 쿠키 설정 통일
 SESSION_COOKIE_NAME = os.getenv('SESSION_COOKIE_NAME', 'hisubtory_sessionid')
