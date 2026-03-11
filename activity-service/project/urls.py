@@ -1,3 +1,4 @@
+from django.http import HttpResponse
 from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
@@ -9,6 +10,7 @@ def health(request):
     return HttpResponse("ok", content_type="text/plain")
 
 urlpatterns = [
+    path('health/', lambda r: HttpResponse('OK', status=200)),
     # 1. API 전용 경로 (최상단 배치)
     path("api/pages/", include("pages.urls_api")),
     path("api/bookmarks/", include("library.urls")),

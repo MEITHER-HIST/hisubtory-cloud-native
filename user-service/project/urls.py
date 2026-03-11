@@ -1,3 +1,4 @@
+from django.http import HttpResponse
 from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
@@ -13,6 +14,7 @@ def index(request):
     return render(request, "main.html")
 
 urlpatterns = [
+    path('health/', lambda r: HttpResponse('OK', status=200)),
     # 1. 시스템 및 어드민
     path("", index, name="index"),
     path("health/", health),
