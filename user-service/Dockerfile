@@ -37,4 +37,4 @@ ENV PYTHONPATH=/app
 # Static 파일 수집 (필요시)
 RUN SB_DB_PASSWORD=dummy python manage.py collectstatic --noinput || true
 
-CMD ["sh", "-c", "python manage.py migrate --noinput && gunicorn --bind 0.0.0.0:80 project.wsgi:application"]
+CMD ["gunicorn", "--bind", "0.0.0.0:80", "project.wsgi:application"]
