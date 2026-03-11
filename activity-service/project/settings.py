@@ -11,7 +11,7 @@ pymysql.version_info = (2, 2, 1, 'final', 0)
 pymysql.install_as_MySQLdb()
 
 SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-ti-prtjm(d_p7ve!r(g&4&(=+*_vn*x+*3z^ge567i72tr-5)1")
-DEBUG = True
+DEBUG = True # Forced by Gemni
 
 ALLOWED_HOSTS = ['*']
 
@@ -178,3 +178,4 @@ CACHES = {
 
 SESSION_ENGINE = os.getenv("SESSION_ENGINE", "django.contrib.sessions.backends.cache")
 SESSION_CACHE_ALIAS = "default"
+CONN_HEALTH_CHECKS = False
