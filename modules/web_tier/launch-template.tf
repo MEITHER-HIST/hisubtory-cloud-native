@@ -1,18 +1,13 @@
 data "aws_ami" "ubuntu" {
   most_recent = true
-  owners      = ["099720109477"]
+
+  owners = ["099720109477"]
 
   filter {
     name   = "name"
     values = ["ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"]
   }
-
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
 }
-
 
 resource "aws_launch_template" "web_lt" {
 
@@ -23,6 +18,10 @@ resource "aws_launch_template" "web_lt" {
 
   key_name = var.key_name
 
+  iam_instance_profile {
+    name = var.iam_profile_name
+  }
+
   vpc_security_group_ids = [
     var.security_group_id
   ]
@@ -31,20 +30,28 @@ resource "aws_launch_template" "web_lt" {
 #!/bin/bash
 
 apt update -y
-apt install -y docker.io -y
+apt install -y awscli docker.io -y
 
-systemctl start docker
 systemctl enable docker
+systemctl start docker
 
-docker run -d \
--p 8000:8000 \
--e DATABASE_HOST=${var.rds_endpoint} \
--e DATABASE_PORT=3306 \
--e REDIS_HOST=${var.redis_endpoint} \
--e REDIS_PORT=6379 \
-nginx
+# S3 env 다운로드
+aws s3 cp s3://your-web-bucket-name/.env /home/ubuntu/.env
+
+# 환경변수 로드
+if [ -f /home/ubuntu/.env ]; then
+    export $(cat /home/ubuntu/.env | xargs)
+fi
+
+# 기존 컨테이너 정리
+docker ps -q | xargs -r docker stop
+docker ps -q | xargs -r docker rm
+
+# nginx 실행 (예시)
+docker run -d -p 8000:8000 --env-file /home/ubuntu/.env nginx
+
 EOF
-  )
+)
 
   tag_specifications {
     resource_type = "instance"

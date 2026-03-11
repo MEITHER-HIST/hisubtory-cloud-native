@@ -1,13 +1,12 @@
 resource "aws_elasticache_subnet_group" "redis_subnet" {
-  name       = "redis-subnet"
-  subnet_ids = var.private_subnet_ids
+  name       = "${var.project_name}-redis-subnet"
+  subnet_ids = var.data_subnet_ids
 }
 
 resource "aws_elasticache_cluster" "redis" {
+  cluster_id           = "${var.project_name}-redis"
+  engine               = "redis"
 
-  cluster_id = "hisubtory-redis"
-
-  engine  = "redis"
   engine_version = "7.0"
 
   node_type        = "cache.t3.micro"

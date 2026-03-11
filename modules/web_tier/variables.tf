@@ -1,18 +1,3 @@
-variable "instance_type" {}
-variable "key_name" {}
-variable "security_group_id" {}
-
-variable "subnet_ids" {
-  type = list(string)
-}
-
-variable "vpc_id" {
+variable "project_name" {
   type = string
 }
-
-variable "target_group_arn" {
-  type = string
-}
-
-variable "redis_endpoint" {}
-variable "rds_endpoint" {}
