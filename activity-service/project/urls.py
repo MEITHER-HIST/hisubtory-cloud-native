@@ -8,6 +8,6 @@ def health(request):
 urlpatterns = [
     path('health/', health),
     path("api/pages/", include("pages.urls_api")),
-    path("api/accounts/", include("accounts.urls_api")),
-    path("api/stories/", include("pages.urls_api")), # 임시: 에러 방지를 위해 pages쪽 참조
+    path("api/accounts/", include("pages.urls_api")),
+    path("api/stories/", include("pages.urls_api")),
 ]
