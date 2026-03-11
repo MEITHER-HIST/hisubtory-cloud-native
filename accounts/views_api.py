@@ -117,10 +117,11 @@ def login_api_view(request):
             res = supabase.auth.sign_in_with_password({"email": identifier, "password": password})
             
             # Django DB와 동기화
-            try:
-                user = User.objects.get(email=identifier)
-            except User.DoesNotExist:
-                user = User.objects.create_user(username=identifier.split('@')[0], email=identifier)
+            username_from_email = identifier.split('@')[0]
+            user, created = User.objects.get_or_create(email=identifier, defaults={"username": username_from_email})
+            if not created and user.username != username_from_email:
+                # 이메일은 맞는데 유저네임이 다를 경우 등에 대한 처리 (필요시)
+                pass
             
             login(request, user)
             return JsonResponse({
