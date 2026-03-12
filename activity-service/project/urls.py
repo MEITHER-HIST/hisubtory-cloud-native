@@ -2,12 +2,11 @@ from django.contrib import admin
 from django.urls import path, include
 from django.http import HttpResponse
 
-def health(request):
-    return HttpResponse("ok")
-
 urlpatterns = [
-    path('health/', health),
+    path('health/', lambda r: HttpResponse('ok')),
     path('admin/', admin.site.urls),
-    # 💡 어떤 경로로 들어오든(api/pages/ 포함 여부와 상관없이) pages.urls_api에서 처리하도록 합니다.
+    # /api/pages/ 로 들어오는 모든 것을 pages.urls_api로 보냄
+    path("api/pages/", include("pages.urls_api")),
+    # 혹시 Nginx가 /api/pages/ 를 떼고 보내면 여기서 처리
     path("", include("pages.urls_api")),
 ]
