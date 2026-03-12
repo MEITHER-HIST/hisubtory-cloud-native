@@ -1,14 +1,17 @@
 import os
 import pymysql
 from pathlib import Path
-
-# --- 필수 설정 (최상단 고정) ---
-SECRET_KEY = 'django-insecure-emergency-force-key-fixed-999'
-DEBUG = True
-ALLOWED_HOSTS = ['*']
+from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(BASE_DIR / ".env")
+
+pymysql.version_info = (2, 2, 1, 'final', 0)
 pymysql.install_as_MySQLdb()
+
+SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-emergency-force-key-fixed-999")
+DEBUG = True
+ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -40,15 +43,25 @@ ROOT_URLCONF = 'project.urls'
 WSGI_APPLICATION = 'project.wsgi.application'
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.getenv("SB_DB_NAME", "postgres"),
+        "USER": os.getenv("SB_DB_USER", "postgres"),
+        "PASSWORD": os.getenv("SB_DB_PASSWORD", "hisubtory1234"),
+        "HOST": os.getenv("SB_DB_HOST", "aws-1-ap-northeast-2.pooler.supabase.com"),
+        "PORT": os.getenv("SB_DB_PORT", "5432"),
     },
-    'mysql': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db_mysql.sqlite3',
+    "mysql": {
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": os.getenv("DB_NAME", "hisubtory_db"),
+        "USER": os.getenv("DB_USER", "admin"),
+        "PASSWORD": os.getenv("DB_PASSWORD", "mysql_password"),
+        "HOST": os.getenv("DB_HOST", "hisubtory-db.cnwkq8oe8jr5.ap-northeast-2.rds.amazonaws.com"),
+        "PORT": os.getenv("DB_PORT", "3306"),
     }
 }
+
+DATABASE_ROUTERS = ['project.router.DatabaseRouter']
 
 CORS_ALLOW_ALL_ORIGINS = True
 SECURE_SSL_REDIRECT = False
@@ -61,3 +74,4 @@ USE_I18N = True
 USE_TZ = True
 STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+AUTH_USER_MODEL = 'accounts.User'

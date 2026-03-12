@@ -1,0 +1,129 @@
+{
+    "containerDefinitions": [
+        {
+            "name": "app",
+            "image": "714454205561.dkr.ecr.ap-northeast-2.amazonaws.com/hisubtory-story:0ada924c9b4d7447c5d70ada9d286ae285604b59",
+            "cpu": 0,
+            "portMappings": [
+                {
+                    "containerPort": 80,
+                    "hostPort": 80,
+                    "protocol": "tcp"
+                }
+            ],
+            "essential": true,
+            "environment": [
+                {
+                    "name": "REDIS_HOST",
+                    "value": "${SECRET_PLACEHOLDER}"
+                },
+                {
+                    "name": "DB_PORT",
+                    "value": "${SECRET_PLACEHOLDER}"
+                },
+                {
+                    "name": "DB_USER",
+                    "value": "${SECRET_PLACEHOLDER}"
+                },
+                {
+                    "name": "AWS_SECRET_ACCESS_KEY",
+                    "value": "${SECRET_PLACEHOLDER}"
+                },
+                {
+                    "name": "DB_NAME",
+                    "value": "${SECRET_PLACEHOLDER}"
+                },
+                {
+                    "name": "DB_HOST",
+                    "value": "${SECRET_PLACEHOLDER}"
+                },
+                {
+                    "name": "SUPABASE_URL",
+                    "value": "${SECRET_PLACEHOLDER}"
+                },
+                {
+                    "name": "SB_DB_HOST",
+                    "value": "${SECRET_PLACEHOLDER}"
+                },
+                {
+                    "name": "SB_DB_USER",
+                    "value": "${SECRET_PLACEHOLDER}"
+                },
+                {
+                    "name": "SB_DB_PASSWORD",
+                    "value": "${SECRET_PLACEHOLDER}"
+                },
+                {
+                    "name": "REDIS_PORT",
+                    "value": "${SECRET_PLACEHOLDER}"
+                },
+                {
+                    "name": "AWS_ACCESS_KEY_ID",
+                    "value": "${SECRET_PLACEHOLDER}"
+                },
+                {
+                    "name": "SB_DB_NAME",
+                    "value": "${SECRET_PLACEHOLDER}"
+                },
+                {
+                    "name": "AWS_S3_REGION_NAME",
+                    "value": "${SECRET_PLACEHOLDER}"
+                },
+                {
+                    "name": "SB_DB_PORT",
+                    "value": "${SECRET_PLACEHOLDER}"
+                },
+                {
+                    "name": "SUPABASE_KEY",
+                    "value": "${SECRET_PLACEHOLDER}"
+                },
+                {
+                    "name": "AWS_STORAGE_BUCKET_NAME",
+                    "value": "${SECRET_PLACEHOLDER}"
+                },
+                {
+                    "name": "DB_PASSWORD",
+                    "value": "${SECRET_PLACEHOLDER}"
+                },
+                {
+                    "name": "SECRET_KEY",
+                    "value": "${SECRET_PLACEHOLDER}"
+                },
+                {
+                    "name": "SESSION_ENGINE",
+                    "value": "${SECRET_PLACEHOLDER}"
+                },
+                {
+                    "name": "REDIS_URL",
+                    "value": "${SECRET_PLACEHOLDER}"
+                },
+                {
+                    "name": "DEBUG",
+                    "value": "${SECRET_PLACEHOLDER}"
+                }
+            ],
+            "mountPoints": [],
+            "volumesFrom": [],
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "/ecs/hisubtory-story",
+                    "awslogs-region": "ap-northeast-2",
+                    "awslogs-stream-prefix": "ecs"
+                }
+            },
+            "systemControls": []
+        }
+    ],
+    "family": "hisubtory-story-task",
+    "taskRoleArn": "arn:aws:iam::714454205561:role/hisubtory-ecs-task-role",
+    "executionRoleArn": "arn:aws:iam::714454205561:role/hisubtory-ecs-task-execution-role",
+    "networkMode": "awsvpc",
+    "volumes": [],
+    "placementConstraints": [],
+    "requiresCompatibilities": [
+        "FARGATE"
+    ],
+    "cpu": "256",
+    "memory": "512"
+}
