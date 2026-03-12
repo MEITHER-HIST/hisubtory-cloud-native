@@ -83,5 +83,17 @@ def me_api_view(request):
     return JsonResponse({"success": False}, status=401)
 
 def restore_db_api_view(request):
-    """DB 복구용 API (필요 시)"""
-    return JsonResponse({"success": True, "message": "DB Restore triggered"})
+    """DB 복구용 API: create_missing_tables.py의 로직을 직접 실행"""
+    import subprocess
+    import os
+    try:
+        # 💡 현재 컨테이너에 있는 create_missing_tables.py 실행
+        result = subprocess.run(["python", "create_missing_tables.py"], capture_output=True, text=True)
+        return JsonResponse({
+            "success": True, 
+            "message": "DB Restore finished", 
+            "stdout": result.stdout, 
+            "stderr": result.stderr
+        })
+    except Exception as e:
+        return JsonResponse({"success": False, "message": str(e)}, status=500)
