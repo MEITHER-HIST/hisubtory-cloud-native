@@ -23,8 +23,15 @@ COPY subway/ ./subway/
 COPY supabase/ ./supabase/
 COPY templates/ ./templates/
 
-# 4. 서비스 코드 복사
+# 4. 서비스 코드 및 스크립트 복사
 COPY story-service/ ./
+COPY create_missing_tables.py .
+COPY seed_episodes.py .
+COPY docker-entrypoint.sh /usr/local/bin/
+
+# 💡 스크립트 권한 부여 및 줄바꿈 처리
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh && \
+    sed -i 's/\r$//' /usr/local/bin/docker-entrypoint.sh
 
 # 💡 설정 폴더 이름을 project로 통일
 RUN if [ -d "story_config" ]; then mv story_config project; fi
@@ -37,5 +44,5 @@ ENV PYTHONUNBUFFERED=1
 
 EXPOSE 80
 
-# 💡 Gunicorn 최적화
-CMD ["gunicorn", "--bind", "0.0.0.0:80", "--workers", "1", "--timeout", "120", "--log-level", "debug", "project.wsgi:application"]
+# 💡 Entrypoint를 통해 DB 마이그레이션 및 시딩 자동화
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
