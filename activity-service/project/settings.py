@@ -77,7 +77,7 @@ DATABASES = {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": os.getenv("SB_DB_NAME", "postgres"),
         "USER": os.getenv("SB_DB_USER", "postgres"),
-        "PASSWORD": os.getenv("SB_DB_PASSWORD", "hisubtory1234"),
+        "PASSWORD": (os.getenv("SB_DB_PASSWORD") or "hisubtory1234"),
         "HOST": os.getenv("SB_DB_HOST", "aws-1-ap-northeast-2.pooler.supabase.com"),
         "PORT": os.getenv("SB_DB_PORT", "5432"),
     },
