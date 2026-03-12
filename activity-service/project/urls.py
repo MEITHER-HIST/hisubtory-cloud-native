@@ -8,7 +8,6 @@ def health(request):
 urlpatterns = [
     path('health/', health),
     path('admin/', admin.site.urls),
-    # 💡 이미 Nginx에서 /api/pages/ 를 붙여서 보내거나 떼서 보낼 수 있으므로 둘 다 처리
-    path("api/pages/", include("pages.urls_api")),
+    # 💡 어떤 경로로 들어오든(api/pages/ 포함 여부와 상관없이) pages.urls_api에서 처리하도록 합니다.
     path("", include("pages.urls_api")),
 ]
