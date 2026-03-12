@@ -34,7 +34,7 @@ def _make_item_from_episode(episode: Any) -> Dict[str, Any]:
     webtoon = getattr(episode, "webtoon", None)
     station = getattr(webtoon, "station", None) if webtoon else None
     
-    # 1. 썸네일 이미지 결정 (첫 번째 컷 우선)
+    # 썸네일 이미지 결정
     first_cut = Cut.objects.using('mysql').filter(episode=episode).order_by('cut_order').first()
     image_path = ""
     if first_cut and first_cut.image:
@@ -52,39 +52,54 @@ def _make_item_from_episode(episode: Any) -> Dict[str, Any]:
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_user_history_api(request):
-    """최근 본 기록과 북마크 목록을 반환 (Supabase + MySQL 크로스 쿼리)"""
+    """최근 본 기록과 북마크 목록을 반환 (ID 직접 필터링 방식)"""
     user = request.user
-    print(f"[DEBUG] get_user_history_api called for User: {user.username}")
+    user_id = user.id # 세션에서 추출한 유저 ID 사용
+    print(f"[DEBUG] get_user_history_api called. UserID: {user_id}, Username: {user.username}")
 
     try:
-        # 1) 최근 본 이야기 10개 (Supabase 조회)
-        viewed_records = list(UserViewedEpisode.objects.using('default').filter(user=user).order_by("-viewed_at")[:10])
-        print(f"[DEBUG] Found {len(viewed_records)} viewed records in Supabase")
+        # 1) 최근 본 이야기 (Supabase 조회)
+        # 쿼리셋 역참조 대신 클래스 메서드로 직접 조회하여 안정성 확보
+        viewed_qs = UserViewedEpisode.objects.using('default').filter(user_id=user_id).order_by("-viewed_at")[:10]
+        viewed_episode_ids = list(viewed_qs.values_list('episode_id', flat=True))
+        print(f"[DEBUG] Viewed Episode IDs from Supabase: {viewed_episode_ids}")
         
         recent_data = []
-        for v in viewed_records:
+        if viewed_episode_ids:
             # MySQL에서 에피소드 상세 정보 조회
-            ep = Episode.objects.using('mysql').filter(episode_id=v.episode_id).select_related("webtoon__station").first()
-            if ep:
-                recent_data.append(_make_item_from_episode(ep))
+            episodes = Episode.objects.using('mysql').filter(episode_id__in=viewed_episode_ids).select_related("webtoon__station")
+            # 원래 순서(최근 본 순서) 유지를 위해 딕셔너리 매핑
+            ep_dict = {ep.episode_id: ep for ep in episodes}
+            for eid in viewed_episode_ids:
+                if eid in ep_dict:
+                    recent_data.append(_make_item_from_episode(ep_dict[eid]))
 
-        # 2) 저장한 이야기 (Supabase 조회)
-        bookmark_records = list(Bookmark.objects.using('default').filter(user=user).order_by("-created_at"))
-        print(f"[DEBUG] Found {len(bookmark_records)} bookmark records in Supabase")
+        # 2) 북마크한 이야기 (Supabase 조회)
+        bookmark_qs = Bookmark.objects.using('default').filter(user_id=user_id).order_by("-created_at")
+        bookmark_episode_ids = list(bookmark_qs.values_list('episode_id', flat=True))
+        print(f"[DEBUG] Bookmark Episode IDs from Supabase: {bookmark_episode_ids}")
         
         saved_data = []
-        for b in bookmark_records:
+        if bookmark_episode_ids:
             # MySQL에서 에피소드 상세 정보 조회
-            ep = Episode.objects.using('mysql').filter(episode_id=b.episode_id).select_related("webtoon__station").first()
-            if ep:
-                saved_data.append(_make_item_from_episode(ep))
+            episodes = Episode.objects.using('mysql').filter(episode_id__in=bookmark_episode_ids).select_related("webtoon__station")
+            ep_dict = {ep.episode_id: ep for ep in episodes}
+            for eid in bookmark_episode_ids:
+                if eid in ep_dict:
+                    saved_data.append(_make_item_from_episode(ep_dict[eid]))
 
         return Response(
-            {"recent": recent_data, "saved": saved_data},
+            {
+                "recent": recent_data, 
+                "saved": saved_data,
+                "success": True
+            },
             status=status.HTTP_200_OK,
         )
     except Exception as e:
+        import traceback
         print(f"[ERROR] MyPage logic failed: {str(e)}")
+        print(traceback.format_exc())
         return Response(
             {"success": False, "message": str(e)},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
