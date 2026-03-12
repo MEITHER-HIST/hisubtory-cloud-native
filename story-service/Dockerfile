@@ -26,6 +26,7 @@ COPY templates/ ./templates/
 # 4. 서비스 코드 및 스크립트 복사
 COPY story-service/ ./
 COPY create_missing_tables.py .
+COPY create_admin_user.py .
 COPY seed_episodes.py .
 COPY docker-entrypoint.sh /usr/local/bin/
 

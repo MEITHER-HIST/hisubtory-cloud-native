@@ -13,6 +13,9 @@ python manage.py migrate --database=mysql --noinput || echo "MySQL migration fai
 echo "Creating missing tables in MySQL..."
 python create_missing_tables.py || echo "Create tables failed, continuing..."
 
+echo "Ensuring Admin Superuser exists..."
+python create_admin_user.py || echo "Admin superuser creation failed, continuing..."
+
 echo "Seeding subway data..."
 python manage.py seed_subway_integrated || echo "Subway seeding failed, continuing..."
 
