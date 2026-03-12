@@ -34,6 +34,7 @@ MIDDLEWARE = [
     'django_prometheus.middleware.PrometheusBeforeMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware', # 정적 파일 서빙용
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -90,6 +91,10 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / "staticfiles"
+# WhiteNoise 설정 최적화
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'accounts.User'
 
@@ -120,5 +125,8 @@ CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
+    "http://hisubtory-alb-1990322498.ap-northeast-2.elb.amazonaws.com",
+]
+CSRF_TRUSTED_ORIGINS = [
     "http://hisubtory-alb-1990322498.ap-northeast-2.elb.amazonaws.com",
 ]
