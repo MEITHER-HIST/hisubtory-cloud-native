@@ -125,10 +125,8 @@ AWS_S3_CUSTOM_DOMAIN = os.getenv("AWS_S3_CUSTOM_DOMAIN", "")
 # Redis Cache 설정
 REDIS_HOST = os.getenv("REDIS_HOST", "db-mysql") # default or get from env
 REDIS_PORT = os.getenv("REDIS_PORT", "6379")
-if REDIS_HOST.endswith('cache.amazonaws.com'):
-    REDIS_URL = os.getenv("REDIS_URL", f"rediss://{REDIS_HOST}:{REDIS_PORT}/0")
-else:
-    REDIS_URL = os.getenv("REDIS_URL", f"redis://{REDIS_HOST}:{REDIS_PORT}/0")
+REDIS_PROTOCOL = os.getenv("REDIS_PROTOCOL", "redis")
+REDIS_URL = f"{REDIS_PROTOCOL}://{REDIS_HOST}:{REDIS_PORT}/0"
 
 CACHES = {
     "default": {
@@ -138,7 +136,9 @@ CACHES = {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
             "CONNECTION_POOL_KWARGS": {
                 "ssl_cert_reqs": None
-            }
+            },
+            "SOCKET_CONNECT_TIMEOUT": 5,
+            "SOCKET_TIMEOUT": 5,
         },
     }
 }

@@ -181,11 +181,11 @@ CORS_ALLOWED_ORIGINS = [
 # Redis Cache 설정
 REDIS_HOST = os.getenv("REDIS_HOST", "redis")
 REDIS_PORT = os.getenv("REDIS_PORT", "6379")
-# AWS ElastiCache TLS 환경에서는 rediss:// 를 사용해야 합니다.
-if REDIS_HOST.endswith('cache.amazonaws.com'):
-    REDIS_URL = os.getenv("REDIS_URL", f"rediss://{REDIS_HOST}:{REDIS_PORT}/0")
-else:
-    REDIS_URL = os.getenv("REDIS_URL", f"redis://{REDIS_HOST}:{REDIS_PORT}/0")
+
+# SSL 에러([SSL] record layer failure) 해결을 위해 redis:// 를 기본으로 사용하고
+# 필요 시 rediss:// 를 환경변수 REDIS_PROTOCOL로 받을 수 있게 합니다.
+REDIS_PROTOCOL = os.getenv("REDIS_PROTOCOL", "redis")
+REDIS_URL = f"{REDIS_PROTOCOL}://{REDIS_HOST}:{REDIS_PORT}/0"
 
 CACHES = {
     "default": {
@@ -195,7 +195,10 @@ CACHES = {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
             "CONNECTION_POOL_KWARGS": {
                 "ssl_cert_reqs": None
-            }
+            },
+            # 연결 시도 시간 단축 및 에러 감지
+            "SOCKET_CONNECT_TIMEOUT": 5,
+            "SOCKET_TIMEOUT": 5,
         },
     }
 }
