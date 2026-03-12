@@ -165,6 +165,10 @@ SESSION_COOKIE_SECURE = False
 SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
 SESSION_CACHE_ALIAS = 'default'
 
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+]
+
 # 운영 환경 보안 설정
 if DEBUG:
     SESSION_COOKIE_SECURE = False

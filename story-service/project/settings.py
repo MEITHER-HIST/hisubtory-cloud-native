@@ -131,6 +131,10 @@ SESSION_COOKIE_SECURE = False
 SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
 SESSION_CACHE_ALIAS = 'default'
 
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+]
+
 # Redis Cache 설정
 REDIS_HOST = os.getenv("REDIS_HOST", "db-mysql") # default or get from env
 REDIS_PORT = os.getenv("REDIS_PORT", "6379")
