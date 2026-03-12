@@ -13,6 +13,18 @@ SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-emergency-force-key-fixed-
 DEBUG = True
 ALLOWED_HOSTS = ['*']
 
+CSRF_TRUSTED_ORIGINS = [
+    "http://hisubtory-alb-1990322498.ap-northeast-2.elb.amazonaws.com",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
+
+CORS_ALLOWED_ORIGINS = [
+    "http://hisubtory-alb-1990322498.ap-northeast-2.elb.amazonaws.com",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
+
 # 세션 쿠키 설정 통일
 SESSION_COOKIE_NAME = os.getenv('SESSION_COOKIE_NAME', 'hisubtory_sessionid')
 SESSION_COOKIE_DOMAIN = os.getenv('SESSION_COOKIE_DOMAIN', None)
