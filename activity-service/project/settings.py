@@ -81,7 +81,7 @@ DATABASES = {
         "NAME": os.getenv("SB_DB_NAME", "postgres"),
         "USER": os.getenv("SB_DB_USER", "postgres"),
         "PASSWORD": (os.getenv("SB_DB_PASSWORD") or "hisubtory1234"),
-        "HOST": os.getenv("SB_DB_HOST", "aws-1-ap-northeast-2.pooler.supabase.com"),
+        "HOST": os.getenv("SB_DB_HOST", "db-postgres"),
         "PORT": os.getenv("SB_DB_PORT", "5432"),
     },
     "mysql": {
@@ -89,7 +89,7 @@ DATABASES = {
         "NAME": os.getenv("DB_NAME", "hisubtory_db"),
         "USER": os.getenv("DB_USER", "admin"),
         "PASSWORD": os.getenv("DB_PASSWORD", "mysql_password"),
-        "HOST": os.getenv("DB_HOST", "hisubtory-db.cnwkq8oe8jr5.ap-northeast-2.rds.amazonaws.com"),
+        "HOST": os.getenv("DB_HOST", "db-mysql"),
         "PORT": os.getenv("DB_PORT", "3306"),
     }
 }

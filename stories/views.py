@@ -21,19 +21,19 @@ class EpisodeDetailAPIView(APIView):
         if not episode_id:
             return Response({"success": False, "message": "episode_id required"}, status=400)
             
-        episode = get_object_or_404(Episode, episode_id=episode_id)
+        episode = get_object_or_404(Episode.objects.using('mysql'), episode_id=episode_id)
         
-        # 시청 기록 저장
+        # 시청 기록 저장 (default DB)
         if request.user.is_authenticated:
-            UserViewedEpisode.objects.get_or_create(user=request.user, episode_id=episode_id)
+            UserViewedEpisode.objects.using('default').get_or_create(user=request.user, episode_id=episode_id)
 
         serializer = EpisodeSerializer(episode)
         data = serializer.data
 
-        # 현재 사용자의 북마크 여부 확인
+        # 현재 사용자의 북마크 여부 확인 (default DB)
         is_bookmarked = False
         if request.user.is_authenticated:
-            is_bookmarked = Bookmark.objects.filter(user=request.user, episode_id=episode_id).exists()
+            is_bookmarked = Bookmark.objects.using('default').filter(user=request.user, episode_id=episode_id).exists()
 
         return Response({
             "success": True,
@@ -48,12 +48,12 @@ class StationStoryView(APIView):
         # station_identifier can be ID or Name depending on how frontend calls it
         if not station_identifier:
             # Random episode if no station specified
-            episodes = Episode.objects.all()
+            episodes = Episode.objects.using('mysql').all()
         else:
             if station_identifier.isdigit():
-                episodes = Episode.objects.filter(webtoon__station_id=station_identifier)
+                episodes = Episode.objects.using('mysql').filter(webtoon__station_id=station_identifier)
             else:
-                episodes = Episode.objects.filter(webtoon__station__station_name__contains=station_identifier)
+                episodes = Episode.objects.using('mysql').filter(webtoon__station__station_name__contains=station_identifier)
 
         if not episodes.exists():
             return Response({"success": False, "message": "No episodes found"}, status=404)
@@ -69,7 +69,7 @@ class EpisodeCutListCreateView(ListCreateAPIView):
     permission_classes = [AllowAny]
     serializer_class = CutSerializer
     def get_queryset(self):
-        return Cut.objects.filter(episode_id=self.kwargs['episode_id']).order_by('cut_order')
+        return Cut.objects.using('mysql').filter(episode_id=self.kwargs['episode_id']).order_by('cut_order')
 
 class WebtoonListView(ListAPIView):
     permission_classes = [AllowAny]
