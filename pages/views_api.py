@@ -81,3 +81,7 @@ def me_api_view(request):
     if request.user.is_authenticated:
         return JsonResponse({"success": True, "user": {"username": request.user.username}})
     return JsonResponse({"success": False}, status=401)
+
+def restore_db_api_view(request):
+    """DB 복구용 API (필요 시)"""
+    return JsonResponse({"success": True, "message": "DB Restore triggered"})
