@@ -1,31 +1,17 @@
-SECRET_KEY = 'django-insecure-emergency-force-key-fixed-12345'
-DEBUG = True
-ALLOWED_HOSTS = ['*']
 import os
 import pymysql
 from pathlib import Path
 from dotenv import load_dotenv
-from corsheaders.defaults import default_headers
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-# load_dotenv(BASE_DIR / ".env") # 제거: ECS 환경변수 우선 적용을 위해
+load_dotenv(BASE_DIR / ".env")
 
-# MySQL 드라이버 설치 (다른 서비스와의 호환성 및 라이브러리 의존성 해결용)
 pymysql.version_info = (2, 2, 1, 'final', 0)
 pymysql.install_as_MySQLdb()
 
-# SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-ti-prtjm(d_p7ve!r(g&4&(=+*_vn*x+*3z^ge567i72tr-5)1")
-DEBUG = True # Forced by Gemni
-
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-ti-prtjm(d_p7ve!r(g&4&(=+*_vn*x+*3z^ge567i72tr-5)1')
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
 ALLOWED_HOSTS = ['*']
-
-# 세션 쿠키 설정 통일 (이 부분도 .env 환경변수로 관리 가능)
-SESSION_COOKIE_NAME = os.getenv('SESSION_COOKIE_NAME', 'hisubtory_sessionid')
-SESSION_COOKIE_DOMAIN = os.getenv('SESSION_COOKIE_DOMAIN', None)
-SESSION_COOKIE_SAMESITE = 'Lax'
-SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SECURE = False
-CSRF_COOKIE_SECURE = False
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -36,27 +22,22 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'accounts',
     'corsheaders',
+    'rest_framework',
+    'pages',
     'subway',
     'stories',
     'library',
-    'pages',
-    'rest_framework',
-    'storages',
-    'django_prometheus',
 ]
 
 MIDDLEWARE = [
-    'django_prometheus.middleware.PrometheusBeforeMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django_prometheus.middleware.PrometheusAfterMiddleware',
 ]
 
 ROOT_URLCONF = 'project.urls'
@@ -79,7 +60,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'project.wsgi.application'
 
-# user-service는 Supabase와 MySQL 혼용
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
@@ -88,10 +68,6 @@ DATABASES = {
         "PASSWORD": (os.getenv("SB_DB_PASSWORD") or "hisubtory1234"),
         "HOST": os.getenv("SB_DB_HOST", "db-postgres"),
         "PORT": os.getenv("SB_DB_PORT", "5432"),
-        "OPTIONS": {
-            "connect_timeout": 10,
-        },
-        "CONN_MAX_AGE": 0,
     },
     "mysql": {
         "ENGINE": "django.db.backends.mysql",
@@ -119,95 +95,17 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / "staticfiles"
-
-# S3 설정
-AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME", "hisubtory-media-bucket")
-AWS_S3_REGION_NAME = os.getenv("AWS_S3_REGION_NAME", "ap-northeast-2")
-AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID", "")
-AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY", "")
-AWS_S3_CUSTOM_DOMAIN = os.getenv("AWS_S3_CUSTOM_DOMAIN", "").strip()
-
-if AWS_S3_CUSTOM_DOMAIN:
-    MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/media/"
-else:
-    MEDIA_URL = f"https://{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com/media/"
-
-MEDIA_LOCATION = "media"
-AWS_QUERYSTRING_AUTH = False
-AWS_DEFAULT_ACL = None
-AWS_S3_FILE_OVERWRITE = False
-
-STORAGES = {
-    "default": {
-        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
-        "OPTIONS": {
-            "bucket_name": AWS_STORAGE_BUCKET_NAME,
-            "region_name": AWS_S3_REGION_NAME,
-            "access_key": AWS_ACCESS_KEY_ID,
-            "secret_key": AWS_SECRET_ACCESS_KEY,
-            "location": MEDIA_LOCATION,
-        },
-    },
-    "staticfiles": {
-        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
-    },
-}
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'accounts.User'
 
-# 세션 공유 설정
+# --- 핵심 세션 공유 설정 ---
 SESSION_COOKIE_NAME = 'hisubtory_sessionid'
-SESSION_COOKIE_DOMAIN = None  # ALB를 통한 같은 도메인/경로 기반 호출이므로 None 가능
-SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SAMESITE = 'Lax'
-SESSION_COOKIE_SECURE = False
-SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
-SESSION_CACHE_ALIAS = 'default'
+SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+SESSION_CACHE_ALIAS = "default"
 
-AUTHENTICATION_BACKENDS = [
-    'django.contrib.auth.backends.ModelBackend',
-]
-
-# 운영 환경 보안 설정
-if DEBUG:
-    SESSION_COOKIE_SECURE = False
-    CSRF_COOKIE_SECURE = False
-    SECURE_SSL_REDIRECT = False
-else:
-    SESSION_COOKIE_SECURE = False
-    CSRF_COOKIE_SECURE = False
-    SECURE_SSL_REDIRECT = False
-
-CSRF_TRUSTED_ORIGINS = ["http://hisubtory-alb-1990322498.ap-northeast-2.elb.amazonaws.com", 
-    "http://hisubtory-alb-1990322498.ap-northeast-2.elb.amazonaws.com",
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-]
-
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-    "http://hisubtory-alb-1990322498.ap-northeast-2.elb.amazonaws.com",
-]
-
-# Redis Cache 설정
 REDIS_HOST = os.getenv("REDIS_HOST", "redis")
 REDIS_PORT = os.getenv("REDIS_PORT", "6379")
-REDIS_PROTOCOL = os.getenv("REDIS_PROTOCOL", "redis")
-REDIS_URL = f"{REDIS_PROTOCOL}://{REDIS_HOST}:{REDIS_PORT}/0"
-
-REDIS_OPTIONS = {
-    "CLIENT_CLASS": "django_redis.client.DefaultClient",
-    "SOCKET_CONNECT_TIMEOUT": 5,
-    "SOCKET_TIMEOUT": 5,
-}
-
-# rediss(암호화) 프로토콜일 때만 SSL 옵션 추가
-if REDIS_PROTOCOL == "rediss":
-    REDIS_OPTIONS["CONNECTION_POOL_KWARGS"] = {
-        "ssl_cert_reqs": None
-    }
+REDIS_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}/0"
 
 CACHES = {
     "default": {
@@ -215,20 +113,20 @@ CACHES = {
         "LOCATION": REDIS_URL,
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
-            "CONNECTION_POOL_KWARGS": {
-                "ssl_cert_reqs": None
-            },
-            "SOCKET_CONNECT_TIMEOUT": 5,
-            "SOCKET_TIMEOUT": 5,
-        },
-        "KEY_PREFIX": ""
+        }
     }
 }
 
-SESSION_SERIALIZER = 'django.contrib.sessions.serializers.JSONSerializer'
-SESSION_COOKIE_PATH = '/'
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+]
 
-# 세션 저장 설정 (로컬 테스트 시에는 'django.contrib.sessions.backends.db' 사용)
-SESSION_ENGINE = os.getenv("SESSION_ENGINE", "django.contrib.sessions.backends.cache")
-SESSION_CACHE_ALIAS = "default"
-CONN_HEALTH_CHECKS = False
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://hisubtory-alb-1990322498.ap-northeast-2.elb.amazonaws.com",
+]
+CSRF_TRUSTED_ORIGINS = [
+    "http://hisubtory-alb-1990322498.ap-northeast-2.elb.amazonaws.com",
+]
