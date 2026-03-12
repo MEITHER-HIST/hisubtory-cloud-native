@@ -1,12 +1,14 @@
 # stories/views.py (Story Service 전용)
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import get_object_or_404
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework.views import APIView
 from rest_framework.generics import ListAPIView, ListCreateAPIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from .models import Webtoon, Episode, Cut
 from .serializers import WebtoonSerializer, EpisodeSerializer, CutSerializer
+from library.models import Bookmark, UserViewedEpisode
 import random
 
 class EpisodeDetailAPIView(APIView):
@@ -14,21 +16,30 @@ class EpisodeDetailAPIView(APIView):
     def get(self, request, *args, **kwargs):
         episode_id = request.query_params.get('episode_id')
         if not episode_id:
-            # try to get from kwargs if URL is /episode/<int:episode_id>/
             episode_id = kwargs.get('episode_id')
             
         if not episode_id:
             return Response({"success": False, "message": "episode_id required"}, status=400)
             
         episode = get_object_or_404(Episode, episode_id=episode_id)
-        serializer = EpisodeSerializer(episode)
         
-        # Format for frontend expectations if different
+        # 시청 기록 저장
+        if request.user.is_authenticated:
+            UserViewedEpisode.objects.get_or_create(user=request.user, episode_id=episode_id)
+
+        serializer = EpisodeSerializer(episode)
         data = serializer.data
+
+        # 현재 사용자의 북마크 여부 확인
+        is_bookmarked = False
+        if request.user.is_authenticated:
+            is_bookmarked = Bookmark.objects.filter(user=request.user, episode_id=episode_id).exists()
+
         return Response({
             "success": True,
             "episode": data,
-            "cuts": data.get('cuts', [])
+            "cuts": data.get('cuts', []),
+            "is_bookmarked": is_bookmarked
         })
 
 class StationStoryView(APIView):
@@ -65,9 +76,22 @@ class WebtoonListView(ListAPIView):
     queryset = Webtoon.objects.all()
     serializer_class = WebtoonSerializer
 
+@csrf_exempt
 def toggle_bookmark_api(request, episode_id=None):
-    # This might need real logic if library is shared or accessed
-    return JsonResponse({"success": True, "is_bookmarked": True})
+    if not request.user.is_authenticated:
+        return JsonResponse({"success": False, "message": "Login required"}, status=401)
+    
+    if not episode_id:
+        return JsonResponse({"success": False, "message": "episode_id required"}, status=400)
+        
+    bookmark, created = Bookmark.objects.get_or_create(user=request.user, episode_id=episode_id)
+    if not created:
+        bookmark.delete()
+        is_bookmarked = False
+    else:
+        is_bookmarked = True
+        
+    return JsonResponse({"success": True, "is_bookmarked": is_bookmarked})
 
 def toggle_bookmark(request, episode_id=None):
     return HttpResponse("OK")

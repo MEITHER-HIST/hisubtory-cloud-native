@@ -5,6 +5,7 @@ from django.http import HttpResponse
 urlpatterns = [
     path('health/', lambda r: HttpResponse('ok')),
     path('admin/', admin.site.urls),
-    # 💡 루트에서 바로 pages.urls_api를 매핑하여 Nginx prefixes와 상관없이 동작하게 함
+    # 💡 루트와 api/pages/ 둘 다 매핑하여 유연하게 대응
     path("", include("pages.urls_api")),
+    path("api/pages/", include("pages.urls_api")),
 ]

@@ -15,9 +15,11 @@ def main_api_view(request):
     stations_with_episodes = set(Webtoon.objects.filter(episodes__isnull=False).values_list('station_id', flat=True))
     
     # 사용자가 본 에피소드 ID 목록
-    viewed_station_ids = []
+    viewed_station_ids = set()
     if user:
-        viewed_station_ids = UserViewedEpisode.objects.filter(user=user).values_list('episode__webtoon__station_id', flat=True).distinct()
+        viewed_episode_ids = UserViewedEpisode.objects.filter(user=user).values_list('episode_id', flat=True)
+        # MySQL 데이터베이스(stories app)에서 해당 episode_id들의 station_id들을 조회
+        viewed_station_ids = set(Episode.objects.filter(episode_id__in=viewed_episode_ids).values_list('webtoon__station_id', flat=True))
 
     station_list = []
     for s in stations:

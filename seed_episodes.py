@@ -22,8 +22,7 @@ def seed():
         webtoon, created = Webtoon.objects.get_or_create(
             station=station,
             defaults={
-                "title": f"{station.station_name}의 역사 이야기",
-                "created_at": timezone.now()
+                "title": f"{station.station_name}의 역사 이야기"
             }
         )
 
@@ -32,8 +31,7 @@ def seed():
             webtoon=webtoon,
             episode_num=1,
             defaults={
-                "subtitle": f"{station.station_name}의 첫 번째 전설",
-                "created_at": timezone.now()
+                "subtitle": f"{station.station_name}의 첫 번째 전설"
             }
         )
 
@@ -44,8 +42,7 @@ def seed():
                 cut_order=i,
                 defaults={
                     "image": f"https://picsum.photos/seed/{station.id}_{i}/800/600",
-                    "caption": f"{station.station_name}역 {i}번째 장면 설명입니다.",
-                    "created_at": timezone.now()
+                    "caption": f"{station.station_name}역 {i}번째 장면 설명입니다."
                 }
             )
 
