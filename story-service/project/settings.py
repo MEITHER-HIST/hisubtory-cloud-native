@@ -157,8 +157,12 @@ CACHES = {
         "BACKEND": "django_redis.cache.RedisCache",
         "LOCATION": REDIS_URL,
         "OPTIONS": REDIS_OPTIONS,
+        "KEY_PREFIX": ""
     }
 }
+
+SESSION_SERIALIZER = 'django.contrib.sessions.serializers.JSONSerializer'
+SESSION_COOKIE_PATH = '/'
 
 # 세션 저장 설정
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
