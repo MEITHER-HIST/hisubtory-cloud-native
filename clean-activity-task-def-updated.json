@@ -15,91 +15,91 @@
             "environment": [
                 {
                     "name": "REDIS_HOST",
-                    "value": "${SECRET_PLACEHOLDER}"
+                    "value": "hisubtory-redis.rkthpz.0001.apn2.cache.amazonaws.com"
                 },
                 {
                     "name": "DB_PORT",
-                    "value": "${SECRET_PLACEHOLDER}"
+                    "value": "3306"
                 },
                 {
                     "name": "DB_USER",
-                    "value": "${SECRET_PLACEHOLDER}"
+                    "value": "admin"
                 },
                 {
                     "name": "AWS_SECRET_ACCESS_KEY",
-                    "value": "${SECRET_PLACEHOLDER}"
+                    "value": "${AWS_SECRET_ACCESS_KEY}"
                 },
                 {
                     "name": "DB_NAME",
-                    "value": "${SECRET_PLACEHOLDER}"
+                    "value": "hisubtory_db"
                 },
                 {
                     "name": "DB_HOST",
-                    "value": "${SECRET_PLACEHOLDER}"
+                    "value": "hisubtory-db.cnwkq8oe8jr5.ap-northeast-2.rds.amazonaws.com"
                 },
                 {
                     "name": "SUPABASE_URL",
-                    "value": "${SECRET_PLACEHOLDER}"
+                    "value": "https://jlvhwihvmivvihffhxse.supabase.co"
                 },
                 {
                     "name": "SB_DB_HOST",
-                    "value": "${SECRET_PLACEHOLDER}"
+                    "value": "aws-1-ap-northeast-2.pooler.supabase.com"
                 },
                 {
                     "name": "SB_DB_USER",
-                    "value": "${SECRET_PLACEHOLDER}"
+                    "value": "postgres.jlvhwihvmivvihffhxse"
                 },
                 {
                     "name": "SB_DB_PASSWORD",
-                    "value": "${SECRET_PLACEHOLDER}"
+                    "value": "${SB_DB_PASSWORD}"
                 },
                 {
                     "name": "REDIS_PORT",
-                    "value": "${SECRET_PLACEHOLDER}"
+                    "value": "6379"
                 },
                 {
                     "name": "AWS_ACCESS_KEY_ID",
-                    "value": "${SECRET_PLACEHOLDER}"
+                    "value": "AKIA2MWGKAR4QH2XYKGO"
                 },
                 {
                     "name": "SB_DB_NAME",
-                    "value": "${SECRET_PLACEHOLDER}"
+                    "value": "postgres"
                 },
                 {
                     "name": "AWS_S3_REGION_NAME",
-                    "value": "${SECRET_PLACEHOLDER}"
+                    "value": "ap-northeast-2"
                 },
                 {
                     "name": "SB_DB_PORT",
-                    "value": "${SECRET_PLACEHOLDER}"
+                    "value": "5432"
                 },
                 {
                     "name": "SUPABASE_KEY",
-                    "value": "${SECRET_PLACEHOLDER}"
+                    "value": "${SUPABASE_KEY}"
                 },
                 {
                     "name": "AWS_STORAGE_BUCKET_NAME",
-                    "value": "${SECRET_PLACEHOLDER}"
+                    "value": "hisubtory-media-bucket"
                 },
                 {
                     "name": "DB_PASSWORD",
-                    "value": "${SECRET_PLACEHOLDER}"
+                    "value": "${DB_PASSWORD}"
                 },
                 {
                     "name": "SECRET_KEY",
-                    "value": "${SECRET_PLACEHOLDER}"
+                    "value": "${SECRET_KEY}"
                 },
                 {
                     "name": "SESSION_ENGINE",
-                    "value": "${SECRET_PLACEHOLDER}"
+                    "value": "django.contrib.sessions.backends.cache"
                 },
                 {
                     "name": "REDIS_URL",
-                    "value": "${SECRET_PLACEHOLDER}"
+                    "value": "rediss://hisubtory-redis.rkthpz.0001.apn2.cache.amazonaws.com:6379/0"
                 },
                 {
                     "name": "DEBUG",
-                    "value": "${SECRET_PLACEHOLDER}"
+                    "value": "True"
                 }
             ],
             "mountPoints": [],

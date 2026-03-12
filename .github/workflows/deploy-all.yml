@@ -69,10 +69,21 @@ jobs:
           container-name: app
           image: ${{ steps.build-image.outputs.image }}
 
+      - name: Inject Secrets into Task Definition
+        env:
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          SB_DB_PASSWORD: ${{ secrets.SB_DB_PASSWORD }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+        run: |
+          envsubst < ${{ steps.task-def.outputs.task-definition }} > processed-task-def.json
+          cat processed-task-def.json
+
       - name: Deploy Amazon ECS task definition
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
-          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          task-definition: processed-task-def.json
           service: ${{ matrix.ecs_svc }}
           cluster: ${{ env.ECS_CLUSTER }}
           wait-for-service-stability: false
