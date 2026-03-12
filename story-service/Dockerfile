@@ -25,6 +25,7 @@ COPY library/ ./library/
 COPY pages/ ./pages/
 COPY subway/ ./subway/
 COPY supabase/ ./supabase/
+COPY templates/ ./templates/
 
 # 서비스 특정 코드 복사
 COPY story-service/ ./
