@@ -9,6 +9,8 @@ import random
 @require_GET
 def main_api_view(request):
     user = request.user if request.user.is_authenticated else None
+    print(f"[DEBUG] main_api_view called. User: {user}")
+    
     stations = list(Station.objects.using('mysql').all().order_by('id'))
     
     # 에피소드가 있는 역 ID 목록 가져오기
@@ -17,11 +19,17 @@ def main_api_view(request):
     # 사용자가 본 에피소드 ID 목록
     viewed_station_ids = set()
     if user:
-        # UserViewedEpisode는 'default'(PostgreSQL)에 있음
-        viewed_episode_ids = list(UserViewedEpisode.objects.using('default').filter(user=user).values_list('episode_id', flat=True))
-        if viewed_episode_ids:
-            # Episode는 'mysql'에 있음
-            viewed_station_ids = set(Episode.objects.using('mysql').filter(episode_id__in=viewed_episode_ids).values_list('webtoon__station_id', flat=True))
+        try:
+            # UserViewedEpisode는 'default'(PostgreSQL)에 있음
+            viewed_episode_ids = list(UserViewedEpisode.objects.using('default').filter(user=user).values_list('episode_id', flat=True))
+            print(f"[DEBUG] User {user.username} viewed episodes: {viewed_episode_ids}")
+            
+            if viewed_episode_ids:
+                # Episode는 'mysql'에 있음
+                viewed_station_ids = set(Episode.objects.using('mysql').filter(episode_id__in=viewed_episode_ids).values_list('webtoon__station_id', flat=True))
+                print(f"[DEBUG] Viewed station IDs: {viewed_station_ids}")
+        except Exception as e:
+            print(f"[ERROR] Failed to fetch viewed history: {str(e)}")
 
     station_list = []
     for s in stations:
