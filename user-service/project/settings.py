@@ -156,6 +156,15 @@ STORAGES = {
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'accounts.User'
 
+# 세션 공유 설정
+SESSION_COOKIE_NAME = 'hisubtory_sessionid'
+SESSION_COOKIE_DOMAIN = None  # ALB를 통한 같은 도메인/경로 기반 호출이므로 None 가능
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_SECURE = False
+SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+SESSION_CACHE_ALIAS = 'default'
+
 # 운영 환경 보안 설정
 if DEBUG:
     SESSION_COOKIE_SECURE = False

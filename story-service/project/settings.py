@@ -122,6 +122,15 @@ AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME", "hisubtory-media-
 AWS_S3_REGION_NAME = os.getenv("AWS_S3_REGION_NAME", "ap-northeast-2")
 AWS_S3_CUSTOM_DOMAIN = os.getenv("AWS_S3_CUSTOM_DOMAIN", "")
 
+# 세션 공유 설정
+SESSION_COOKIE_NAME = 'hisubtory_sessionid'
+SESSION_COOKIE_DOMAIN = None
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_SECURE = False
+SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+SESSION_CACHE_ALIAS = 'default'
+
 # Redis Cache 설정
 REDIS_HOST = os.getenv("REDIS_HOST", "db-mysql") # default or get from env
 REDIS_PORT = os.getenv("REDIS_PORT", "6379")
