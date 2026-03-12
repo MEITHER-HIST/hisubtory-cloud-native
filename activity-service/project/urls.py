@@ -7,8 +7,7 @@ def health(request):
 
 urlpatterns = [
     path('health/', health),
-    path('admin/', admin.site.urls), # 관리자 페이지 추가
-    path("api/pages/", include("pages.urls_api")),
-    path("api/accounts/", include("pages.urls_api")),
-    path("api/stories/", include("pages.urls_api")),
+    path('admin/', admin.site.urls),
+    # 💡 이미 Nginx에서 /api/pages/ 를 붙여서 보내므로, include 시 prefix를 비웁니다.
+    path("", include("pages.urls_api")),
 ]
