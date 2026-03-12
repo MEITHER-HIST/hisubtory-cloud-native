@@ -84,7 +84,7 @@ def toggle_bookmark_api(request, episode_id=None):
     if not episode_id:
         return JsonResponse({"success": False, "message": "episode_id required"}, status=400)
         
-    bookmark, created = Bookmark.objects.get_or_create(user=request.user, episode_id=episode_id)
+    bookmark, created = Bookmark.objects.using('default').get_or_create(user=request.user, episode_id=episode_id)
     if not created:
         bookmark.delete()
         is_bookmarked = False

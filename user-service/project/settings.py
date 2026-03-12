@@ -217,8 +217,3 @@ CACHES = {
 SESSION_ENGINE = os.getenv("SESSION_ENGINE", "django.contrib.sessions.backends.cache")
 SESSION_CACHE_ALIAS = "default"
 CONN_HEALTH_CHECKS = False
-
-# --- EMERGENCY FORCE SETTINGS ---
-SECRET_KEY = 'django-insecure-emergency-force-key-9999999999'
-DEBUG = True
-ALLOWED_HOSTS = ['*']
