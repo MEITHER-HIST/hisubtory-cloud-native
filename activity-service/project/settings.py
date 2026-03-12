@@ -123,18 +123,22 @@ REDIS_PORT = os.getenv("REDIS_PORT", "6379")
 REDIS_PROTOCOL = os.getenv("REDIS_PROTOCOL", "redis")
 REDIS_URL = f"{REDIS_PROTOCOL}://{REDIS_HOST}:{REDIS_PORT}/0"
 
+REDIS_OPTIONS = {
+    "CLIENT_CLASS": "django_redis.client.DefaultClient",
+    "SOCKET_CONNECT_TIMEOUT": 5,
+    "SOCKET_TIMEOUT": 5,
+}
+
+if REDIS_PROTOCOL == "rediss":
+    REDIS_OPTIONS["CONNECTION_POOL_KWARGS"] = {
+        "ssl_cert_reqs": None
+    }
+
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
         "LOCATION": REDIS_URL,
-        "OPTIONS": {
-            "CLIENT_CLASS": "django_redis.client.DefaultClient",
-            "CONNECTION_POOL_KWARGS": {
-                "ssl_cert_reqs": None
-            },
-            "SOCKET_CONNECT_TIMEOUT": 5,
-            "SOCKET_TIMEOUT": 5,
-        },
+        "OPTIONS": REDIS_OPTIONS,
     }
 }
 
