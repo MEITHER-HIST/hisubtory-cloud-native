@@ -9,17 +9,19 @@ import random
 @require_GET
 def main_api_view(request):
     user = request.user if request.user.is_authenticated else None
-    stations = Station.objects.all().order_by('id')
+    stations = list(Station.objects.using('mysql').all().order_by('id'))
     
     # 에피소드가 있는 역 ID 목록 가져오기
-    stations_with_episodes = set(Webtoon.objects.filter(episodes__isnull=False).values_list('station_id', flat=True))
+    stations_with_episodes = set(Webtoon.objects.using('mysql').filter(episodes__isnull=False).values_list('station_id', flat=True))
     
     # 사용자가 본 에피소드 ID 목록
     viewed_station_ids = set()
     if user:
-        viewed_episode_ids = UserViewedEpisode.objects.filter(user=user).values_list('episode_id', flat=True)
-        # MySQL 데이터베이스(stories app)에서 해당 episode_id들의 station_id들을 조회
-        viewed_station_ids = set(Episode.objects.filter(episode_id__in=viewed_episode_ids).values_list('webtoon__station_id', flat=True))
+        # UserViewedEpisode는 'default'(PostgreSQL)에 있음
+        viewed_episode_ids = list(UserViewedEpisode.objects.using('default').filter(user=user).values_list('episode_id', flat=True))
+        if viewed_episode_ids:
+            # Episode는 'mysql'에 있음
+            viewed_station_ids = set(Episode.objects.using('mysql').filter(episode_id__in=viewed_episode_ids).values_list('webtoon__station_id', flat=True))
 
     station_list = []
     for s in stations:
@@ -45,7 +47,7 @@ def pick_episode_api_view(request):
     if not station_id:
         return JsonResponse({"success": False, "message": "station_id required"}, status=400)
     
-    episodes = Episode.objects.filter(webtoon__station_id=station_id)
+    episodes = Episode.objects.using('mysql').filter(webtoon__station_id=station_id)
     if not episodes.exists():
         return JsonResponse({"success": False, "message": "No episodes for this station"}, status=404)
     
@@ -57,7 +59,7 @@ def pick_episode_api_view(request):
     })
 
 def random_episode_api_view(request):
-    episodes = Episode.objects.all()
+    episodes = Episode.objects.using('mysql').all()
     if not episodes.exists():
         return JsonResponse({"success": False, "message": "No episodes available"}, status=404)
     
