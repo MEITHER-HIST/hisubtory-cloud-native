@@ -166,7 +166,7 @@ else:
     CSRF_COOKIE_SECURE = False
     SECURE_SSL_REDIRECT = False
 
-CSRF_TRUSTED_ORIGINS = [
+CSRF_TRUSTED_ORIGINS = ["http://hisubtory-alb-1990322498.ap-northeast-2.elb.amazonaws.com", 
     "http://hisubtory-alb-1990322498.ap-northeast-2.elb.amazonaws.com",
     "http://localhost:5173",
     "http://127.0.0.1:5173",
