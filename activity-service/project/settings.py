@@ -9,9 +9,8 @@ load_dotenv(BASE_DIR / ".env", override=True)
 pymysql.version_info = (2, 2, 1, 'final', 0)
 pymysql.install_as_MySQLdb()
 
-# FINAL UNBREAKABLE PATCH - Hardcoded Fallbacks
-SECRET_KEY = 'django-insecure-ti-prtjm(d_p7ve!r(g&4&(=+*_vn*x+*3z^ge567i72tr-5)1'
-DEBUG = True
+SECRET_KEY = os.getenv('SECRET_KEY') or 'django-insecure-ti-prtjm(d_p7ve!r(g&4&(=+*_vn*x+*3z^ge567i72tr-5)1'
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
 ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
@@ -51,24 +50,24 @@ WSGI_APPLICATION = 'project.wsgi.application'
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.getenv("SB_DB_NAME", "postgres"),
-        "USER": os.getenv("SB_DB_USER", "postgres.jlvhwihvmivvihffhxse"),
-        "PASSWORD": "hisubtory1234",
-        "HOST": os.getenv("SB_DB_HOST", "aws-1-ap-northeast-2.pooler.supabase.com"),
-        "PORT": os.getenv("SB_DB_PORT", "5432"),
+        "NAME": os.getenv("SB_DB_NAME"),
+        "USER": os.getenv("SB_DB_USER"),
+        "PASSWORD": os.getenv("SB_DB_PASSWORD"),
+        "HOST": os.getenv("SB_DB_HOST"),
+        "PORT": os.getenv("SB_DB_PORT"),
     },
     "mysql": {
         "ENGINE": "django.db.backends.mysql",
-        "NAME": os.getenv("DB_NAME", "hisubtory_db"),
-        "USER": os.getenv("DB_USER", "admin"),
-        "PASSWORD": "8gEEJTwfFTMRhRFIMNrF",
-        "HOST": os.getenv("DB_HOST", "hisubtory-db.cnwkq8oe8jr5.ap-northeast-2.rds.amazonaws.com"),
-        "PORT": os.getenv("DB_PORT", "3306"),
+        "NAME": os.getenv("DB_NAME"),
+        "USER": os.getenv("DB_USER"),
+        "PASSWORD": os.getenv("DB_PASSWORD"),
+        "HOST": os.getenv("DB_HOST"),
+        "PORT": os.getenv("DB_PORT"),
     }
 }
 
 DATABASE_ROUTERS = ['project.router.DatabaseRouter']
-REDIS_HOST = os.getenv("REDIS_HOST", "hisubtory-redis.rkthpz.0001.apn2.cache.amazonaws.com")
+REDIS_HOST = os.getenv("REDIS_HOST")
 REDIS_PORT = os.getenv("REDIS_PORT", "6379")
 CACHES = {
     "default": {
