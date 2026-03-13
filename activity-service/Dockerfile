@@ -35,7 +35,6 @@ RUN chmod +x /usr/local/bin/docker-entrypoint.sh && \
     sed -i 's/\r$//' /usr/local/bin/docker-entrypoint.sh
 
 # 💡 설정 폴더 이름을 project로 통일
-RUN if [ -d "activity_config" ]; then mv activity_config project; fi
 
 # 5. 정적 파일 수집
 RUN SB_DB_PASSWORD=dummy SECRET_KEY=dummy python manage.py collectstatic --noinput || true
