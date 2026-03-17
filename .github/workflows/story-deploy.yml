@@ -5,7 +5,12 @@ on:
     branches: [ feat/do ]
     paths:
       - 'stories/**'
+      - 'subway/**'
+      - 'library/**'
       - 'story-service/**'
+      - 'seed_episodes.py'
+      - 'docker-entrypoint.sh'
+      - 'requirements.txt'
       - '.github/workflows/story-deploy.yml'
 
 env:

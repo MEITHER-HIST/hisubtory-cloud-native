@@ -24,7 +24,7 @@
     <!-- 컷 4개 + 캡션 -->
     {% for cut in cuts %}
         <div class="cut">
-            <img src="{{ cut.image.url }}" alt="컷 {{ forloop.counter }}">
+            <img src="{{ cut.image_url }}" alt="컷 {{ forloop.counter }}">
             {% if cut.caption %}
                 <p class="caption">{{ cut.caption }}</p>
             {% endif %}
