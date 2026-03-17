@@ -2,7 +2,7 @@
     "containerDefinitions": [
         {
             "name": "app",
-            "image": "714454205561.dkr.ecr.ap-northeast-2.amazonaws.com/hisubtory-web",
+            "image": "180618475875.dkr.ecr.ap-northeast-2.amazonaws.com/hisubtory-web",
             "cpu": 0,
             "portMappings": [
                 {
@@ -27,7 +27,7 @@
                 },
                 {
                     "name": "REDIS_URL",
-                    "value": "rediss://hisubtory-redis.rkthpz.0001.apn2.cache.amazonaws.com:6379/0"
+                    "value": "rediss://hisubtory-redis.gquniu.0001.apn2.cache.amazonaws.com:6379/0"
                 }
             ],
             "mountPoints": [],
@@ -44,8 +44,8 @@
         }
     ],
     "family": "hisubtory-web-task",
-    "taskRoleArn": "arn:aws:iam::714454205561:role/hisubtory-ecs-task-role",
-    "executionRoleArn": "arn:aws:iam::714454205561:role/hisubtory-ecs-task-execution-role",
+    "taskRoleArn": "arn:aws:iam::180618475875:role/hisubtory-ecs-task-role",
+    "executionRoleArn": "arn:aws:iam::180618475875:role/hisubtory-ecs-task-execution-role",
     "networkMode": "awsvpc",
     "volumes": [],
     "placementConstraints": [],
