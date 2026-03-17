@@ -45,24 +45,37 @@ class EpisodeDetailAPIView(APIView):
 class StationStoryView(APIView):
     permission_classes = [AllowAny]
     def get(self, request, station_identifier=None, *args, **kwargs):
-        # station_identifier can be ID or Name depending on how frontend calls it
-        if not station_identifier:
-            # Random episode if no station specified
-            episodes = Episode.objects.using('mysql').all()
-        else:
-            if station_identifier.isdigit():
-                episodes = Episode.objects.using('mysql').filter(webtoon__station_id=station_identifier)
-            else:
-                episodes = Episode.objects.using('mysql').filter(webtoon__station__station_name__contains=station_identifier)
+        # 1. 파라미터 수집 (URL 경로 또는 쿼리 스트링)
+        sid = station_identifier or request.query_params.get('station_id')
+        exclude_id = request.query_params.get('exclude')
 
+        # 2. 역 기반 필터링
+        if sid:
+            if str(sid).isdigit():
+                episodes = Episode.objects.using('mysql').filter(webtoon__station_id=sid)
+            else:
+                episodes = Episode.objects.using('mysql').filter(webtoon__station__station_name__contains=sid)
+        else:
+            # 역 정보가 없으면 전체에서 랜덤
+            episodes = Episode.objects.using('mysql').all()
+
+        # 3. 현재 에피소드 제외 로직
+        if exclude_id and str(exclude_id).isdigit():
+            episodes = episodes.exclude(episode_id=int(exclude_id))
+
+        # 4. 결과가 없으면 404 반환 (다른 역으로 넘어가지 않음)
         if not episodes.exists():
-            return Response({"success": False, "message": "No episodes found"}, status=404)
+            return Response({
+                "success": False, 
+                "message": "해당 역의 다른 에피소드가 없습니다."
+            }, status=404)
 
         episode = random.choice(list(episodes))
         return Response({
             "success": True, 
             "episode_id": episode.episode_id,
-            "station_id": episode.webtoon.station_id
+            "station_id": episode.webtoon.station_id,
+            "subtitle": episode.subtitle
         })
 
 class EpisodeCutListCreateView(ListCreateAPIView):
