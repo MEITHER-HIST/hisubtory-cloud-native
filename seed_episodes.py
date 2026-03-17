@@ -186,39 +186,62 @@ def seed():
 
     print(f"Found {len(stations)} stations. Seeding real episodes...")
 
+    # 숫자를 한글 서수로 변환하는 함수
+    def get_korean_ordinal(num):
+        ordinals = {1: "첫", 2: "두", 3: "세", 4: "네", 5: "다섯", 6: "여섯", 7: "일곱", 8: "여덟", 9: "아홉", 10: "열"}
+        if num in ordinals:
+            return ordinals[num]
+        return str(num)
+
     for station in stations:
         data = REAL_DATA.get(station.station_name)
         
         # 1. 웹툰 생성
-        webtoon, _ = Webtoon.objects.using('mysql').get_or_create(
-            station=station,
-            defaults={"title": f"{station.station_name}역 이야기"}
-        )
+        webtoon = Webtoon.objects.using('mysql').filter(station=station).first()
+        if not webtoon:
+            webtoon = Webtoon.objects.using('mysql').create(
+                station=station,
+                title=f"{station.station_name}역 이야기"
+            )
+        else:
+            Webtoon.objects.using('mysql').filter(station=station).exclude(pk=webtoon.pk).delete()
 
         # 2. 에피소드 생성
         if data:
             eid = data["episode_id"]
-            # 기존에 다른 ID로 생성된 에피소드가 있다면 삭제 (ID 충돌 방지)
+            ep_num = data.get("episode_num", 1) # 데이터에 있는 번호 사용, 없으면 1
+            new_subtitle = f"{station.station_name}역의 {get_korean_ordinal(ep_num)} 번째 이야기"
+            
             Episode.objects.using('mysql').filter(webtoon=webtoon).exclude(episode_id=eid).delete()
             
             episode, created = Episode.objects.using('mysql').get_or_create(
                 episode_id=eid,
                 defaults={
                     "webtoon": webtoon,
-                    "episode_num": 1,
-                    "subtitle": data["subtitle"]
+                    "episode_num": ep_num,
+                    "subtitle": new_subtitle
                 }
             )
             if not created:
                 episode.webtoon = webtoon
-                episode.subtitle = data["subtitle"]
+                episode.episode_num = ep_num
+                episode.subtitle = new_subtitle
                 episode.save(using='mysql')
 
             # 3. 컷 생성/업데이트
             # 기존 컷 삭제 후 재생성 (순서 보장)
             Cut.objects.using('mysql').filter(episode=episode).delete()
             for i, caption in enumerate(data["captions"], 1):
-                image_path = f"episodes/{eid}/{i}.png"
+                # 1~6번 에피소드(eid)의 경우 우리가 업로드한 S3 경로 사용
+                if eid <= 6:
+                    image_path = f"webtoons/{eid}/episodes/1/cuts/{i}.png"
+                    # 웹툰 썸네일도 첫 번째 컷으로 업데이트
+                    if i == 1:
+                        webtoon.thumbnail = image_path
+                        webtoon.save(using='mysql')
+                else:
+                    image_path = f"episodes/{eid}/{i}.png"
+                
                 Cut.objects.using('mysql').create(
                     episode=episode,
                     cut_order=i,
