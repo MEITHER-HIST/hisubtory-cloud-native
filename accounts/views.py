@@ -101,9 +101,9 @@ def get_user_history(request):
         ep = record.episode
         # 컷(Cut) 모델의 첫 이미지를 썸네일로 활용
         img_url = "https://via.placeholder.com/150"
-        if ep.cuts.exists():
-            first_cut = ep.cuts.first()
-            img_url = first_cut.image.url if hasattr(first_cut.image, 'url') else str(first_cut.image)
+        first_cut = ep.cuts.first()
+        if first_cut:
+            img_url = first_cut.image_url
 
         recent_data.append({
             "id": ep.episode_id,
@@ -119,9 +119,9 @@ def get_user_history(request):
     for bookmark in saved_qs:
         ep = bookmark.episode
         img_url = "https://via.placeholder.com/150"
-        if ep.cuts.exists():
-            first_cut = ep.cuts.first()
-            img_url = first_cut.image.url if hasattr(first_cut.image, 'url') else str(first_cut.image)
+        first_cut = ep.cuts.first()
+        if first_cut:
+            img_url = first_cut.image_url
 
         saved_data.append({
             "id": ep.episode_id,

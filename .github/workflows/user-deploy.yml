@@ -5,7 +5,12 @@ on:
     branches: [ feat/do ]
     paths:
       - 'accounts/**'
+      - 'subway/**'
+      - 'library/**'
       - 'user-service/**'
+      - 'seed_episodes.py'
+      - 'docker-entrypoint.sh'
+      - 'requirements.txt'
       - '.github/workflows/user-deploy.yml'
 
 env:
