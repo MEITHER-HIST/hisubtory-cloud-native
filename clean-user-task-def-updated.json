@@ -2,7 +2,7 @@
     "containerDefinitions": [
         {
             "name": "app",
-            "image": "714454205561.dkr.ecr.ap-northeast-2.amazonaws.com/hisubtory-user:0ada924c9b4d7447c5d70ada9d286ae285604b59",
+            "image": "180618475875.dkr.ecr.ap-northeast-2.amazonaws.com/hisubtory-user:latest",
             "cpu": 0,
             "portMappings": [
                 {
@@ -15,7 +15,7 @@
             "environment": [
                 {
                     "name": "REDIS_HOST",
-                    "value": "hisubtory-redis.rkthpz.0001.apn2.cache.amazonaws.com"
+                    "value": "hisubtory-redis.gquniu.0001.apn2.cache.amazonaws.com"
                 },
                 {
                     "name": "DB_PORT",
@@ -95,7 +95,7 @@
                 },
                 {
                     "name": "REDIS_URL",
-                    "value": "rediss://hisubtory-redis.rkthpz.0001.apn2.cache.amazonaws.com:6379/0"
+                    "value": "rediss://hisubtory-redis.gquniu.0001.apn2.cache.amazonaws.com:6379/0"
                 },
                 {
                     "name": "DEBUG",
@@ -116,8 +116,8 @@
         }
     ],
     "family": "hisubtory-user-task",
-    "taskRoleArn": "arn:aws:iam::714454205561:role/hisubtory-ecs-task-role",
-    "executionRoleArn": "arn:aws:iam::714454205561:role/hisubtory-ecs-task-execution-role",
+    "taskRoleArn": "arn:aws:iam::180618475875:role/hisubtory-ecs-task-role",
+    "executionRoleArn": "arn:aws:iam::180618475875:role/hisubtory-ecs-task-execution-role",
     "networkMode": "awsvpc",
     "volumes": [],
     "placementConstraints": [],
