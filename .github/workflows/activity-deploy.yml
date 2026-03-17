@@ -5,6 +5,11 @@ on:
     branches: [ feat/do ]
     paths:
       - 'activity-service/**'
+      - 'subway/**'
+      - 'library/**'
+      - 'seed_episodes.py'
+      - 'docker-entrypoint.sh'
+      - 'requirements.txt'
       - '.github/workflows/activity-deploy.yml'
 
 env:
