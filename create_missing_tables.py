@@ -1,11 +1,13 @@
+import os
 import pymysql
 
 # Database connection details
 DB_CONFIG = {
-    'host': 'hisubtory-db.cnwkq8oe8jr5.ap-northeast-2.rds.amazonaws.com',
-    'user': 'admin',
-    'password': '8gEEJTwfFTMRhRFIMNrF',
-    'db': 'hisubtory_db',
+    'host': os.getenv('DB_HOST', '127.0.0.1'),
+    'port': int(os.getenv('DB_PORT', 3307)),
+    'user': os.getenv('DB_USER', 'admin'),
+    'password': os.getenv('DB_PASSWORD', '8gEEJTwfFTMRhRFIMNrF'),
+    'db': os.getenv('DB_NAME', 'hisubtory_db'),
     'charset': 'utf8mb4',
     'cursorclass': pymysql.cursors.DictCursor
 }

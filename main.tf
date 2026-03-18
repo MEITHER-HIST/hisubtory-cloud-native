@@ -89,6 +89,14 @@ module "apigateway" {
 #   alb_arn      = module.alb.alb_arn
 # }
 
+module "bastion" {
+  source            = "./modules/bastion"
+  public_subnet_ids = module.vpc.public_subnet_ids
+  bastion_sg_id     = module.sg.bastion_sg_id
+  key_name          = var.key_name
+  project_name      = var.project_name
+}
+
 module "monitoring" {
   source             = "./modules/monitoring_tf"
   project_name       = var.project_name

@@ -40,7 +40,7 @@ resource "aws_instance" "bastion" {
   ami           = data.aws_ami.ubuntu.id
   instance_type = "t3.micro"
 
-  subnet_id = var.public_subnet_id
+  subnet_id = var.public_subnet_ids[0]
   key_name  = var.key_name
 
   vpc_security_group_ids = [var.bastion_sg_id]

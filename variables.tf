@@ -15,7 +15,7 @@ variable "instance_type" {
 
 variable "key_name" {
   type    = string
-  default = "his-key"
+  default = "his_v2_key"
 }
 
 variable "db_username" {

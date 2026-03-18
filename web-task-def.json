@@ -1,9 +1,9 @@
 {
-    "taskDefinitionArn": "arn:aws:ecs:ap-northeast-2:714454205561:task-definition/hisubtory-web-task:1",
+    "taskDefinitionArn": "arn:aws:ecs:ap-northeast-2:latest:task-definition/hisubtory-web-task:1",
     "containerDefinitions": [
         {
             "name": "app",
-            "image": "714454205561.dkr.ecr.ap-northeast-2.amazonaws.com/hisubtory-web",
+            "image": "180618475875.dkr.ecr.ap-northeast-2.amazonaws.com/hisubtory-web",
             "cpu": 0,
             "portMappings": [
                 {
@@ -28,8 +28,8 @@
         }
     ],
     "family": "hisubtory-web-task",
-    "taskRoleArn": "arn:aws:iam::714454205561:role/hisubtory-ecs-task-role",
-    "executionRoleArn": "arn:aws:iam::714454205561:role/hisubtory-ecs-task-execution-role",
+    "taskRoleArn": "arn:aws:iam::180618475875:role/hisubtory-ecs-task-role",
+    "executionRoleArn": "arn:aws:iam::180618475875:role/hisubtory-ecs-task-execution-role",
     "networkMode": "awsvpc",
     "revision": 1,
     "volumes": [],
@@ -72,5 +72,5 @@
     "cpu": "256",
     "memory": "512",
     "registeredAt": "2026-03-10T17:21:08.336000+09:00",
-    "registeredBy": "arn:aws:iam::714454205561:user/hisubtory"
+    "registeredBy": "arn:aws:iam::latest:user/hisubtory"
 }

@@ -79,7 +79,7 @@
                 },
                 {
                     "name": "AWS_STORAGE_BUCKET_NAME",
-                    "value": "hisubtory-media-bucket"
+                    "value": "hisubtory-media-bucket-v2"
                 },
                 {
                     "name": "DB_PASSWORD",

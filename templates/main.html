@@ -66,11 +66,16 @@
     <!-- Story Modal -->
     <div id="story-modal" onclick="closeModal(event)">
       <div class="modal-content" onclick="event.stopPropagation()">
-        <button onclick="closeModal()" class="absolute top-4 right-4 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 font-bold w-10 h-10">X</button>
+        <button onclick="closeModal()" class="absolute top-4 right-4 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 font-bold w-10 h-10 z-10">X</button>
         <div id="story-viewer" class="p-0">
-          <div id="story-header" class="p-6 border-b">
-            <h2 id="modal-title" class="text-2xl font-bold">제목</h2>
-            <p id="modal-subtitle" class="text-gray-600">부제목</p>
+          <div id="story-header" class="p-6 border-b flex justify-between items-center">
+            <div>
+              <h2 id="modal-title" class="text-2xl font-bold">제목</h2>
+              <p id="modal-subtitle" class="text-gray-600">부제목</p>
+            </div>
+            <button onclick="fetchAnotherEpisode()" class="px-4 py-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors text-sm font-semibold">
+              다른 이야기 보기
+            </button>
           </div>
           <div id="cuts-container" class="space-y-0 p-0">
             <!-- Cuts will be loaded here -->
@@ -80,6 +85,8 @@
     </div>
 
     <script>
+      let currentStationId = null;
+      let currentEpisodeId = null;
       const stationsData = ["대화","주엽","정발산","마두","백석","대곡","화정","원당","원흥","삼송","지축","구파발","연신내","불광","녹번","홍제","무악재","독립문","경복궁","안국","종로3가","을지로3가","충무로","동대입구","약수","금호","옥수","압구정","신사","잠원","고속터미널","교대","남부터미널","양재","매봉","도곡","대치","학여울","대청","일원","수서","가락시장","경찰병원","오금"];
       
       function renderStations() {
@@ -104,8 +111,9 @@
       }
 
       async function fetchStoryByStation(stationId) {
+        currentStationId = stationId;
         try {
-          const resp = await fetch(`/api/pages/v1/episode/pick/?station_id=${stationId}`);
+          const resp = await fetch(`/api/stories/v1/episode/random/?station_id=${stationId}`);
           const data = await resp.json();
           if (data.success) {
             loadEpisode(data.episode_id);
@@ -115,7 +123,21 @@
         } catch (e) { console.error(e); }
       }
 
+      async function fetchAnotherEpisode() {
+        if (!currentStationId) return;
+        try {
+          const resp = await fetch(`/api/stories/v1/episode/random/?station_id=${currentStationId}&exclude=${currentEpisodeId}`);
+          const data = await resp.json();
+          if (data.success) {
+            loadEpisode(data.episode_id);
+          } else {
+            alert("더 이상 다른 이야기가 없습니다.");
+          }
+        } catch (e) { console.error(e); }
+      }
+
       async function loadEpisode(episodeId) {
+        currentEpisodeId = episodeId;
         try {
           const resp = await fetch(`/api/stories/episode/detail/?episode_id=${episodeId}`);
           const data = await resp.json();
@@ -130,15 +152,21 @@
               </div>
             `).join('');
             document.getElementById('story-modal').style.display = 'flex';
+            document.getElementById('story-modal').scrollTop = 0;
           }
         } catch (e) { console.error(e); }
       }
 
       function closeModal() { document.getElementById('story-modal').style.display = 'none'; }
       function pickRandom() {
-        fetch('/api/pages/v1/episode/random/')
+        fetch('/api/stories/v1/episode/random/')
           .then(r => r.json())
-          .then(d => { if(d.success) loadEpisode(d.episode_id); });
+          .then(d => { 
+            if(d.success) {
+              currentStationId = d.station_id;
+              loadEpisode(d.episode_id);
+            }
+          });
       }
 
       renderStations();

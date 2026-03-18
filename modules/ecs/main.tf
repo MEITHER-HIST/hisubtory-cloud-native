@@ -124,6 +124,10 @@ resource "aws_ecs_task_definition" "user" {
         { name = "SB_DB_PASSWORD", value = var.sb_db_password },
         { name = "SB_DB_HOST", value = var.sb_db_host },
         { name = "SB_DB_PORT", value = var.sb_db_port },
+        { name = "AWS_ACCESS_KEY_ID", value = var.aws_access_key },
+        { name = "AWS_SECRET_ACCESS_KEY", value = var.aws_secret_key },
+        { name = "AWS_STORAGE_BUCKET_NAME", value = var.s3_bucket_name },
+        { name = "AWS_S3_REGION_NAME", value = var.aws_region },
         { name = "DEBUG", value = "True" }
       ]
     }
@@ -168,6 +172,10 @@ resource "aws_ecs_task_definition" "story" {
         { name = "SB_DB_PASSWORD", value = var.sb_db_password },
         { name = "SB_DB_HOST", value = var.sb_db_host },
         { name = "SB_DB_PORT", value = var.sb_db_port },
+        { name = "AWS_ACCESS_KEY_ID", value = var.aws_access_key },
+        { name = "AWS_SECRET_ACCESS_KEY", value = var.aws_secret_key },
+        { name = "AWS_STORAGE_BUCKET_NAME", value = var.s3_bucket_name },
+        { name = "AWS_S3_REGION_NAME", value = var.aws_region },
         { name = "DEBUG", value = "True" }
       ]
     }
@@ -212,6 +220,10 @@ resource "aws_ecs_task_definition" "activity" {
         { name = "SB_DB_PASSWORD", value = var.sb_db_password },
         { name = "SB_DB_HOST", value = var.sb_db_host },
         { name = "SB_DB_PORT", value = var.sb_db_port },
+        { name = "AWS_ACCESS_KEY_ID", value = var.aws_access_key },
+        { name = "AWS_SECRET_ACCESS_KEY", value = var.aws_secret_key },
+        { name = "AWS_STORAGE_BUCKET_NAME", value = var.s3_bucket_name },
+        { name = "AWS_S3_REGION_NAME", value = var.aws_region },
         { name = "DEBUG", value = "True" }
       ]
     }

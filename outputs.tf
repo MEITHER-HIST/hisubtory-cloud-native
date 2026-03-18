@@ -25,3 +25,8 @@ output "ecs_task_role_arn" {
 output "rds_endpoint" {
   value = module.rds.db_endpoint
 }
+
+output "redis_endpoint" {
+  value = module.redis.redis_endpoint
+}
+output "bastion_public_ip" { value = module.bastion.bastion_public_ip }
