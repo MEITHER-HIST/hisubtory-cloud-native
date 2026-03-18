@@ -10,25 +10,35 @@ from botocore.client import Config
 from typing import Any, Dict
 
 def get_presigned_url(path, expires_in=600):
-    """S3 경로를 받아 보안 주소(Presigned URL)를 생성하는 공통 함수"""
+    """S3 경로를 받아 보안 주소(Presigned URL) 또는 CloudFront URL을 생성하는 공통 함수"""
     if not path: return ""
     path_str = str(path)
     if path_str.startswith('http'): return path_str
     
+    # ✅ CloudFront 커스텀 도메인이 있으면 바로 조립해서 리턴
+    custom_domain = getattr(settings, "AWS_S3_CUSTOM_DOMAIN", None)
+    if custom_domain:
+        return f"https://{custom_domain}/media/{path_str}"
+    
     try:
+        region = getattr(settings, "AWS_S3_REGION_NAME", "ap-northeast-2")
         s3 = boto3.client("s3", 
-                          region_name=settings.AWS_S3_REGION_NAME,
-                          aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
-                          aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
-                          endpoint_url=f"https://s3.{settings.AWS_S3_REGION_NAME}.amazonaws.com",
+                          region_name=region,
+                          aws_access_key_id=getattr(settings, "AWS_ACCESS_KEY_ID", ""),
+                          aws_secret_access_key=getattr(settings, "AWS_SECRET_ACCESS_KEY", ""),
+                          endpoint_url=f"https://s3.{region}.amazonaws.com",
                           config=Config(signature_version="s3v4"))
         
+        # S3 key에도 media/ 접두사 추가
         return s3.generate_presigned_url(ClientMethod="get_object",
-            Params={"Bucket": settings.AWS_STORAGE_BUCKET_NAME, "Key": path_str},
+            Params={"Bucket": getattr(settings, "AWS_STORAGE_BUCKET_NAME", "hisubtory-media-bucket"), "Key": f"media/{path_str}"},
             ExpiresIn=expires_in)
     except Exception as e:
         print(f"[ERROR] Presigned URL generation failed: {str(e)}")
-        return ""
+        # 최종 실패 시 S3 직접 링크 시도
+        bucket = getattr(settings, "AWS_STORAGE_BUCKET_NAME", "hisubtory-media-bucket")
+        region = getattr(settings, "AWS_S3_REGION_NAME", "ap-northeast-2")
+        return f"https://{bucket}.s3.{region}.amazonaws.com/media/{path_str}"
 
 def _make_item_from_episode(episode: Any) -> Dict[str, Any]:
     webtoon = getattr(episode, "webtoon", None)
