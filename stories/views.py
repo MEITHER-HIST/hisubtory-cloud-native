@@ -49,25 +49,34 @@ class StationStoryView(APIView):
         sid = station_identifier or request.query_params.get('station_id')
         exclude_id = request.query_params.get('exclude')
 
-        # 2. 역 기반 필터링
-        if sid:
+        # 2. 에피소드 필터링 (가급적 같은 웹툰의 다른 에피소드 우선)
+        if exclude_id and str(exclude_id).isdigit():
+            current_episode = Episode.objects.using('mysql').filter(episode_id=int(exclude_id)).first()
+            if current_episode:
+                # 같은 웹툰의 다른 에피소드들
+                episodes = Episode.objects.using('mysql').filter(webtoon=current_episode.webtoon).exclude(episode_id=int(exclude_id))
+                
+                # 같은 웹툰에 다른 에피소드가 없으면 같은 역의 다른 웹툰 에피소드들
+                if not episodes.exists():
+                    episodes = Episode.objects.using('mysql').filter(webtoon__station_id=current_episode.webtoon.station_id).exclude(episode_id=int(exclude_id))
+            else:
+                episodes = Episode.objects.using('mysql').all()
+        elif sid:
             if str(sid).isdigit():
                 episodes = Episode.objects.using('mysql').filter(webtoon__station_id=sid)
             else:
                 episodes = Episode.objects.using('mysql').filter(webtoon__station__station_name__contains=sid)
         else:
-            # 역 정보가 없으면 전체에서 랜덤
             episodes = Episode.objects.using('mysql').all()
 
-        # 3. 현재 에피소드 제외 로직
-        if exclude_id and str(exclude_id).isdigit():
-            episodes = episodes.exclude(episode_id=int(exclude_id))
+        # 3. 결과가 없으면 전체에서 랜덤 (Fallback)
+        if not episodes.exists():
+            episodes = Episode.objects.using('mysql').all()
 
-        # 4. 결과가 없으면 404 반환 (다른 역으로 넘어가지 않음)
         if not episodes.exists():
             return Response({
                 "success": False, 
-                "message": "해당 역의 다른 에피소드가 없습니다."
+                "message": "에피소드가 없습니다."
             }, status=404)
 
         episode = random.choice(list(episodes))

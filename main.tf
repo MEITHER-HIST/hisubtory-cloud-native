@@ -7,7 +7,7 @@ module "vpc" {
 module "sg" {
   source       = "./modules/sg"
   vpc_id       = module.vpc.vpc_id
-  my_ip        = "112.221.198.140/32"
+  my_ip        = "210.124.140.19/32"
   project_name = var.project_name
 }
 

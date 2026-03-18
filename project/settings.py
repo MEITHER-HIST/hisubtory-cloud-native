@@ -161,7 +161,9 @@ else:
 
 CSRF_TRUSTED_ORIGINS = [
     "http://hisub-alb-1329951961.ap-northeast-2.elb.amazonaws.com",
+    "https://hisub-alb-1329951961.ap-northeast-2.elb.amazonaws.com",
     "http://hisubtory-alb-913594763.ap-northeast-2.elb.amazonaws.com",
+    "https://hisubtory-alb-913594763.ap-northeast-2.elb.amazonaws.com",
     "http://localhost:5173",
     "http://127.0.0.1:5173",
     "http://localhost:8000",

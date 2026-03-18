@@ -35,6 +35,7 @@ def signup_view(request):
 # --- [2] 로그인 API (JSON/Form 공용) ---
 
 @api_view(['POST'])
+@authentication_classes([UnsafeSessionAuthentication])
 @permission_classes([AllowAny])
 def login_view(request):
     # 🔍 1. 서버 터미널에 들어온 원본 데이터를 통째로 찍어봅니다.

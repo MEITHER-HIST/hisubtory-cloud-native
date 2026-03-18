@@ -9,3 +9,8 @@ node_modules/
 .vscode/
 __pycache__/
 *.pyc
+venv/
+processed-*.json
+*.pem
+*.sql
+.env

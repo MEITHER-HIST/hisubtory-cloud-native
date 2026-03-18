@@ -23,6 +23,7 @@ urlpatterns = [
     path("api/pages/", include("pages.urls")),
     path("api/stories/", include("stories.urls")),
     path("api/library/", include("library.urls")),
+    path("api/accounts/", include("accounts.urls")),
 
     # 3. HTML/Legacy 경로 (기존 템플릿 페이지)
     path("accounts/", include("accounts.urls")),

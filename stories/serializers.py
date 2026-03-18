@@ -10,8 +10,8 @@ def get_presigned_url(path, expires_in=600):
     path_str = str(path)
     if path_str.startswith('http'): return path_str
     
-    # media/ 접두사 중복 방지
-    clean_path = path_str if path_str.startswith('media/') else f"media/{path_str}"
+    # media/ 접두사 제거 (S3 버킷 루트에 데이터가 직접 존재함)
+    clean_path = path_str
     
     try:
         region = getattr(settings, "AWS_S3_REGION_NAME", "ap-northeast-2")
