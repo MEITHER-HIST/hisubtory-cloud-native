@@ -14,8 +14,8 @@ python manage.py seed_subway_integrated || echo "Subway seeding skipped or faile
 echo "Checking episode seed state..."
 python seed_episodes.py || echo "Episode seeding skipped or failed."
 
-echo "Restoring database from restore.sql..."
-python restore_db.py || echo "Database restore failed, continuing..."
+# echo "Restoring database from restore.sql..."
+# python restore_db.py || echo "Database restore failed, continuing..."
 
 echo "Starting Gunicorn..."
 # 💡 --preload를 빼서 연결 지연 시에도 부팅이 멈추지 않게 합니다.

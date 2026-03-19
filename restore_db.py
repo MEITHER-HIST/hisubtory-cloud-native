@@ -6,7 +6,7 @@ import sqlparse
 DB_CONFIG = {
     'host': os.getenv('DB_HOST', '127.0.0.1'),
     'user': os.getenv('DB_USER', 'admin'),
-    'password': os.getenv('DB_PASSWORD', '8gEEJTwfFTMRhRFIMNrF'),
+    'password': os.getenv('DB_PASSWORD'),
     'database': os.getenv('DB_NAME', 'hisubtory_db'),
     'port': int(os.getenv('DB_PORT', 3307)),
     'charset': 'utf8mb4'
