@@ -4,14 +4,11 @@ import boto3
 from botocore.client import Config
 from .models import Webtoon, Episode, Cut
 
-def get_presigned_url(path, expires_in=600):
+def get_presigned_url(path, expires_in=3600):
     """S3 경로를 받아 보안 주소(Presigned URL)를 생성하는 공통 함수"""
     if not path: return None
     path_str = str(path)
     if path_str.startswith('http'): return path_str
-    
-    # media/ 접두사 제거 (S3 버킷 루트에 데이터가 직접 존재함)
-    clean_path = path_str
     
     try:
         region = getattr(settings, "AWS_S3_REGION_NAME", "ap-northeast-2")
@@ -25,13 +22,14 @@ def get_presigned_url(path, expires_in=600):
                           config=Config(signature_version="s3v4"))
         
         return s3.generate_presigned_url(ClientMethod="get_object",
-            Params={"Bucket": bucket, "Key": clean_path},
+            Params={"Bucket": bucket, "Key": path_str},
             ExpiresIn=expires_in)
-    except:
+    except Exception as e:
+        print(f"[ERROR] S3 URL Generation fail: {str(e)}")
         # 최종 실패 시 S3 직접 링크 시도
         bucket = getattr(settings, "AWS_STORAGE_BUCKET_NAME", "hisubtory-media-bucket-v2")
         region = getattr(settings, "AWS_S3_REGION_NAME", "ap-northeast-2")
-        return f"https://{bucket}.s3.{region}.amazonaws.com/{clean_path}"
+        return f"https://{bucket}.s3.{region}.amazonaws.com/{path_str}"
 
 class CutSerializer(serializers.ModelSerializer):
     image_url = serializers.SerializerMethodField()

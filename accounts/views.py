@@ -117,6 +117,7 @@ def get_user_history(request):
             "title": ep.subtitle,
             "stationName": ep.webtoon.station.station_name if ep.webtoon and ep.webtoon.station else "알 수 없음",
             "imageUrl": img_url,
+            "content": ep.subtitle, # 💡 content 필드 추가 (HistoryItem 인터페이스 대응)
             "viewed_at": record.viewed_at
         })
 
@@ -138,6 +139,7 @@ def get_user_history(request):
             "title": ep.subtitle,
             "stationName": ep.webtoon.station.station_name if ep.webtoon and ep.webtoon.station else "알 수 없음",
             "imageUrl": img_url,
+            "content": ep.subtitle
         })
 
     return Response({

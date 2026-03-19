@@ -14,28 +14,31 @@ import random
 class EpisodeDetailAPIView(APIView):
     permission_classes = [AllowAny]
     def get(self, request, *args, **kwargs):
-        episode_id = request.query_params.get('episode_id')
-        if not episode_id:
-            episode_id = kwargs.get('episode_id')
-            
+        episode_id = request.query_params.get('episode_id') or kwargs.get('episode_id')
         if not episode_id:
             return Response({"success": False, "message": "episode_id required"}, status=400)
             
         episode = get_object_or_404(Episode.objects.using('mysql'), episode_id=episode_id)
         
-        # 시청 기록 저장 (default DB)
+        # 💡 시청 기록 저장 로직 강화
         if request.user.is_authenticated:
-            UserViewedEpisode.objects.using('default').get_or_create(user=request.user, episode_id=episode_id)
+            try:
+                # 컷 데이터가 하나라도 있어야 '제대로 된 에피소드'로 간주하여 기록
+                UserViewedEpisode.objects.using('default').update_or_create(
+                    user=request.user, 
+                    episode_id=episode_id,
+                    defaults={'viewed_at': timezone.now()}
+                )
+            except Exception as e:
+                print(f"[ERROR] Failed to save view history: {str(e)}")
 
         serializer = EpisodeSerializer(episode)
         data = serializer.data
 
-        # 현재 사용자의 북마크 여부 확인 (default DB)
         is_bookmarked = False
         if request.user.is_authenticated:
             is_bookmarked = Bookmark.objects.using('default').filter(user=request.user, episode_id=episode_id).exists()
 
-        # 💡 cuts 데이터를 명시적으로 포함시킵니다.
         return Response({
             "success": True,
             "episode": data,
@@ -46,39 +49,30 @@ class EpisodeDetailAPIView(APIView):
 class StationStoryView(APIView):
     permission_classes = [AllowAny]
     def get(self, request, station_identifier=None, *args, **kwargs):
-        # 1. 파라미터 수집 (URL 경로 또는 쿼리 스트링)
+        # 💡 station_id 필터링 강화
         sid = station_identifier or request.query_params.get('station_id')
         exclude_id = request.query_params.get('exclude')
 
-        # 2. 에피소드 필터링 (가급적 같은 웹툰의 다른 에피소드 우선)
-        if exclude_id and str(exclude_id).isdigit():
-            current_episode = Episode.objects.using('mysql').filter(episode_id=int(exclude_id)).first()
-            if current_episode:
-                # 같은 웹툰의 다른 에피소드들
-                episodes = Episode.objects.using('mysql').filter(webtoon=current_episode.webtoon).exclude(episode_id=int(exclude_id))
-                
-                # 같은 웹툰에 다른 에피소드가 없으면 같은 역의 다른 웹툰 에피소드들
-                if not episodes.exists():
-                    episodes = Episode.objects.using('mysql').filter(webtoon__station_id=current_episode.webtoon.station_id).exclude(episode_id=int(exclude_id))
-            else:
-                episodes = Episode.objects.using('mysql').all()
-        elif sid:
-            if str(sid).isdigit():
-                episodes = Episode.objects.using('mysql').filter(webtoon__station_id=sid)
-            else:
+        if sid:
+            # 1. 해당 역에 직접 연결된 웹툰의 에피소드들 찾기
+            episodes = Episode.objects.using('mysql').filter(webtoon__station_id=sid)
+            
+            # 2. 만약 해당 역에 에피소드가 없으면 이름으로 다시 검색
+            if not episodes.exists() and not str(sid).isdigit():
                 episodes = Episode.objects.using('mysql').filter(webtoon__station__station_name__contains=sid)
+            
+            # 3. 제외할 ID가 있다면 제외
+            if exclude_id and str(exclude_id).isdigit():
+                episodes = episodes.exclude(episode_id=int(exclude_id))
         else:
             episodes = Episode.objects.using('mysql').all()
 
-        # 3. 결과가 없으면 전체에서 랜덤 (Fallback)
         if not episodes.exists():
+            # Fallback: 아무거나 하나 (데이터가 없는 경우 방지)
             episodes = Episode.objects.using('mysql').all()
 
         if not episodes.exists():
-            return Response({
-                "success": False, 
-                "message": "에피소드가 없습니다."
-            }, status=404)
+            return Response({"success": False, "message": "에피소드가 없습니다."}, status=404)
 
         episode = random.choice(list(episodes))
         return Response({
