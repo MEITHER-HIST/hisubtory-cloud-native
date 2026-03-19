@@ -12,6 +12,7 @@ def health(request):
 urlpatterns = [
     path('health/', lambda r: HttpResponse('OK', status=200)),
     path("api/stories/", include("stories.urls")),
+    path("api/stories/library/", include("library.urls")),
     path("api/library/", include("library.urls")),
     path("library/", include("library.urls")),
     path("", include("stories.urls")),
