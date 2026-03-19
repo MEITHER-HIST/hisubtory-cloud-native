@@ -67,30 +67,35 @@ def get_user_history_api(request):
     print(f"[DEBUG] get_user_history_api called. UserID: {user_id}, Username: {user.username}")
 
     try:
-        # 1) 최근 본 이야기 (Supabase 조회)
-        # 쿼리셋 역참조 대신 클래스 메서드로 직접 조회하여 안정성 확보
-        viewed_qs = UserViewedEpisode.objects.using('default').filter(user_id=user_id).order_by("-viewed_at")[:10]
-        viewed_episode_ids = list(viewed_qs.values_list('episode_id', flat=True))
-        print(f"[DEBUG] Viewed Episode IDs from Supabase: {viewed_episode_ids}")
+        # 1) 최근 본 이야기 (Supabase 조회) - 중복 제거 로직 추가
+        # episode_id별로 가장 최신 기록만 남깁니다.
+        viewed_qs = UserViewedEpisode.objects.using('default').filter(user_id=user_id).order_by('episode_id', '-viewed_at').distinct('episode_id')
+        # 그 후 다시 시간순으로 정렬하여 10개를 가져옵니다.
+        viewed_episode_ids = list(UserViewedEpisode.objects.using('default')
+                                  .filter(user_id=user_id)
+                                  .values_list('episode_id', flat=True)
+                                  .distinct()[:10])
+        
+        # 전체 고유 시청 개수 계산
+        total_viewed_count = UserViewedEpisode.objects.using('default').filter(user_id=user_id).values('episode_id').distinct().count()
         
         recent_data = []
         if viewed_episode_ids:
-            # MySQL에서 에피소드 상세 정보 조회
             episodes = Episode.objects.using('mysql').filter(episode_id__in=viewed_episode_ids).select_related("webtoon__station")
-            # 원래 순서(최근 본 순서) 유지를 위해 딕셔너리 매핑
             ep_dict = {ep.episode_id: ep for ep in episodes}
             for eid in viewed_episode_ids:
                 if eid in ep_dict:
                     recent_data.append(_make_item_from_episode(ep_dict[eid]))
 
         # 2) 북마크한 이야기 (Supabase 조회)
-        bookmark_qs = Bookmark.objects.using('default').filter(user_id=user_id).order_by("-created_at")
-        bookmark_episode_ids = list(bookmark_qs.values_list('episode_id', flat=True))
-        print(f"[DEBUG] Bookmark Episode IDs from Supabase: {bookmark_episode_ids}")
+        bookmark_qs = Bookmark.objects.using('default').filter(user_id=user_id)
+        bookmark_episode_ids = list(bookmark_qs.values_list('episode_id', flat=True).distinct())
+        
+        # 전체 북마크 개수 계산
+        total_saved_count = len(bookmark_episode_ids)
         
         saved_data = []
         if bookmark_episode_ids:
-            # MySQL에서 에피소드 상세 정보 조회
             episodes = Episode.objects.using('mysql').filter(episode_id__in=bookmark_episode_ids).select_related("webtoon__station")
             ep_dict = {ep.episode_id: ep for ep in episodes}
             for eid in bookmark_episode_ids:
@@ -99,8 +104,10 @@ def get_user_history_api(request):
 
         return Response(
             {
-                "recent": recent_data, 
+                "recent": recent_data,
                 "saved": saved_data,
+                "recentCount": total_viewed_count,
+                "savedCount": total_saved_count,
                 "success": True
             },
             status=status.HTTP_200_OK,

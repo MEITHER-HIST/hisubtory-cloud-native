@@ -19,6 +19,7 @@ export function MyPage({ user, onBack, onEpisodeClick }: MyPageProps) {
   const [activeTab, setActiveTab] = useState<'recent' | 'saved'>('recent');
   const [recentStories, setRecentStories] = useState<HistoryItem[]>([]);
   const [myStories, setMyStories] = useState<HistoryItem[]>([]);
+  const [counts, setCounts] = useState({ recent: 0, saved: 0 });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -31,6 +32,10 @@ export function MyPage({ user, onBack, onEpisodeClick }: MyPageProps) {
         if (res.ok) {
           setRecentStories(data.recent || []);
           setMyStories(data.saved || []);
+          setCounts({
+            recent: data.recentCount || 0,
+            saved: data.savedCount || 0
+          });
         }
       } catch (error) {
         console.error("활동 기록 로드 실패:", error);
@@ -115,11 +120,11 @@ export function MyPage({ user, onBack, onEpisodeClick }: MyPageProps) {
           <div className="flex flex-wrap gap-4">
             <div className="flex items-center gap-2 bg-green-50 px-4 py-2 rounded-xl border border-green-100">
               <Check className="w-5 h-5 text-green-600" />
-              <span className="text-gray-700 font-bold">시청 완료: {recentStories.length}</span>
+              <span className="text-gray-700 font-bold">시청 완료: {counts.recent}</span>
             </div>
             <div className="flex items-center gap-2 bg-blue-50 px-4 py-2 rounded-xl border border-blue-100">
               <Bookmark className="w-5 h-5 text-blue-600" />
-              <span className="text-gray-700 font-bold">내 보관함: {myStories.length}</span>
+              <span className="text-gray-700 font-bold">내 보관함: {counts.saved}</span>
             </div>
           </div>
         </div>
