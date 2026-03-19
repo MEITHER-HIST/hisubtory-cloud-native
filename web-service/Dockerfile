@@ -10,8 +10,8 @@ RUN npm run build
 
 # Stage 2: Serve
 FROM nginx:stable-alpine
-# Vite 빌드 결과물(dist)을 Nginx 경로로 복사
-COPY --from=build /app/dist /usr/share/nginx/html
+# Vite 빌드 결과물(build)을 Nginx 경로로 복사
+COPY --from=build /app/build /usr/share/nginx/html
 # Nginx 설정 파일 복사
 COPY nginx/default.conf /etc/nginx/conf.d/default.conf
 EXPOSE 80
