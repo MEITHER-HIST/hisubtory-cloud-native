@@ -9,6 +9,7 @@ from rest_framework.permissions import AllowAny
 from .models import Webtoon, Episode, Cut
 from .serializers import WebtoonSerializer, EpisodeSerializer, CutSerializer
 from library.models import Bookmark, UserViewedEpisode
+from django.utils import timezone
 import random
 
 class EpisodeDetailAPIView(APIView):
