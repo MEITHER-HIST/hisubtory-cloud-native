@@ -122,3 +122,32 @@ def signup_api_view(request):
         
         return JsonResponse({"success": False, "message": friendly_msg}, status=400)
 
+@require_GET
+def me_api_view(request):
+    """현재 로그인 사용자 정보 확인"""
+    if request.user.is_authenticated:
+        return JsonResponse({
+            "success": True, 
+            "is_authenticated": True, 
+            "username": request.user.username,
+            "email": request.user.email,
+            "id": request.user.id
+        })
+    return JsonResponse({"success": False, "is_authenticated": False}, status=401)
+
+@csrf_exempt
+@require_POST
+def logout_api_view(request):
+    """로그아웃 처리 (장고 및 Supabase 세션 모두 종료)"""
+    try:
+        # 장고 세션 로그아웃
+        logout(request)
+        # Supabase 로그아웃 (선택 사항)
+        if supabase:
+            supabase.auth.sign_out()
+            
+        return JsonResponse({"success": True, "message": "성공적으로 로그아웃되었습니다."})
+    except Exception as e:
+        return JsonResponse({"success": False, "message": f"로그아웃 중 오류 발생: {str(e)}"}, status=500)
+
+
