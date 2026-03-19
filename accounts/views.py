@@ -96,45 +96,50 @@ from stories.serializers import get_presigned_url
 def get_user_history(request):
     """사용자가 본 에피소드와 북마크한 목록을 반환"""
     user = request.user
-    
-    # 최근 본 에피소드 (N:1 관계 추적)
-    viewed_qs = UserViewedEpisode.objects.filter(user=user).select_related('episode__webtoon__station').order_by('-viewed_at')[:10]
+
+    # 최근 본 에피소드
+    viewed_qs = UserViewedEpisode.objects.filter(user=user).order_by('-viewed_at')[:10]
     recent_data = []
     for record in viewed_qs:
-        ep = record.episode
-        # 컷(Cut) 모델의 첫 이미지를 썸네일로 활용
+        # 💡 mysql DB에서 에피소드 정보를 명시적으로 가져옵니다.
+        from stories.models import Episode, Cut
+        ep = Episode.objects.using('mysql').filter(episode_id=record.episode_id).first()
+        if not ep: continue
+
         img_url = "https://via.placeholder.com/150"
-        first_cut = ep.cuts.first()
+        # 💡 첫 번째 컷의 이미지를 이야기 페이지와 동일하게 S3 주소로 변환
+        first_cut = Cut.objects.using('mysql').filter(episode_id=ep.episode_id).order_by('cut_order').first()
         if first_cut:
-            # ✅ S3 보안 주소로 변환하여 전달
             img_url = get_presigned_url(first_cut.image)
 
         recent_data.append({
             "id": ep.episode_id,
             "title": ep.subtitle,
-            "stationId": ep.webtoon.station.station_name,
+            "stationId": ep.webtoon.station.station_name if ep.webtoon and ep.webtoon.station else "알 수 없음",
             "imageUrl": img_url,
             "viewed_at": record.viewed_at
         })
 
     # 저장한 북마크 목록
-    saved_qs = Bookmark.objects.filter(user=user).select_related('episode__webtoon__station').order_by('-created_at')
+    saved_qs = Bookmark.objects.filter(user=user).order_by('-created_at')
     saved_data = []
     for bookmark in saved_qs:
-        ep = bookmark.episode
+        from stories.models import Episode, Cut
+        ep = Episode.objects.using('mysql').filter(episode_id=bookmark.episode_id).first()
+        if not ep: continue
+
         img_url = "https://via.placeholder.com/150"
-        first_cut = ep.cuts.first()
+        first_cut = Cut.objects.using('mysql').filter(episode_id=ep.episode_id).order_by('cut_order').first()
         if first_cut:
-            # ✅ S3 보안 주소로 변환하여 전달
             img_url = get_presigned_url(first_cut.image)
 
         saved_data.append({
             "id": ep.episode_id,
             "title": ep.subtitle,
-            "stationId": ep.webtoon.station.station_name,
+            "stationId": ep.webtoon.station.station_name if ep.webtoon and ep.webtoon.station else "알 수 없음",
             "imageUrl": img_url,
         })
-    
+
     return Response({
         "success": True,
         "username": user.username,

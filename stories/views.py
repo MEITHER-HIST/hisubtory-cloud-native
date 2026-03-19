@@ -38,7 +38,6 @@ class EpisodeDetailAPIView(APIView):
         return Response({
             "success": True,
             "episode": data,
-            "cuts": data.get('cuts', []),
             "is_bookmarked": is_bookmarked
         })
 
