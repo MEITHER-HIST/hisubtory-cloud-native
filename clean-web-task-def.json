@@ -15,7 +15,7 @@
             "environment": [
                 {
                     "name": "DB_HOST",
-                    "value": "hisubtory-db.cnwkq8oe8jr5.ap-northeast-2.rds.amazonaws.com"
+                    "value": "hisubtory-db.cviagkyaooln.ap-northeast-2.rds.amazonaws.com"
                 },
                 {
                     "name": "SECRET_KEY",

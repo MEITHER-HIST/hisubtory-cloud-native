@@ -35,7 +35,7 @@
                 },
                 {
                     "name": "DB_HOST",
-                    "value": "${DB_HOST}"
+                    "value": "hisubtory-db.cviagkyaooln.ap-northeast-2.rds.amazonaws.com"
                 },
                 {
                     "name": "SUPABASE_URL",
