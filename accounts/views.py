@@ -52,18 +52,31 @@ def login_view(request):
     if not login_id or not password:
         return Response({
             "success": False,
-            "message": "필드명이 일치하지 않습니다.",
-            "debug_received_data": data # 리액트 개발자 도구에서도 확인 가능하게 함
+            "message": "아이디와 비밀번호를 모두 입력해 주세요."
         }, status=400)
 
     # 🔍 3. 이제 인증 시도
     user = authenticate(username=login_id, password=password)
     
     if user is not None:
+        if not user.is_active:
+            return Response({
+                "success": False,
+                "message": "아직 계정이 활성화되지 않았습니다. 이메일 인증을 완료해 주세요."
+            }, status=403)
+            
         login(request, user)
-        return Response({"success": True, "username": user.username})
+        return Response({
+            "success": True, 
+            "username": user.username,
+            "message": f"{user.username}님, 환영합니다!"
+        })
     else:
-        return Response({"success": False, "message": "invalid_credentials"}, status=401)
+        # 아이디가 없는지, 비번이 틀린지 보안상 상세히 알리지 않되 문구는 친절하게
+        return Response({
+            "success": False, 
+            "message": "아이디 또는 비밀번호가 올바르지 않습니다."
+        }, status=401)
 
 # --- [3] 유저 정보 확인 및 로그아웃 ---
 
