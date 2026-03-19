@@ -13,7 +13,17 @@ User = get_user_model()
 # Supabase 설정 (환경 변수에서 가져옴)
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY) if SUPABASE_URL and SUPABASE_KEY else None
+
+def get_supabase():
+    """안전하게 Supabase 클라이언트를 가져옵니다."""
+    try:
+        if SUPABASE_URL and SUPABASE_KEY:
+            return create_client(SUPABASE_URL, SUPABASE_KEY)
+    except Exception as e:
+        print(f"Supabase 초기화 오류: {e}")
+    return None
+
+supabase = get_supabase()
 
 @ensure_csrf_cookie
 def csrf_api_view(request):
@@ -25,6 +35,9 @@ def csrf_api_view(request):
 def login_api_view(request):
     """로그인 처리 (Supabase Auth 사용 권장)"""
     try:
+        if not supabase:
+            return JsonResponse({"success": False, "message": "인증 서비스가 준비되지 않았습니다. 관리자에게 문의하세요."}, status=500)
+
         data = json.loads(request.body)
         email = data.get('email')
         password = data.get('password')
@@ -60,6 +73,7 @@ def login_api_view(request):
     except Exception as e:
         # 에러 메시지 상세 분석 및 한글화
         error_msg = str(e)
+        print(f"로그인 오류: {error_msg}")
         status_code = 401
         
         if "Invalid login credentials" in error_msg:
@@ -76,6 +90,9 @@ def login_api_view(request):
 def signup_api_view(request):
     """Supabase Auth SDK를 이용한 회원가입 (인증 메일 발송 포함)"""
     try:
+        if not supabase:
+            return JsonResponse({"success": False, "message": "인증 서비스가 준비되지 않았습니다. 관리자에게 문의하세요."}, status=500)
+
         data = json.loads(request.body)
         username = data.get('username')
         email = data.get('email')
@@ -111,8 +128,8 @@ def signup_api_view(request):
         })
 
     except Exception as e:
-        # 에러 메시지 상세 분석 및 한글화
         error_msg = str(e)
+        print(f"회원가입 오류: {error_msg}")
         if "User already registered" in error_msg:
             friendly_msg = "이미 등록된 이메일 주소입니다."
         elif "already exists" in error_msg:
@@ -142,9 +159,12 @@ def logout_api_view(request):
     try:
         # 장고 세션 로그아웃
         logout(request)
-        # Supabase 로그아웃 (선택 사항)
+        # Supabase 로그아웃 (안전하게 처리)
         if supabase:
-            supabase.auth.sign_out()
+            try:
+                supabase.auth.sign_out()
+            except:
+                pass
             
         return JsonResponse({"success": True, "message": "성공적으로 로그아웃되었습니다."})
     except Exception as e:
