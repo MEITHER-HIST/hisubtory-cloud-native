@@ -59,7 +59,7 @@
                 },
                 {
                     "name": "AWS_ACCESS_KEY_ID",
-                    "value": "AKIA2MWGKAR4QH2XYKGO"
+                    "value": "${AWS_ACCESS_KEY_ID}"
                 },
                 {
                     "name": "SB_DB_NAME",

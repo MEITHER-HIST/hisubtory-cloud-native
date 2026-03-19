@@ -26,7 +26,6 @@ variable "db_username" {
 variable "db_password" {
   type      = string
   sensitive = true
-  default   = "mysql_password"
 }
 
 variable "supabase_url" {
@@ -66,17 +65,14 @@ variable "sb_db_port" {
 
 variable "aws_access_key" {
   type    = string
-  default = "AKIA2MWGKAR4QH2XYKGO"
 }
 
 variable "aws_secret_key" {
   type      = string
   sensitive = true
-  default   = "/Fqh7t2fQLx2j4BvZJ15njdWn+hRiMTkJSTj0T42"
 }
 
 variable "django_secret_key" {
   type      = string
   sensitive = true
-  default   = "django-insecure-ti-prtjm(d_p7ve!r(g&4&(=+*_vn*x+*3z^ge567i72tr-5)1"
 }

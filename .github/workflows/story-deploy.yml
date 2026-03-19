@@ -66,6 +66,7 @@ jobs:
         env:
           DB_HOST: hisubtory-db.cviagkyaooln.ap-northeast-2.rds.amazonaws.com
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           SB_DB_PASSWORD: ${{ secrets.SB_DB_PASSWORD }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}

@@ -164,6 +164,8 @@ CSRF_TRUSTED_ORIGINS = [
     "https://hisub-alb-1329951961.ap-northeast-2.elb.amazonaws.com",
     "http://hisubtory-alb-913594763.ap-northeast-2.elb.amazonaws.com",
     "https://hisubtory-alb-913594763.ap-northeast-2.elb.amazonaws.com",
+    "http://hisubtory-alb-258264007.ap-northeast-2.elb.amazonaws.com",
+    "https://hisubtory-alb-258264007.ap-northeast-2.elb.amazonaws.com",
     "http://localhost:5173",
     "http://127.0.0.1:5173",
     "http://localhost:8000",
@@ -177,7 +179,11 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
     "http://hisub-alb-1329951961.ap-northeast-2.elb.amazonaws.com",
+    "https://hisub-alb-1329951961.ap-northeast-2.elb.amazonaws.com",
     "http://hisubtory-alb-913594763.ap-northeast-2.elb.amazonaws.com",
+    "https://hisubtory-alb-913594763.ap-northeast-2.elb.amazonaws.com",
+    "http://hisubtory-alb-258264007.ap-northeast-2.elb.amazonaws.com",
+    "https://hisubtory-alb-258264007.ap-northeast-2.elb.amazonaws.com",
 ]
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = list(default_headers) + ["x-csrftoken"]
