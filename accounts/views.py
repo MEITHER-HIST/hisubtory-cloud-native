@@ -88,6 +88,8 @@ def logout_view(request):
 
 # --- [4] 마이페이지 활동 기록 API (library 모델 연동) ---
 
+from stories.serializers import get_presigned_url
+
 @api_view(['GET'])
 @authentication_classes([UnsafeSessionAuthentication])
 @permission_classes([IsAuthenticated])
@@ -104,7 +106,8 @@ def get_user_history(request):
         img_url = "https://via.placeholder.com/150"
         first_cut = ep.cuts.first()
         if first_cut:
-            img_url = first_cut.image_url
+            # ✅ S3 보안 주소로 변환하여 전달
+            img_url = get_presigned_url(first_cut.image)
 
         recent_data.append({
             "id": ep.episode_id,
@@ -122,7 +125,8 @@ def get_user_history(request):
         img_url = "https://via.placeholder.com/150"
         first_cut = ep.cuts.first()
         if first_cut:
-            img_url = first_cut.image_url
+            # ✅ S3 보안 주소로 변환하여 전달
+            img_url = get_presigned_url(first_cut.image)
 
         saved_data.append({
             "id": ep.episode_id,
