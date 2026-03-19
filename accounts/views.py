@@ -113,9 +113,9 @@ def get_user_history(request):
             img_url = get_presigned_url(first_cut.image)
 
         recent_data.append({
-            "id": ep.episode_id,
+            "id": str(ep.episode_id),
             "title": ep.subtitle,
-            "stationId": ep.webtoon.station.station_name if ep.webtoon and ep.webtoon.station else "알 수 없음",
+            "stationName": ep.webtoon.station.station_name if ep.webtoon and ep.webtoon.station else "알 수 없음",
             "imageUrl": img_url,
             "viewed_at": record.viewed_at
         })
@@ -134,9 +134,9 @@ def get_user_history(request):
             img_url = get_presigned_url(first_cut.image)
 
         saved_data.append({
-            "id": ep.episode_id,
+            "id": str(ep.episode_id),
             "title": ep.subtitle,
-            "stationId": ep.webtoon.station.station_name if ep.webtoon and ep.webtoon.station else "알 수 없음",
+            "stationName": ep.webtoon.station.station_name if ep.webtoon and ep.webtoon.station else "알 수 없음",
             "imageUrl": img_url,
         })
 

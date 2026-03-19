@@ -35,9 +35,11 @@ class EpisodeDetailAPIView(APIView):
         if request.user.is_authenticated:
             is_bookmarked = Bookmark.objects.using('default').filter(user=request.user, episode_id=episode_id).exists()
 
+        # 💡 cuts 데이터를 명시적으로 포함시킵니다.
         return Response({
             "success": True,
             "episode": data,
+            "cuts": data.get('cuts', []),
             "is_bookmarked": is_bookmarked
         })
 
