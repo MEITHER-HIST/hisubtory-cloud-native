@@ -19,14 +19,20 @@ def my_page_api(request):
     recent_data = []
     for s in recent:
         try:
-            episode = Episode.objects.get(episode_id=s.episode_id)
+            # MySQL에 있는 Episode 정보를 가져올 때 에러가 나면 스킵하거나 기본값 처리
+            episode = Episode.objects.using('mysql').get(episode_id=s.episode_id)
             recent_data.append({
-                "station_id": episode.webtoon.station.id,
-                "station": episode.webtoon.station.station_name,
+                "station_id": episode.webtoon.station.id if episode.webtoon and episode.webtoon.station else None,
+                "station": episode.webtoon.station.station_name if episode.webtoon and episode.webtoon.station else "알 수 없는 역",
                 "last_viewed": s.viewed_at.strftime("%Y-%m-%d %H:%M")
             })
-        except Episode.DoesNotExist:
-            continue
+        except Exception as e:
+            # MySQL 연결 실패 시 ID 정보만이라도 반환
+            recent_data.append({
+                "station_id": None,
+                "station": f"기록 불러오기 실패 (ID: {s.episode_id})",
+                "last_viewed": s.viewed_at.strftime("%Y-%m-%d %H:%M")
+            })
 
     # 2. 나의 이야기: 북마크된 것들
     saved = Bookmark.objects.filter(user=user)
@@ -34,16 +40,19 @@ def my_page_api(request):
     saved_data = []
     for s in saved:
         try:
-            episode = Episode.objects.get(episode_id=s.episode_id)
-            # 에피소드에 연결된 컷 중 첫 번째 가져오기
+            episode = Episode.objects.using('mysql').get(episode_id=s.episode_id)
             first_cut = episode.cuts.first()
             saved_data.append({
-                "station_id": episode.webtoon.station.id,
-                "station": episode.webtoon.station.station_name,
+                "station_id": episode.webtoon.station.id if episode.webtoon and episode.webtoon.station else None,
+                "station": episode.webtoon.station.station_name if episode.webtoon and episode.webtoon.station else "알 수 없는 역",
                 "image": first_cut.image if first_cut else None
             })
-        except Episode.DoesNotExist:
-            continue
+        except Exception as e:
+            saved_data.append({
+                "station_id": None,
+                "station": "북마크 정보를 불러올 수 없습니다.",
+                "image": None
+            })
 
     return JsonResponse({
         "recent_stories": recent_data,
