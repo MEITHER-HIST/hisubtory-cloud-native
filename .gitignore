@@ -4,6 +4,19 @@
 *.tfvars
 .env
 .env.*
+# Backup folders
+archive/
+achive/
+archive_state/
+docs/
+scripts/
+staticfiles/
+templates/
+subway/
+library/
+supabase/
+pages/
+static/
 node_modules/
 .DS_Store
 .vscode/
@@ -14,3 +27,19 @@ processed-*.json
 *.pem
 *.sql
 .env
+
+# JSON backup files containing sensitive data
+*_td_*.json
+*task-def*.json
+activity_td*.json
+story_td*.json
+user_td*.json
+temp-*.json
+new-*.json
+current-task-def.json
+updated-user-task.json
+clean-activity-task-def-updated.json
+clean-story-task-def-updated.json
+clean-user-task-def-updated.json
+clean-web-task-def.json
+web-task-def*.json

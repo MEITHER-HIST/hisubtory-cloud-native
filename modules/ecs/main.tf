@@ -98,8 +98,11 @@ resource "aws_ecs_task_definition" "user" {
   container_definitions = jsonencode([
     {
       name      = "app"
-      image     = "${var.user_repo_url}:0ada924c9b4d7447c5d70ada9d286ae285604b59"
-      portMappings = [{ containerPort = 80, hostPort = 80 }]
+      image     = "${var.user_repo_url}:latest"
+      portMappings = [
+        { containerPort = 80, hostPort = 80 },
+        { containerPort = 8000, hostPort = 8000 }
+      ]
       logConfiguration = {
         logDriver = "awslogs"
         options = {
@@ -130,6 +133,11 @@ resource "aws_ecs_task_definition" "user" {
         { name = "AWS_S3_REGION_NAME", value = var.aws_region },
         { name = "DEBUG", value = "True" }
       ]
+    },
+    {
+      name      = "node-exporter"
+      image     = "prom/node-exporter:latest"
+      portMappings = [{ containerPort = 9100, hostPort = 9100 }]
     }
   ])
 }
@@ -146,8 +154,11 @@ resource "aws_ecs_task_definition" "story" {
   container_definitions = jsonencode([
     {
       name      = "app"
-      image     = "${var.story_repo_url}:fcf8202d042d08666e03e6f10cceb960da1fa5d5"
-      portMappings = [{ containerPort = 80, hostPort = 80 }]
+      image     = "${var.story_repo_url}:latest"
+      portMappings = [
+        { containerPort = 80, hostPort = 80 },
+        { containerPort = 8000, hostPort = 8000 }
+      ]
       logConfiguration = {
         logDriver = "awslogs"
         options = {
@@ -178,6 +189,11 @@ resource "aws_ecs_task_definition" "story" {
         { name = "AWS_S3_REGION_NAME", value = var.aws_region },
         { name = "DEBUG", value = "True" }
       ]
+    },
+    {
+      name      = "node-exporter"
+      image     = "prom/node-exporter:latest"
+      portMappings = [{ containerPort = 9100, hostPort = 9100 }]
     }
   ])
 }
@@ -194,8 +210,11 @@ resource "aws_ecs_task_definition" "activity" {
   container_definitions = jsonencode([
     {
       name      = "app"
-      image     = "${var.activity_repo_url}:fcf8202d042d08666e03e6f10cceb960da1fa5d5"
-      portMappings = [{ containerPort = 80, hostPort = 80 }]
+      image     = "${var.activity_repo_url}:latest"
+      portMappings = [
+        { containerPort = 80, hostPort = 80 },
+        { containerPort = 8000, hostPort = 8000 }
+      ]
       logConfiguration = {
         logDriver = "awslogs"
         options = {
@@ -226,6 +245,11 @@ resource "aws_ecs_task_definition" "activity" {
         { name = "AWS_S3_REGION_NAME", value = var.aws_region },
         { name = "DEBUG", value = "True" }
       ]
+    },
+    {
+      name      = "node-exporter"
+      image     = "prom/node-exporter:latest"
+      portMappings = [{ containerPort = 9100, hostPort = 9100 }]
     }
   ])
 }
@@ -242,8 +266,11 @@ resource "aws_ecs_task_definition" "web" {
   container_definitions = jsonencode([
     {
       name      = "app"
-      image     = "${var.web_repo_url}:1773131378"
-      portMappings = [{ containerPort = 80, hostPort = 80 }]
+      image     = "${var.web_repo_url}:latest"
+      portMappings = [
+        { containerPort = 80, hostPort = 80 },
+        { containerPort = 8000, hostPort = 8000 }
+      ]
       logConfiguration = {
         logDriver = "awslogs"
         options = {
@@ -252,6 +279,11 @@ resource "aws_ecs_task_definition" "web" {
           "awslogs-stream-prefix" = "ecs"
         }
       }
+    },
+    {
+      name      = "node-exporter"
+      image     = "prom/node-exporter:latest"
+      portMappings = [{ containerPort = 9100, hostPort = 9100 }]
     }
   ])
 }

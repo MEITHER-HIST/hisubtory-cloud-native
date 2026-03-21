@@ -3,6 +3,7 @@ from django.urls import path, include
 from django.http import HttpResponse
 
 urlpatterns = [
+    path('', include('django_prometheus.urls')),
     path('health/', lambda r: HttpResponse('ok')),
     path('admin/', admin.site.urls),
     # 💡 이미 Nginx에서 /api/accounts/ 를 붙여서 보내거나 떼서 보낼 수 있으므로 둘 다 처리
