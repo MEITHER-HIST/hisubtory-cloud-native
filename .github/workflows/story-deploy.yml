@@ -4,13 +4,10 @@ on:
   push:
     branches: [ feat/do, dev ]
     paths:
-      - 'stories/**'
-      - 'subway/**'
-      - 'library/**'
       - 'story-service/**'
-      - 'seed_episodes.py'
-      - 'docker-entrypoint.sh'
-      - 'requirements.txt'
+      - 'stories/**'
+      - 'library/**'
+      - 'subway/**'
       - '.github/workflows/story-deploy.yml'
 
 env:
@@ -18,7 +15,6 @@ env:
   ECR_REPOSITORY: hisubtory-story
   ECS_SERVICE: hisubtory-story-service
   ECS_CLUSTER: hisubtory-cluster
-  # 수정된 계정 번호가 반영된 작업 정의 파일 사용
   ECS_TASK_DEFINITION: clean-story-task-def-updated.json
   CONTAINER_NAME: app
 
@@ -64,7 +60,6 @@ jobs:
 
       - name: Inject Secrets into Task Definition
         env:
-          DB_HOST: hisubtory-db.cviagkyaooln.ap-northeast-2.rds.amazonaws.com
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           SB_DB_PASSWORD: ${{ secrets.SB_DB_PASSWORD }}
@@ -75,7 +70,7 @@ jobs:
           envsubst < ${{ steps.task-def.outputs.task-definition }} > processed-task-def.json
 
       - name: Deploy Amazon ECS task definition
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
         with:
           task-definition: processed-task-def.json
           service: ${{ env.ECS_SERVICE }}
