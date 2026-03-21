@@ -43,7 +43,7 @@ jobs:
         id: build-image
         uses: docker/build-push-action@v6
         with:
-          context: .  # 💡 프로젝트 루트를 컨텍스트로 설정
+          context: .
           file: story-service/Dockerfile
           push: true
           tags: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
@@ -67,7 +67,7 @@ jobs:
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           SECRET_KEY: ${{ secrets.SECRET_KEY }}
         run: |
-          envsubst < ${{ steps.task-def.outputs.task-definition }} > processed-task-def.json
+          envsubst '$AWS_SECRET_ACCESS_KEY,$AWS_ACCESS_KEY_ID,$SB_DB_PASSWORD,$SUPABASE_KEY,$DB_PASSWORD,$SECRET_KEY' < ${{ steps.task-def.outputs.task-definition }} > processed-task-def.json
 
       - name: Deploy Amazon ECS task definition
         uses: aws-actions/amazon-ecs-deploy-task-definition@v2
