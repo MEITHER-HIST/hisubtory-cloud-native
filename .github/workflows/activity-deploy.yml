@@ -44,7 +44,7 @@ jobs:
         id: build-image
         uses: docker/build-push-action@v6
         with:
-          context: .
+          context: .  # 💡 프로젝트 루트를 컨텍스트로 설정 (공유 모듈 복사 가능하게 함)
           file: activity-service/Dockerfile
           push: true
           tags: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
