@@ -1,5 +1,10 @@
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
+
+def health(request):
+    """로드밸런서 헬스체크용: DB 연결 없이 즉시 응답"""
+    return HttpResponse("ok", content_type="text/plain", status=200)
+
 from library.models import UserViewedEpisode, Bookmark
 from stories.models import Episode
 
