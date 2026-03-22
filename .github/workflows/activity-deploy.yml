@@ -9,6 +9,8 @@ on:
       - 'library/**'
       - 'stories/**'
       - 'accounts/**'
+      - 'monitoring/**'
+      - 'seed_episodes.py'
       - '.github/workflows/activity-deploy.yml'
 
 env:
