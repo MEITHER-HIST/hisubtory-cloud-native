@@ -128,20 +128,18 @@ resource "aws_instance" "bastion" {
               cat <<'PROM' > monitoring/prometheus.yml
 global:
   scrape_interval: 15s
+  evaluation_interval: 15s
 
 scrape_configs:
   - job_name: 'prometheus'
     static_configs:
       - targets: ['localhost:9090']
 
-  - job_name: 'bastion-node-exporter'
-    static_configs:
-      - targets: ['node-exporter:9100']
-
-  - job_name: 'ecs-services'
+  - job_name: 'django'
+    metrics_path: '/metrics/'
     ecs_sd_configs:
       - region: 'ap-northeast-2'
-        cluster: 'hisubtory-cluster'
+        clusters: ['hisubtory-cluster']
     relabel_configs:
       - source_labels: [__meta_ecs_container_name]
         regex: 'app'
@@ -150,11 +148,13 @@ scrape_configs:
         regex: '(.*):(.*)'
         replacement: '$${1}:8000'
         target_label: __address__
+      - source_labels: [__meta_ecs_task_definition_family]
+        target_label: task_family
 
-  - job_name: 'ecs-node-exporter'
+  - job_name: 'node-exporter'
     ecs_sd_configs:
       - region: 'ap-northeast-2'
-        cluster: 'hisubtory-cluster'
+        clusters: ['hisubtory-cluster']
     relabel_configs:
       - source_labels: [__meta_ecs_container_name]
         regex: 'node-exporter'
@@ -163,6 +163,12 @@ scrape_configs:
         regex: '(.*):(.*)'
         replacement: '$${1}:9100'
         target_label: __address__
+      - source_labels: [__meta_ecs_task_definition_family]
+        target_label: task_family
+
+  - job_name: 'bastion-node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
 PROM
 
               cat <<'LOKI' > monitoring/promtail.yml
