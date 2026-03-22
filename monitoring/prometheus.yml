@@ -1,11 +1,14 @@
 global:
   scrape_interval: 15s
+  evaluation_interval: 15s
 
 scrape_configs:
-  - job_name: 'bastion-node-exporter'
+  # 1. Prometheus 자체 모니터링
+  - job_name: 'prometheus'
     static_configs:
-      - targets: ['hisubtory-node-exporter:9100']
+      - targets: ['localhost:9090']
 
+  # 2. ECS 서비스 모니터링 (Django App)
   - job_name: 'django'
     metrics_path: '/metrics/'
     ecs_sd_configs:
@@ -15,15 +18,17 @@ scrape_configs:
       - source_labels: [__meta_ecs_container_name]
         regex: 'app'
         action: keep
+      # 컨테이너 IP:8000으로 메트릭 수집 시도
       - source_labels: [__address__]
         regex: '(.*):(.*)'
         replacement: '${1}:8000'
         target_label: __address__
       - source_labels: [__meta_ecs_task_definition_family]
         target_label: task_family
-      - source_labels: [__address__]
-        target_label: instance
+      - source_labels: [__meta_ecs_container_name]
+        target_label: container_name
 
+  # 3. ECS 서비스 모니터링 (Node Exporter)
   - job_name: 'node-exporter'
     ecs_sd_configs:
       - region: 'ap-northeast-2'
@@ -38,5 +43,8 @@ scrape_configs:
         target_label: __address__
       - source_labels: [__meta_ecs_task_definition_family]
         target_label: task_family
-      - source_labels: [__address__]
-        target_label: instance
+
+  # 4. 로컬/Bastion Node Exporter (직접 IP 입력 필요 시 사용)
+  - job_name: 'bastion'
+    static_configs:
+      - targets: ['node-exporter:9100'] # Docker-compose 내부 네트워크용
