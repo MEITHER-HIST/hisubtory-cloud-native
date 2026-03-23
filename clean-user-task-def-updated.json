@@ -92,6 +92,14 @@
                 {
                     "name": "DEBUG",
                     "value": "True"
+                },
+                {
+                    "name": "EMAIL_HOST_USER",
+                    "value": "${EMAIL_HOST_USER}"
+                },
+                {
+                    "name": "EMAIL_HOST_PASSWORD",
+                    "value": "${EMAIL_HOST_PASSWORD}"
                 }
             ],
             "mountPoints": [],
