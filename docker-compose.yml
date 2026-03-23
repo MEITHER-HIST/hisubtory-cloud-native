@@ -14,6 +14,7 @@ services:
       - user-service
       - story-service
       - activity-service
+    restart: unless-stopped
 
   # 2. User Service
   user-service:
@@ -30,6 +31,7 @@ services:
       - jaeger
       - db-postgres
       - db-mysql
+    restart: unless-stopped
 
   # 3. Story Service
   story-service:
@@ -45,6 +47,7 @@ services:
     depends_on:
       - jaeger
       - db-mysql
+    restart: unless-stopped
 
   # 4. Activity Service
   activity-service:
@@ -61,6 +64,7 @@ services:
       - redis
       - jaeger
       - db-mysql
+    restart: unless-stopped
 
   # 5. Redis
   redis:
@@ -68,6 +72,7 @@ services:
     container_name: hisubtory-redis
     ports:
       - "6380:6379"
+    restart: unless-stopped
 
   # 6. Database: PostgreSQL (for Supabase compat)
   db-postgres:
@@ -79,6 +84,7 @@ services:
       POSTGRES_PASSWORD: hisubtory1234
     ports:
       - "5433:5432"
+    restart: unless-stopped
 
   # 7. Database: MySQL
   db-mysql:
@@ -91,6 +97,7 @@ services:
       MYSQL_PASSWORD: mysql_password
     ports:
       - "3307:3306"
+    restart: unless-stopped
 
   # 8. Jaeger
   jaeger:
@@ -102,15 +109,18 @@ services:
       - "4318:4318"
     environment:
       - COLLECTOR_OTLP_ENABLED=true
+    restart: unless-stopped
 
   # 9. Prometheus
   prometheus:
     image: prom/prometheus:latest
     container_name: hisubtory-prometheus
-    volumes:
-      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
     ports:
       - "9090:9090"
+    restart: unless-stopped
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
 
   # 10. Loki
   loki:
@@ -118,6 +128,7 @@ services:
     container_name: hisubtory-loki
     ports:
       - "3100:3100"
+    restart: unless-stopped
 
   # 11. Promtail
   promtail:
@@ -126,6 +137,7 @@ services:
     volumes:
       - ./monitoring/promtail.yml:/etc/promtail/config.yml
       - /var/run/docker.sock:/var/run/docker.sock:ro
+    restart: unless-stopped
 
   # 12. Grafana
   grafana:
@@ -142,20 +154,32 @@ services:
       - prometheus
       - loki
       - jaeger
+    restart: unless-stopped
+    volumes:
+      - grafana-data:/var/lib/grafana
 
-  # 13. Node Exporter
+  # Node-Exporter
   node-exporter:
     image: prom/node-exporter:latest
     container_name: hisubtory-node-exporter
-    restart: always
-    volumes:
-      - /proc:/host/proc:ro
-      - /sys:/host/sys:ro
-      - /:/rootfs:ro
-    command:
-      - '--path.procfs=/host/proc'
-      - '--path.rootfs=/rootfs'
-      - '--path.sysfs=/host/sys'
-      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
     ports:
-      - "9101:9100"
+      - "9100:9100"
+    restart: unless-stopped
+
+  # cAdvisor
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: hisubtory-cadvisor
+    ports:
+      - "8080:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker:/var/lib/docker:ro
+    privileged: true
+    restart: unless-stopped
+
+volumes:
+  grafana-data:
+  prometheus-data:

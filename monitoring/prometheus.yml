@@ -3,12 +3,18 @@ global:
   evaluation_interval: 15s
 
 scrape_configs:
-  # 1. Prometheus 자체 모니터링
   - job_name: 'prometheus'
     static_configs:
-      - targets: ['localhost:9090']
+      - targets: ['prometheus:9090']
 
-  # 2. ECS 서비스 모니터링 (Django App)
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['cadvisor:8080']
+
   - job_name: 'django'
     metrics_path: '/metrics/'
     ecs_sd_configs:
@@ -47,4 +53,8 @@ scrape_configs:
   # 4. 로컬/Bastion Node Exporter (직접 IP 입력 필요 시 사용)
   - job_name: 'bastion'
     static_configs:
+<<<<<<< HEAD
       - targets: ['node-exporter:9100'] # Docker-compose 내부 네트워크용
+=======
+      - targets: ['10.0.3.82:8000', 'story-service:8000', 'activity-service:8000']
+>>>>>>> 0a709d9c1702f227a045a1f46911b03e549acf10
