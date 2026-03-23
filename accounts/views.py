@@ -35,6 +35,7 @@ def signup_view(request):
 # --- [2] 로그인 API (JSON/Form 공용) ---
 
 @api_view(['POST'])
+@authentication_classes([UnsafeSessionAuthentication])
 @permission_classes([AllowAny])
 def login_view(request):
     # 🔍 1. 서버 터미널에 들어온 원본 데이터를 통째로 찍어봅니다.
@@ -51,18 +52,31 @@ def login_view(request):
     if not login_id or not password:
         return Response({
             "success": False,
-            "message": "필드명이 일치하지 않습니다.",
-            "debug_received_data": data # 리액트 개발자 도구에서도 확인 가능하게 함
+            "message": "아이디와 비밀번호를 모두 입력해 주세요."
         }, status=400)
 
     # 🔍 3. 이제 인증 시도
     user = authenticate(username=login_id, password=password)
     
     if user is not None:
+        if not user.is_active:
+            return Response({
+                "success": False,
+                "message": "아직 계정이 활성화되지 않았습니다. 이메일 인증을 완료해 주세요."
+            }, status=403)
+            
         login(request, user)
-        return Response({"success": True, "username": user.username})
+        return Response({
+            "success": True, 
+            "username": user.username,
+            "message": f"{user.username}님, 환영합니다!"
+        })
     else:
-        return Response({"success": False, "message": "invalid_credentials"}, status=401)
+        # 아이디가 없는지, 비번이 틀린지 보안상 상세히 알리지 않되 문구는 친절하게
+        return Response({
+            "success": False, 
+            "message": "아이디 또는 비밀번호가 올바르지 않습니다."
+        }, status=401)
 
 # --- [3] 유저 정보 확인 및 로그아웃 ---
 
@@ -87,49 +101,60 @@ def logout_view(request):
 
 # --- [4] 마이페이지 활동 기록 API (library 모델 연동) ---
 
+from stories.serializers import get_presigned_url
+
 @api_view(['GET'])
 @authentication_classes([UnsafeSessionAuthentication])
 @permission_classes([IsAuthenticated])
 def get_user_history(request):
     """사용자가 본 에피소드와 북마크한 목록을 반환"""
     user = request.user
-    
-    # 최근 본 에피소드 (N:1 관계 추적)
-    viewed_qs = UserViewedEpisode.objects.filter(user=user).select_related('episode__webtoon__station').order_by('-viewed_at')[:10]
+
+    # 최근 본 에피소드
+    viewed_qs = UserViewedEpisode.objects.filter(user=user).order_by('-viewed_at')[:10]
     recent_data = []
     for record in viewed_qs:
-        ep = record.episode
-        # 컷(Cut) 모델의 첫 이미지를 썸네일로 활용
+        # 💡 mysql DB에서 에피소드 정보를 명시적으로 가져옵니다.
+        from stories.models import Episode, Cut
+        ep = Episode.objects.using('mysql').filter(episode_id=record.episode_id).first()
+        if not ep: continue
+
         img_url = "https://via.placeholder.com/150"
-        if ep.cuts.exists():
-            first_cut = ep.cuts.first()
-            img_url = first_cut.image.url if hasattr(first_cut.image, 'url') else str(first_cut.image)
+        # 💡 첫 번째 컷의 이미지를 이야기 페이지와 동일하게 S3 주소로 변환
+        first_cut = Cut.objects.using('mysql').filter(episode_id=ep.episode_id).order_by('cut_order').first()
+        if first_cut:
+            img_url = get_presigned_url(first_cut.image)
 
         recent_data.append({
-            "id": ep.episode_id,
+            "id": str(ep.episode_id),
             "title": ep.subtitle,
-            "stationId": ep.webtoon.station.station_name,
+            "stationName": ep.webtoon.station.station_name if ep.webtoon and ep.webtoon.station else "알 수 없음",
             "imageUrl": img_url,
+            "content": ep.subtitle, # 💡 content 필드 추가 (HistoryItem 인터페이스 대응)
             "viewed_at": record.viewed_at
         })
 
     # 저장한 북마크 목록
-    saved_qs = Bookmark.objects.filter(user=user).select_related('episode__webtoon__station').order_by('-created_at')
+    saved_qs = Bookmark.objects.filter(user=user).order_by('-created_at')
     saved_data = []
     for bookmark in saved_qs:
-        ep = bookmark.episode
+        from stories.models import Episode, Cut
+        ep = Episode.objects.using('mysql').filter(episode_id=bookmark.episode_id).first()
+        if not ep: continue
+
         img_url = "https://via.placeholder.com/150"
-        if ep.cuts.exists():
-            first_cut = ep.cuts.first()
-            img_url = first_cut.image.url if hasattr(first_cut.image, 'url') else str(first_cut.image)
+        first_cut = Cut.objects.using('mysql').filter(episode_id=ep.episode_id).order_by('cut_order').first()
+        if first_cut:
+            img_url = get_presigned_url(first_cut.image)
 
         saved_data.append({
-            "id": ep.episode_id,
+            "id": str(ep.episode_id),
             "title": ep.subtitle,
-            "stationId": ep.webtoon.station.station_name,
+            "stationName": ep.webtoon.station.station_name if ep.webtoon and ep.webtoon.station else "알 수 없음",
             "imageUrl": img_url,
+            "content": ep.subtitle
         })
-    
+
     return Response({
         "success": True,
         "username": user.username,

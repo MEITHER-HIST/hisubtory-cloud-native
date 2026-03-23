@@ -1,8 +1,8 @@
 resource "aws_s3_bucket" "media_bucket" {
-  bucket = "${var.project_name}-media-bucket"
+  bucket = "${var.project_name}-media-bucket-v2"
   
   tags = {
-    Name = "${var.project_name}-media-bucket"
+    Name = "${var.project_name}-media-bucket-v2"
   }
 }
 

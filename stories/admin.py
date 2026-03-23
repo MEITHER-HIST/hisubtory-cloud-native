@@ -1,42 +1,41 @@
 from django.contrib import admin
 from django.utils.safestring import mark_safe
 from .models import Webtoon, Episode, Cut
+from .serializers import get_presigned_url
 
 @admin.register(Webtoon)
 class WebtoonAdmin(admin.ModelAdmin):
-    list_display = ('webtoon_id', 'title', 'station')
+    list_display = ('webtoon_id', 'title', 'station', 'thumbnail_preview')
     search_fields = ('title',)
-    list_filter = ('station',)
+
+    def thumbnail_preview(self, obj):
+        if obj.thumbnail:
+            url = get_presigned_url(obj.thumbnail)
+            return mark_safe(f'<img src="{url}" width="100" />')
+        return "-"
+    thumbnail_preview.short_description = 'Thumbnail Preview'
 
 @admin.register(Episode)
 class EpisodeAdmin(admin.ModelAdmin):
-    list_display = ('episode_id', 'webtoon', 'episode_num', 'subtitle')
-    search_fields = ('subtitle', 'webtoon__title') 
+    list_display = ('episode_id', 'webtoon', 'episode_num', 'subtitle', 'source_preview')
     list_filter = ('webtoon',)
+    search_fields = ('subtitle',)
+
+    def source_preview(self, obj):
+        if obj.source_url:
+            url = get_presigned_url(obj.source_url)
+            return mark_safe(f'<img src="{url}" width="100" />')
+        return "-"
+    source_preview.short_description = 'Source Preview'
 
 @admin.register(Cut)
 class CutAdmin(admin.ModelAdmin):
     list_display = ('cut_id', 'episode', 'cut_order', 'image_preview')
-    list_filter = ('episode__webtoon', 'episode')
-    readonly_fields = ('image_preview',)
-
+    list_filter = ('episode',)
+    
     def image_preview(self, obj):
-        if not obj.image:
-            return "No Image"
-        
-        if hasattr(obj.image, 'url'):
-            try:
-                return mark_safe(f'<img src="{obj.image.url}" width="100" />')
-            except:
-                pass
-        
-        image_path = str(obj.image)
-        if image_path.startswith('s3://'):
-            path_only = image_path.replace('s3://hisub-s3-bucket/', '')
-            image_url = f"https://hisub-s3-bucket.s3.ap-northeast-2.amazonaws.com/{path_only}"
-        else:
-            image_url = image_path
-
-        return mark_safe(f'<img src="{image_url}" width="100" />')
-
-    image_preview.short_description = "미리보기"
+        if obj.image:
+            url = get_presigned_url(obj.image)
+            return mark_safe(f'<img src="{url}" width="100" />')
+        return "-"
+    image_preview.short_description = 'Image Preview'

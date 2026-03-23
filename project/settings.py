@@ -19,6 +19,7 @@ ALLOWED_HOSTS = [
     "*",
     ".amazonaws.com",
     ".elb.amazonaws.com",
+    "hisubtory-alb-913594763.ap-northeast-2.elb.amazonaws.com",
     "hisubtory-alb-258264007.ap-northeast-2.elb.amazonaws.com"
 ]
 
@@ -55,13 +56,17 @@ ROOT_URLCONF = 'project.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
+                'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.i18n',
+                'django.template.context_processors.static',
+                'django.template.context_processors.tz',
             ],
         },
     },
@@ -156,6 +161,11 @@ else:
 
 CSRF_TRUSTED_ORIGINS = [
     "http://hisub-alb-1329951961.ap-northeast-2.elb.amazonaws.com",
+    "https://hisub-alb-1329951961.ap-northeast-2.elb.amazonaws.com",
+    "http://hisubtory-alb-913594763.ap-northeast-2.elb.amazonaws.com",
+    "https://hisubtory-alb-913594763.ap-northeast-2.elb.amazonaws.com",
+    "http://hisubtory-alb-258264007.ap-northeast-2.elb.amazonaws.com",
+    "https://hisubtory-alb-258264007.ap-northeast-2.elb.amazonaws.com",
     "http://localhost:5173",
     "http://127.0.0.1:5173",
     "http://localhost:8000",
@@ -169,6 +179,11 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
     "http://hisub-alb-1329951961.ap-northeast-2.elb.amazonaws.com",
+    "https://hisub-alb-1329951961.ap-northeast-2.elb.amazonaws.com",
+    "http://hisubtory-alb-913594763.ap-northeast-2.elb.amazonaws.com",
+    "https://hisubtory-alb-913594763.ap-northeast-2.elb.amazonaws.com",
+    "http://hisubtory-alb-258264007.ap-northeast-2.elb.amazonaws.com",
+    "https://hisubtory-alb-258264007.ap-northeast-2.elb.amazonaws.com",
 ]
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = list(default_headers) + ["x-csrftoken"]

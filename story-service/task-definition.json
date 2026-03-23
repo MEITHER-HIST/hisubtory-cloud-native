@@ -1,11 +1,11 @@
 {
     "family": "hisubtory-story-task",
-    "executionRoleArn": "arn:aws:iam::714454205561:role/hisubtory-ecs-task-execution-role",
-    "taskRoleArn": "arn:aws:iam::714454205561:role/hisubtory-ecs-task-role",
+    "executionRoleArn": "arn:aws:iam::180618475875:role/hisubtory-ecs-task-execution-role",
+    "taskRoleArn": "arn:aws:iam::180618475875:role/hisubtory-ecs-task-role",
     "containerDefinitions": [
         {
             "name": "app",
-            "image": "714454205561.dkr.ecr.ap-northeast-2.amazonaws.com/hisubtory-story:latest",
+            "image": "180618475875.dkr.ecr.ap-northeast-2.amazonaws.com/hisubtory-story:latest",
             "portMappings": [{ "containerPort": 80, "hostPort": 80, "protocol": "tcp" }],
             "essential": true,
             "environment": [

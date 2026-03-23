@@ -4,25 +4,32 @@ import boto3
 from botocore.client import Config
 from .models import Webtoon, Episode, Cut
 
-def get_presigned_url(path, expires_in=600):
+def get_presigned_url(path, expires_in=3600):
     """S3 경로를 받아 보안 주소(Presigned URL)를 생성하는 공통 함수"""
     if not path: return None
     path_str = str(path)
     if path_str.startswith('http'): return path_str
     
     try:
+        region = getattr(settings, "AWS_S3_REGION_NAME", "ap-northeast-2")
+        bucket = getattr(settings, "AWS_STORAGE_BUCKET_NAME", "hisubtory-media-bucket-v2")
+        
         s3 = boto3.client("s3", 
-                          region_name=settings.AWS_S3_REGION_NAME,
-                          aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
-                          aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
-                          endpoint_url=f"https://s3.{settings.AWS_S3_REGION_NAME}.amazonaws.com",
+                          region_name=region,
+                          aws_access_key_id=getattr(settings, "AWS_ACCESS_KEY_ID", ""),
+                          aws_secret_access_key=getattr(settings, "AWS_SECRET_ACCESS_KEY", ""),
+                          endpoint_url=f"https://s3.{region}.amazonaws.com",
                           config=Config(signature_version="s3v4"))
         
         return s3.generate_presigned_url(ClientMethod="get_object",
-            Params={"Bucket": settings.AWS_STORAGE_BUCKET_NAME, "Key": path_str},
+            Params={"Bucket": bucket, "Key": path_str},
             ExpiresIn=expires_in)
-    except:
-        return None
+    except Exception as e:
+        print(f"[ERROR] S3 URL Generation fail: {str(e)}")
+        # 최종 실패 시 S3 직접 링크 시도
+        bucket = getattr(settings, "AWS_STORAGE_BUCKET_NAME", "hisubtory-media-bucket-v2")
+        region = getattr(settings, "AWS_S3_REGION_NAME", "ap-northeast-2")
+        return f"https://{bucket}.s3.{region}.amazonaws.com/{path_str}"
 
 class CutSerializer(serializers.ModelSerializer):
     image_url = serializers.SerializerMethodField()

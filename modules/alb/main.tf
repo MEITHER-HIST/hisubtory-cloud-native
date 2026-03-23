@@ -1,6 +1,6 @@
 # User Service Target Group
 resource "aws_lb_target_group" "user_tg" {
-  name        = "${var.project_name}-user-tg"
+  name        = "${var.project_name}-user-tg-v2"
   port        = 80
   protocol    = "HTTP"
   vpc_id      = var.vpc_id
@@ -18,7 +18,7 @@ resource "aws_lb_target_group" "user_tg" {
 
 # Story Service Target Group
 resource "aws_lb_target_group" "story_tg" {
-  name        = "${var.project_name}-story-tg"
+  name        = "${var.project_name}-story-tg-v2"
   port        = 80
   protocol    = "HTTP"
   vpc_id      = var.vpc_id
@@ -36,7 +36,7 @@ resource "aws_lb_target_group" "story_tg" {
 
 # Activity Service Target Group
 resource "aws_lb_target_group" "activity_tg" {
-  name        = "${var.project_name}-activity-tg"
+  name        = "${var.project_name}-activity-tg-v2"
   port        = 80
   protocol    = "HTTP"
   vpc_id      = var.vpc_id
@@ -44,6 +44,24 @@ resource "aws_lb_target_group" "activity_tg" {
 
   health_check {
     path                = "/health/"
+    matcher             = "200"
+    interval            = 30
+    timeout             = 5
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
+  }
+}
+
+# Web (Frontend) Target Group
+resource "aws_lb_target_group" "web_tg" {
+  name        = "${var.project_name}-web-tg"
+  port        = 80
+  protocol    = "HTTP"
+  vpc_id      = var.vpc_id
+  target_type = "ip"
+
+  health_check {
+    path                = "/"
     matcher             = "200"
     interval            = 30
     timeout             = 5
@@ -81,6 +99,22 @@ resource "aws_lb_listener" "http" {
 }
 
 # ALB Listener Rules for routing (Updated to match API Gateway prefixes or direct API paths)
+resource "aws_lb_listener_rule" "web" {
+  listener_arn = aws_lb_listener.http.arn
+  priority     = 5
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.web_tg.arn
+  }
+
+  condition {
+    path_pattern {
+      values = ["/", "/index.html", "/assets/*", "/favicon.ico"]
+    }
+  }
+}
+
 resource "aws_lb_listener_rule" "user" {
   listener_arn = aws_lb_listener.http.arn
   priority     = 10
@@ -92,7 +126,7 @@ resource "aws_lb_listener_rule" "user" {
 
   condition {
     path_pattern {
-      values = ["/user/*", "/api/accounts/*", "/"]
+      values = ["/user/*", "/api/accounts/*"]
     }
   }
 }

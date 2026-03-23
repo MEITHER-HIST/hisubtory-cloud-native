@@ -9,3 +9,7 @@ output "story_repo_url" {
 output "activity_repo_url" {
   value = aws_ecr_repository.activity.repository_url
 }
+
+output "web_repo_url" {
+  value = aws_ecr_repository.web.repository_url
+}

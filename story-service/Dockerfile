@@ -1,39 +1,48 @@
-# 1. Build Stage
-FROM python:3.12-slim AS builder
+FROM python:3.12-slim
+
 WORKDIR /app
-RUN apt-get update && apt-get install -y \
+
+# 1. 시스템 의존성 설치
+RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     default-libmysqlclient-dev \
     pkg-config \
+    libmagic1 \
     && rm -rf /var/lib/apt/lists/*
+
+# 2. Python 라이브러리 설치
 COPY story-service/requirements.txt .
-RUN pip install --user --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
-# 2. Run Stage
-FROM python:3.12-slim
-WORKDIR /app
-RUN apt-get update && apt-get install -y \
-    default-libmysqlclient-dev \
-    && rm -rf /var/lib/apt/lists/*
-COPY --from=builder /root/.local /root/.local
-ENV PATH=/root/.local/bin:$PATH
-
-# 공유 모듈 복사 (루트 컨텍스트에서 실행됨)
+# 3. 공유 모듈 복사
 COPY accounts/ ./accounts/
 COPY stories/ ./stories/
 COPY library/ ./library/
 COPY pages/ ./pages/
 COPY subway/ ./subway/
 COPY supabase/ ./supabase/
+COPY templates/ ./templates/
 
-# 서비스 특정 코드 복사
+# 4. 서비스 코드 및 스크립트 복사
 COPY story-service/ ./
+COPY create_missing_tables.py .
+COPY create_admin_user.py .
+COPY seed_episodes.py .
+COPY docker-entrypoint.sh /usr/local/bin/
 
-# 설정 폴더 이름을 project로 통일 (이미 존재하면 건너뜀)
-RUN if [ -d "story_config" ]; then mv story_config project; fi
+# 💡 스크립트 권한 부여 및 줄바꿈 처리
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh && \
+    sed -i 's/\r$//' /usr/local/bin/docker-entrypoint.sh
+
+# 💡 설정 폴더 이름을 project로 통일
+
+# 5. 정적 파일 수집
+RUN SB_DB_PASSWORD=dummy SECRET_KEY=dummy python manage.py collectstatic --noinput || true
 
 ENV PYTHONPATH=/app
-# Static 파일 수집 (필요시)
-RUN SB_DB_PASSWORD=dummy python manage.py collectstatic --noinput || true
+ENV PYTHONUNBUFFERED=1
 
-CMD ["gunicorn", "--bind", "0.0.0.0:80", "project.wsgi:application"]
+EXPOSE 80
+
+# 💡 Entrypoint를 통해 DB 마이그레이션 및 시딩 자동화
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]

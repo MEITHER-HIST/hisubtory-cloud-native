@@ -4,8 +4,41 @@
 *.tfvars
 .env
 .env.*
+# Backup folders
+archive/
+achive/
+archive_state/
+docs/
+scripts/
+staticfiles/
+templates/
+library/
+supabase/
+pages/
+static/
 node_modules/
 .DS_Store
 .vscode/
 __pycache__/
 *.pyc
+venv/
+processed-*.json
+*.pem
+*.sql
+.env
+
+# JSON backup files containing sensitive data
+*_td_*.json
+activity_td*.json
+story_td*.json
+user_td*.json
+temp-*.json
+new-*.json
+current-task-def.json
+updated-user-task.json
+# clean- 파일들은 플레이스홀더만 있으므로 배포를 위해 허용함
+!clean-activity-task-def-updated.json
+!clean-story-task-def-updated.json
+!clean-user-task-def-updated.json
+!clean-web-task-def.json
+web-task-def*.json

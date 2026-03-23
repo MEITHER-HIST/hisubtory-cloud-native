@@ -15,7 +15,7 @@ variable "instance_type" {
 
 variable "key_name" {
   type    = string
-  default = "his-key"
+  default = "his_v2_key"
 }
 
 variable "db_username" {
@@ -55,4 +55,53 @@ variable "django_secret_key" {
   type      = string
   sensitive = true
   default   = "django-insecure-ti-prtjm(d_p7ve!r(g&4&(=+*_vn*x+*3z^ge567i72tr-5)1"
+}
+
+variable "supabase_url" {
+  type    = string
+  default = "https://jlvhwihvmivvihffhxse.supabase.co"
+}
+
+variable "supabase_key" {
+  type      = string
+  sensitive = true
+}
+
+variable "sb_db_name" {
+  type    = string
+  default = "postgres"
+}
+
+variable "sb_db_user" {
+  type    = string
+  default = "postgres.jlvhwihvmivvihffhxse"
+}
+
+variable "sb_db_password" {
+  type      = string
+  sensitive = true
+}
+
+variable "sb_db_host" {
+  type    = string
+  default = "aws-1-ap-northeast-2.pooler.supabase.com"
+}
+
+variable "sb_db_port" {
+  type    = string
+  default = "5432"
+}
+
+variable "aws_access_key" {
+  type    = string
+}
+
+variable "aws_secret_key" {
+  type      = string
+  sensitive = true
+}
+
+variable "django_secret_key" {
+  type      = string
+  sensitive = true
 }

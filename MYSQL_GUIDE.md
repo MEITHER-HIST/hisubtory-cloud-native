@@ -49,8 +49,5 @@ python /home/tester/update_episode_12_captions.py
 ```
 
 ## 4. Current Setup Status
-- **MySQL Container:** `hisubtory-db-mysql-verify` (running on port 3307)
-- **Database Name:** `hisubtory_db`
-- **User:** `admin`
-- **Password:** `mysql_password`
-- **Tables:** `webtoons`, `episodes`, `cuts`, `subway_station`, `subway_line`
+*   **Bastion IP (SSH 터널링용):** `43.203.220.75`
+*   **Host:** `hisubtory-db.cviagkyaooln.ap-northeast-2.rds.amazonaws.com`

@@ -1,4 +1,4 @@
-from rest_framework.decorators import api_view, permission_classes, authentication_classes
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
@@ -7,7 +7,6 @@ from .models import UserViewedEpisode, Bookmark
 from stories.models import Episode, Cut
 import boto3
 from botocore.client import Config
-import urllib.parse
 from typing import Any, Dict
 
 def get_presigned_url(path, expires_in=600):
@@ -16,28 +15,35 @@ def get_presigned_url(path, expires_in=600):
     path_str = str(path)
     if path_str.startswith('http'): return path_str
     
+    # media/ 접두사 중복 방지 로직 제거 (이미 DB에 전체 경로가 있거나 root 기준임)
+    clean_path = path_str
+    
     try:
+        region = getattr(settings, "AWS_S3_REGION_NAME", "ap-northeast-2")
+        bucket = getattr(settings, "AWS_STORAGE_BUCKET_NAME", "hisubtory-media-bucket-v2")
+        
         s3 = boto3.client("s3", 
-                          region_name=settings.AWS_S3_REGION_NAME,
-                          aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
-                          aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
-                          endpoint_url=f"https://s3.{settings.AWS_S3_REGION_NAME}.amazonaws.com",
+                          region_name=region,
+                          aws_access_key_id=getattr(settings, "AWS_ACCESS_KEY_ID", ""),
+                          aws_secret_access_key=getattr(settings, "AWS_SECRET_ACCESS_KEY", ""),
+                          endpoint_url=f"https://s3.{region}.amazonaws.com",
                           config=Config(signature_version="s3v4"))
         
         return s3.generate_presigned_url(ClientMethod="get_object",
-            Params={"Bucket": settings.AWS_STORAGE_BUCKET_NAME, "Key": path_str},
+            Params={"Bucket": bucket, "Key": clean_path},
             ExpiresIn=expires_in)
-    except:
-        return ""
-
-def _safe_episode_id(episode: Any) -> str:
-    return str(getattr(episode, "episode_id", ""))
+    except Exception as e:
+        print(f"[ERROR] Presigned URL generation failed: {str(e)}")
+        # 최종 실패 시 S3 직접 링크 시도
+        bucket = getattr(settings, "AWS_STORAGE_BUCKET_NAME", "hisubtory-media-bucket-v2")
+        region = getattr(settings, "AWS_S3_REGION_NAME", "ap-northeast-2")
+        return f"https://{bucket}.s3.{region}.amazonaws.com/{clean_path}"
 
 def _make_item_from_episode(episode: Any) -> Dict[str, Any]:
     webtoon = getattr(episode, "webtoon", None)
     station = getattr(webtoon, "station", None) if webtoon else None
     
-    # 1. 썸네일 이미지 경로 결정 (첫 번째 컷 우선)
+    # 썸네일 이미지 결정
     first_cut = Cut.objects.using('mysql').filter(episode=episode).order_by('cut_order').first()
     image_path = ""
     if first_cut and first_cut.image:
@@ -45,39 +51,72 @@ def _make_item_from_episode(episode: Any) -> Dict[str, Any]:
     elif webtoon and webtoon.thumbnail:
         image_path = webtoon.thumbnail
 
-    # 2. 보안 주소로 변환
-    final_image_url = get_presigned_url(image_path)
-
     return {
-        "id": _safe_episode_id(episode),
+        "id": str(episode.episode_id),
         "title": getattr(episode, "subtitle", ""),
         "stationName": getattr(station, "station_name", "알 수 없는 역") if station else "알 수 없는 역",
-        "imageUrl": final_image_url,
+        "imageUrl": get_presigned_url(image_path),
     }
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_user_history_api(request):
-    """최근 본 기록과 북마크 목록을 보안 이미지 주소와 함께 반환"""
+    """최근 본 기록과 북마크 목록을 반환 (ID 직접 필터링 방식)"""
     user = request.user
+    user_id = user.id # 세션에서 추출한 유저 ID 사용
+    print(f"[DEBUG] get_user_history_api called. UserID: {user_id}, Username: {user.username}")
 
-    # 1) 최근 본 이야기 10개
-    viewed_records = user.viewed_episodes.all().order_by("-viewed_at")[:10]
-    recent_data = []
-    for v in viewed_records:
-        ep = Episode.objects.using('mysql').filter(episode_id=v.episode_id).select_related("webtoon__station").first()
-        if ep:
-            recent_data.append(_make_item_from_episode(ep))
+    try:
+        # 1) 최근 본 이야기 (Supabase 조회) - 중복 제거 로직 추가
+        # episode_id별로 가장 최신 기록만 남깁니다.
+        viewed_qs = UserViewedEpisode.objects.using('default').filter(user_id=user_id).order_by('episode_id', '-viewed_at').distinct('episode_id')
+        # 그 후 다시 시간순으로 정렬하여 10개를 가져옵니다.
+        viewed_episode_ids = list(UserViewedEpisode.objects.using('default')
+                                  .filter(user_id=user_id)
+                                  .values_list('episode_id', flat=True)
+                                  .distinct()[:10])
+        
+        # 전체 고유 시청 개수 계산
+        total_viewed_count = UserViewedEpisode.objects.using('default').filter(user_id=user_id).values('episode_id').distinct().count()
+        
+        recent_data = []
+        if viewed_episode_ids:
+            episodes = Episode.objects.using('mysql').filter(episode_id__in=viewed_episode_ids).select_related("webtoon__station")
+            ep_dict = {ep.episode_id: ep for ep in episodes}
+            for eid in viewed_episode_ids:
+                if eid in ep_dict:
+                    recent_data.append(_make_item_from_episode(ep_dict[eid]))
 
-    # 2) 저장한 이야기
-    bookmark_records = user.bookmarks.all().order_by("-created_at")
-    saved_data = []
-    for b in bookmark_records:
-        ep = Episode.objects.using('mysql').filter(episode_id=b.episode_id).select_related("webtoon__station").first()
-        if ep:
-            saved_data.append(_make_item_from_episode(ep))
+        # 2) 북마크한 이야기 (Supabase 조회)
+        bookmark_qs = Bookmark.objects.using('default').filter(user_id=user_id)
+        bookmark_episode_ids = list(bookmark_qs.values_list('episode_id', flat=True).distinct())
+        
+        # 전체 북마크 개수 계산
+        total_saved_count = len(bookmark_episode_ids)
+        
+        saved_data = []
+        if bookmark_episode_ids:
+            episodes = Episode.objects.using('mysql').filter(episode_id__in=bookmark_episode_ids).select_related("webtoon__station")
+            ep_dict = {ep.episode_id: ep for ep in episodes}
+            for eid in bookmark_episode_ids:
+                if eid in ep_dict:
+                    saved_data.append(_make_item_from_episode(ep_dict[eid]))
 
-    return Response(
-        {"recent": recent_data, "saved": saved_data},
-        status=status.HTTP_200_OK,
-    )
+        return Response(
+            {
+                "recent": recent_data,
+                "saved": saved_data,
+                "recentCount": total_viewed_count,
+                "savedCount": total_saved_count,
+                "success": True
+            },
+            status=status.HTTP_200_OK,
+        )
+    except Exception as e:
+        import traceback
+        print(f"[ERROR] MyPage logic failed: {str(e)}")
+        print(traceback.format_exc())
+        return Response(
+            {"success": False, "message": str(e)},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
