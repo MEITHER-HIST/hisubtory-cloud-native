@@ -41,6 +41,18 @@
                 }
             },
             "systemControls": []
+        },
+        {
+            "name": "node-exporter",
+            "image": "prom/node-exporter:latest",
+            "portMappings": [
+                {
+                    "containerPort": 9100,
+                    "hostPort": 9100,
+                    "protocol": "tcp"
+                }
+            ],
+            "essential": true
         }
     ],
     "family": "hisubtory-web-task",

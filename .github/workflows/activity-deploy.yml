@@ -63,14 +63,12 @@ jobs:
 
       - name: Inject Secrets into Task Definition
         env:
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           SB_DB_PASSWORD: ${{ secrets.SB_DB_PASSWORD }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           SECRET_KEY: ${{ secrets.SECRET_KEY }}
         run: |
-          envsubst '$AWS_SECRET_ACCESS_KEY,$AWS_ACCESS_KEY_ID,$SB_DB_PASSWORD,$SUPABASE_KEY,$DB_PASSWORD,$SECRET_KEY' < ${{ steps.task-def.outputs.task-definition }} > processed-task-def.json
+          envsubst '$SB_DB_PASSWORD,$SUPABASE_KEY,$DB_PASSWORD,$SECRET_KEY' < ${{ steps.task-def.outputs.task-definition }} > processed-task-def.json
 
       - name: Deploy Amazon ECS task definition
         uses: aws-actions/amazon-ecs-deploy-task-definition@v2

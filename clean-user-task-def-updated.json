@@ -26,10 +26,6 @@
                     "value": "admin"
                 },
                 {
-                    "name": "AWS_SECRET_ACCESS_KEY",
-                    "value": "${AWS_SECRET_ACCESS_KEY}"
-                },
-                {
                     "name": "DB_NAME",
                     "value": "hisubtory_db"
                 },
@@ -56,10 +52,6 @@
                 {
                     "name": "REDIS_PORT",
                     "value": "6379"
-                },
-                {
-                    "name": "AWS_ACCESS_KEY_ID",
-                    "value": "${AWS_ACCESS_KEY_ID}"
                 },
                 {
                     "name": "SB_DB_NAME",
@@ -113,6 +105,18 @@
                 }
             },
             "systemControls": []
+        },
+        {
+            "name": "node-exporter",
+            "image": "prom/node-exporter:latest",
+            "portMappings": [
+                {
+                    "containerPort": 9100,
+                    "hostPort": 9100,
+                    "protocol": "tcp"
+                }
+            ],
+            "essential": true
         }
     ],
     "family": "hisubtory-user-task",
