@@ -2,7 +2,7 @@ name: Deploy to Amazon ECS (User Service)
 
 on:
   push:
-    branches: [ feat/do, dev ]
+    branches: [ feat/do ]
     paths:
       - 'user-service/**'
       - 'accounts/**'
@@ -23,7 +23,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
