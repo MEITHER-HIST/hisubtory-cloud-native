@@ -2,7 +2,7 @@ name: Deploy to Amazon ECS (Web Service)
 
 on:
   push:
-    branches: [ feat/do, dev ]
+    branches: [ feat/do ]
     paths:
       - 'web-service/**'
 

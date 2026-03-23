@@ -2,7 +2,7 @@ name: Deploy to Amazon ECS (Activity Service)
 
 on:
   push:
-    branches: [ feat/do, dev ]
+    branches: [ feat/do ]
     paths:
       - 'activity-service/**'
       - 'subway/**'

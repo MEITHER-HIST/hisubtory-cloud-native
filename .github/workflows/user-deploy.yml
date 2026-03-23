@@ -2,7 +2,7 @@ name: Deploy to Amazon ECS (User Service)
 
 on:
   push:
-    branches: [ feat/do, dev ]
+    branches: [ feat/do ]
     paths:
       - 'user-service/**'
       - 'accounts/**'
