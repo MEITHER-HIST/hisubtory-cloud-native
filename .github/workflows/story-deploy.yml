@@ -6,8 +6,6 @@ on:
     paths:
       - 'story-service/**'
       - 'stories/**'
-      - 'library/**'
-      - 'subway/**'
       - '.github/workflows/story-deploy.yml'
 
 env:
@@ -48,19 +46,19 @@ jobs:
           tags: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=inline
-- name: Fill in the new image ID in the Amazon ECS task definition
-  id: task-def
-  uses: aws-actions/amazon-ecs-render-task-definition@v1
-  with:
-    task-definition: ${{ env.ECS_TASK_DEFINITION }}
-    container-name: ${{ env.CONTAINER_NAME }}
-    image: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
 
-- name: Deploy Amazon ECS task definition
-  uses: aws-actions/amazon-ecs-deploy-task-definition@v2
-  with:
-    task-definition: ${{ steps.task-def.outputs.task-definition }}
-    service: ${{ env.ECS_SERVICE }}
-    cluster: ${{ env.ECS_CLUSTER }}
-    wait-for-service-stability: false
+      - name: Fill in the new image ID in the Amazon ECS task definition
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ${{ env.ECS_TASK_DEFINITION }}
+          container-name: ${{ env.CONTAINER_NAME }}
+          image: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
 
+      - name: Deploy Amazon ECS task definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: ${{ env.ECS_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: false
