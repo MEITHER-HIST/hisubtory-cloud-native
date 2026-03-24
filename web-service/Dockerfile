@@ -4,7 +4,6 @@ FROM node:22-alpine AS build
 # 빌드 시 메모리 제한 확장 및 Vite 에러 방지용 환경 변수
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 ENV VITE_API_URL="/api"
-# 💡 CI=false로 설정하여 사소한 경고(Warning)가 빌드를 멈추지 않게 함
 ENV CI=false
 
 WORKDIR /app
@@ -15,10 +14,14 @@ COPY package*.json ./
 # 💡 피어 의존성 무시 및 유연한 설치
 RUN npm install --legacy-peer-deps
 
-# 소스 복사
+# 소스 및 설정 파일 복사
 COPY . .
 
-# 💡 상세 로그와 함께 빌드 실행 (빌드 실패 시 원인 파악 용이)
+# 💡 빌드 전 index.html 존재 확인 (로그 기록용)
+RUN ls -al index.html
+
+# 💡 타입 체크 건너뛰고 Vite 빌드 직접 실행
+# npx를 통해 설치된 로컬 vite를 직접 호출하여 경로 문제를 해결합니다.
 RUN npx vite build --emptyOutDir
 
 # Stage 2: Serve

@@ -4,19 +4,19 @@ import path from 'node:path';
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  // 💡 엔트리 포인트 탐색 위치를 명시적으로 현재 디렉토리로 설정
+  root: process.cwd(),
   plugins: [react()],
   resolve: {
-    // 💡 불필요하고 에러를 유발하는 라이브러리 버전별 별칭을 모두 제거하고 표준 별칭만 사용합니다.
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
   },
   build: {
     target: 'esnext',
-    outDir: 'build', // Dockerfile의 경로와 일치해야 함
+    outDir: 'build',
     emptyOutDir: true,
     sourcemap: false,
-    chunkSizeWarningLimit: 1000,
   },
   server: {
     port: 5173,
