@@ -73,12 +73,13 @@ def login_api_view(request):
             return JsonResponse({"success": False, "message": "인증 서비스가 준비되지 않았습니다."}, status=500)
 
         data = get_request_data(request)
-        email = data.get('email')
-        password = data.get('password')
+        # 💡 프론트엔드에 따라 'email' 또는 'username'을 ID로 사용 가능하므로 유연하게 처리
+        email = data.get('email') or data.get('username')
+        password = data.get('password') or data.get('password1')
 
         if not email or not password:
             print(f"DEBUG: 로그인 필수 필드 누락 (수신된 키: {list(data.keys())})")
-            return JsonResponse({"success": False, "message": "이메일과 비밀번호를 입력해주세요."}, status=400)
+            return JsonResponse({"success": False, "message": "이메일(또는 아이디)과 비밀번호를 입력해주세요."}, status=400)
 
         # 1. Supabase Auth로 로그인 시도
         res = supabase.auth.sign_in_with_password({
@@ -115,7 +116,6 @@ def login_api_view(request):
         error_msg = str(e)
         print(f"ERROR: 로그인 실패 상세: {error_msg}")
         
-        # Supabase 에러 메시지 한글화
         friendly_msg = "로그인 중 오류가 발생했습니다."
         if "Invalid login credentials" in error_msg:
             friendly_msg = "이메일 또는 비밀번호가 올바르지 않습니다."
@@ -127,7 +127,7 @@ def login_api_view(request):
 @csrf_exempt
 @require_POST
 def signup_api_view(request):
-    """회원가입 처리 (상세 로깅 포함)"""
+    """회원가입 처리 (프론트엔드 필드명 password1, password2 대응)"""
     try:
         print(f"DEBUG: 회원가입 요청 수신 (Content-Type: {request.content_type})")
         if not supabase:
@@ -136,11 +136,18 @@ def signup_api_view(request):
         data = get_request_data(request)
         username = data.get('username')
         email = data.get('email')
-        password = data.get('password')
+        
+        # 💡 프론트엔드 필드명(password1) 대응
+        password = data.get('password') or data.get('password1')
+        password_confirm = data.get('password_confirm') or data.get('password2')
 
         if not username or not email or not password:
             print(f"DEBUG: 회원가입 필수 필드 누락 (수신된 키: {list(data.keys())})")
-            return JsonResponse({"success": False, "message": "모든 필드를 입력해 주세요."}, status=400)
+            return JsonResponse({"success": False, "message": "모든 필드를 입력해 주세요 (아이디, 이메일, 비밀번호)."}, status=400)
+
+        # 💡 비밀번호 일치 확인
+        if password and password_confirm and password != password_confirm:
+            return JsonResponse({"success": False, "message": "비밀번호가 일치하지 않습니다."}, status=400)
 
         # 1. Supabase Auth로 가입 시도
         try:
