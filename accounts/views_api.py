@@ -37,7 +37,21 @@ def get_request_data(request):
             return json.loads(request.body)
         except json.JSONDecodeError:
             return {}
-    return request.POST
+    # 💡 Form Data 또는 URLSearchParams 대응
+    if request.POST:
+        return request.POST
+    
+    # 💡 body에 데이터가 있지만 POST가 비어있는 경우를 위한 폴백
+    try:
+        from urllib.parse import parse_qs
+        body_str = request.body.decode('utf-8')
+        if body_str:
+            data = parse_qs(body_str)
+            return {k: v[0] for k, v in data.items()}
+    except:
+        pass
+        
+    return {}
 
 @csrf_exempt
 @require_POST
