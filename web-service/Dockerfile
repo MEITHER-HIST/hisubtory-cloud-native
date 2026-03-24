@@ -1,9 +1,15 @@
 # Stage 1: Build
 FROM node:20-alpine AS build
+
+# 빌드 시 메모리 제한 확장 (Vite 빌드 안정성 확보)
+ENV NODE_OPTIONS="--max-old-space-size=4096"
+
 WORKDIR /app
-# 종속성 파일 복사 및 설치
+
+# 종속성 파일 복사 및 설치 (확실한 빌드 도구 설치를 위해 devDependencies 포함)
 COPY package*.json ./
-RUN npm install
+RUN npm install --include=dev
+
 # 소스 복사 및 빌드
 COPY . .
 RUN npm run build
