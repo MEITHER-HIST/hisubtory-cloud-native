@@ -1,14 +1,18 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-// https://vitejs.dev/config/
+// 💡 ESM 환경에서 __dirname을 대체하는 표준 방법
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 export default defineConfig({
-  // 💡 엔트리 포인트 탐색 위치를 명시적으로 현재 디렉토리로 설정
   root: process.cwd(),
   plugins: [react()],
   resolve: {
     alias: {
+      // 💡 경로 별칭을 안전하게 설정
       '@': path.resolve(__dirname, './src'),
     },
   },
@@ -17,18 +21,8 @@ export default defineConfig({
     outDir: 'build',
     emptyOutDir: true,
     sourcemap: false,
-  },
-  server: {
-    port: 5173,
-    proxy: {
-      '/api': {
-        target: 'http://127.0.0.1:8000',
-        changeOrigin: true,
-        secure: false,
-      },
-      '/admin': { target: 'http://127.0.0.1:8000' },
-      '/static': { target: 'http://127.0.0.1:8000' },
-      '/media': { target: 'http://127.0.0.1:8000' },
-    },
+    // 💡 빌드 실패 시 상세 로그를 위한 설정
+    minify: 'esbuild',
+    reportCompressedSize: false,
   },
 });
