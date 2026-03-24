@@ -4,15 +4,18 @@ import path from 'node:path';
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  // 💡 리소스 경로를 상대 경로로 설정하여 MIME 타입 에러 방지
+  base: './',
   plugins: [react()],
   resolve: {
     alias: {
-      // 💡 경로 별칭을 표준적인 방식으로 설정
       '@': path.resolve(__dirname, './src'),
     },
   },
   build: {
-    outDir: 'build',
+    // 💡 Vite 기본값인 dist 폴더를 사용하여 호환성 극대화
+    outDir: 'dist',
     emptyOutDir: true,
+    assetsDir: 'assets',
   }
 });

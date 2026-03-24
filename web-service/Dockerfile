@@ -20,7 +20,9 @@ RUN npx vite build --emptyOutDir
 
 # Stage 2: Serve
 FROM nginx:stable-alpine
-COPY --from=build /app/web-service/build /usr/share/nginx/html
+# Vite 기본 빌드 폴더인 dist를 Nginx 경로로 복사
+COPY --from=build /app/web-service/dist /usr/share/nginx/html
+# Nginx 설정 파일 복사
 COPY web-service/nginx/default.conf /etc/nginx/conf.d/default.conf
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
