@@ -73,18 +73,27 @@ def login_api_view(request):
             if not password: missing.append("password")
             return JsonResponse({"success": False, "message": f"필수 필드가 누락되었습니다: {', '.join(missing)}"}, status=400)
 
-        # Supabase Auth로 로그인 시도
+        # 1. Supabase Auth로 로그인 시도
         res = supabase.auth.sign_in_with_password({
             "email": email,
             "password": password
         })
         
         supabase_user = res.user
+        
+        # 2. 장고 DB 동기화 및 활성화 여부 확인
         user, created = User.objects.get_or_create(
             email=supabase_user.email,
-            defaults={'username': supabase_user.user_metadata.get('username', email.split('@')[0])}
+            defaults={
+                'username': supabase_user.user_metadata.get('username', email.split('@')[0]),
+                'is_active': True # ✅ 기본적으로 활성 상태로 생성
+            }
         )
         
+        if not user.is_active:
+            return JsonResponse({"success": False, "message": "계정이 비활성화되어 있습니다. 관리자에게 문의하세요."}, status=403)
+        
+        # 3. 장고 세션 로그인 수행
         login(request, user)
         
         return JsonResponse({
@@ -112,7 +121,7 @@ def login_api_view(request):
 @csrf_exempt
 @require_POST
 def signup_api_view(request):
-    """회원가입 처리 (필드 누락 상세 확인)"""
+    """회원가입 처리 (필드 누락 상세 확인 및 SMTP 예외 처리)"""
     try:
         if not supabase:
             return JsonResponse({"success": False, "message": "인증 서비스가 준비되지 않았습니다. 관리자에게 문의하세요."}, status=500)
@@ -122,7 +131,6 @@ def signup_api_view(request):
         email = data.get('email')
         password = data.get('password')
 
-        # 어떤 필드가 누락되었는지 구체적으로 파악
         if not username or not email or not password:
             missing = []
             if not username: missing.append("username")
@@ -130,24 +138,32 @@ def signup_api_view(request):
             if not password: missing.append("password")
             return JsonResponse({"success": False, "message": f"필수 필드가 누락되었습니다: {', '.join(missing)}"}, status=400)
 
-        # 1. Supabase Auth로 가입 시도
-        res = supabase.auth.sign_up({
-            "email": email,
-            "password": password,
-            "options": {
-                "data": {
-                    "username": username
+        # 1. Supabase Auth로 가입 시도 (인증 메일 발송 트리거)
+        try:
+            res = supabase.auth.sign_up({
+                "email": email,
+                "password": password,
+                "options": {
+                    "data": {
+                        "username": username
+                    }
                 }
-            }
-        })
+            })
+        except Exception as auth_e:
+            # 💡 SMTP 설정 오류 등으로 가입이 안 되는 경우를 위한 상세 로깅
+            auth_error = str(auth_e)
+            print(f"Supabase Auth 가입 실패: {auth_error}")
+            if "Database error saving new user" in auth_error or "SMTP" in auth_error:
+                return JsonResponse({"success": False, "message": "이메일 발송 시스템에 일시적인 문제가 있습니다. 잠시 후 다시 시도해 주세요."}, status=503)
+            raise auth_e
 
-        # 2. 장고 DB 동기화
+        # 2. 장고 DB 동기화 (테스트를 위해 우선 is_active=True로 생성)
         if not User.objects.filter(email=email).exists():
             User.objects.create_user(
                 username=username, 
                 email=email, 
                 password=password,
-                is_active=False
+                is_active=True # ✅ 테스트 편의를 위해 즉시 활성화
             )
 
         return JsonResponse({
