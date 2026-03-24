@@ -113,6 +113,11 @@ CSRF_TRUSTED_ORIGINS = [
     "http://hisubtory-alb-913594763.ap-northeast-2.elb.amazonaws.com",
 ]
 
+# ✅ 보안 및 프록시 설정 (ALB 환경 필수)
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
+USE_X_FORWARDED_PORT = True
+
 # 💡 서비스 간 세션 공유를 위한 도메인 설정 개선
 SESSION_COOKIE_DOMAIN = ".hisubtory.site"
 SESSION_COOKIE_SECURE = True

@@ -14,15 +14,18 @@ from .serializers import EpisodeSerializer
 @api_view(['GET'])
 def pick_episode_view(request, station_id):
     """
-    station_id 기준 에피소드 선택 (정확한 매칭 로직 적용)
+    ID 기준 에피소드 선택 (DBeaver webtoon_id 최우선 매칭 로직)
     """
     mode = request.GET.get('mode', 'auto')
     user = request.user if request.user.is_authenticated else None
 
-    # 해당 역에 연결된 에피소드들 가져오기 (Webtoon의 station_id를 정확히 참조)
+    # 1. 입력받은 ID가 Webtoon의 고유 ID(webtoon_id)인 경우를 최우선으로 찾습니다. (가장 정확한 매칭)
     from .models import Webtoon
-    webtoon_ids = Webtoon.objects.filter(station_id=station_id).values_list('webtoon_id', flat=True)
-    episodes = Episode.objects.filter(webtoon_id__in=webtoon_ids)
+    episodes = Episode.objects.filter(webtoon_id=station_id)
+
+    # 2. 만약 webtoon_id로 조회된 에피소드가 없다면, station_id로 한 번 더 조회합니다.
+    if not episodes.exists():
+        episodes = Episode.objects.filter(webtoon__station_id=station_id)
 
     # -----------------------------
     # 역 버튼 클릭: 미시청 우선
@@ -38,16 +41,23 @@ def pick_episode_view(request, station_id):
         episodes = episodes.exclude(episode_id__in=viewed_ids)
 
     # -----------------------------
-    # 선택 가능한 에피가 없으면 해당 역의 전체 에피로 fallback
+    # 최종 결과가 없으면 전체 에피로 fallback
     # -----------------------------
     if not episodes.exists():
-        episodes = Episode.objects.filter(webtoon_id__in=webtoon_ids)
+        episodes = Episode.objects.filter(webtoon_id=station_id)
+        if not episodes.exists():
+             episodes = Episode.objects.filter(webtoon__station_id=station_id)
 
     if not episodes.exists():
         return Response(
-            {"success": False, "message": "해당 역에 등록된 이야기가 없습니다."},
+            {"success": False, "message": "해당 조건에 맞는 이야기가 없습니다."},
             status=status.HTTP_404_NOT_FOUND
         )
+
+    # -----------------------------
+    # 랜덤 선택
+    # -----------------------------
+    episode = random.choice(list(episodes))
 
     # -----------------------------
     # 랜덤 선택
