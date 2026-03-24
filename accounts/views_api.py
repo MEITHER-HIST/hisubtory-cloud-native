@@ -31,17 +31,19 @@ def csrf_api_view(request):
     return JsonResponse({"success": True, "detail": "CSRF cookie set"})
 
 def get_request_data(request):
-    """JSON 또는 Form Data에서 데이터를 추출하는 헬퍼 함수"""
-    if request.content_type == 'application/json':
-        try:
+    """JSON 또는 Form Data에서 데이터를 추출하는 헬퍼 함수 (개선됨)"""
+    # 1. JSON 데이터 처리 (Content-Type에 상관없이 시도)
+    try:
+        if request.body:
             return json.loads(request.body)
-        except json.JSONDecodeError:
-            return {}
-    # 💡 Form Data 또는 URLSearchParams 대응
+    except (json.JSONDecodeError, UnicodeDecodeError):
+        pass
+
+    # 2. Form Data 처리
     if request.POST:
-        return request.POST
+        return {k: v for k, v in request.POST.items()}
     
-    # 💡 body에 데이터가 있지만 POST가 비어있는 경우를 위한 폴백
+    # 3. URLSearchParams 또는 Body 문자열 파싱
     try:
         from urllib.parse import parse_qs
         body_str = request.body.decode('utf-8')
@@ -56,7 +58,7 @@ def get_request_data(request):
 @csrf_exempt
 @require_POST
 def login_api_view(request):
-    """로그인 처리 (Supabase Auth 사용 권장)"""
+    """로그인 처리 (상세 에러 메시지 제공)"""
     try:
         if not supabase:
             return JsonResponse({"success": False, "message": "인증 서비스가 준비되지 않았습니다. 관리자에게 문의하세요."}, status=500)
@@ -66,22 +68,23 @@ def login_api_view(request):
         password = data.get('password')
 
         if not email or not password:
-            return JsonResponse({"success": False, "message": "이메일과 비밀번호를 모두 입력해 주세요."}, status=400)
+            missing = []
+            if not email: missing.append("email")
+            if not password: missing.append("password")
+            return JsonResponse({"success": False, "message": f"필수 필드가 누락되었습니다: {', '.join(missing)}"}, status=400)
 
-        # 💡 Supabase Auth로 로그인 시도
+        # Supabase Auth로 로그인 시도
         res = supabase.auth.sign_in_with_password({
             "email": email,
             "password": password
         })
         
-        # 💡 장고 DB와 동기화 (세션 유지를 위해 필수)
         supabase_user = res.user
         user, created = User.objects.get_or_create(
             email=supabase_user.email,
             defaults={'username': supabase_user.user_metadata.get('username', email.split('@')[0])}
         )
         
-        # 장고 세션 로그인 수행
         login(request, user)
         
         return JsonResponse({
@@ -94,24 +97,22 @@ def login_api_view(request):
             }
         })
     except Exception as e:
-        # 에러 메시지 상세 분석 및 한글화
         error_msg = str(e)
         print(f"로그인 오류 상세: {error_msg}")
-        status_code = 401
         
         if "Invalid login credentials" in error_msg:
             friendly_msg = "이메일 또는 비밀번호가 올바르지 않습니다."
         elif "Email not confirmed" in error_msg:
-            friendly_msg = "아직 이메일 인증이 완료되지 않았습니다. 메일함을 확인해 주세요."
+            friendly_msg = "이메일 인증이 완료되지 않았습니다. 메일함에서 인증 링크를 클릭해 주세요."
         else:
             friendly_msg = f"로그인 중 오류가 발생했습니다: {error_msg}"
             
-        return JsonResponse({"success": False, "message": friendly_msg}, status=status_code)
+        return JsonResponse({"success": False, "message": friendly_msg}, status=401)
 
 @csrf_exempt
 @require_POST
 def signup_api_view(request):
-    """Supabase Auth SDK를 이용한 회원가입 (인증 메일 발송 포함)"""
+    """회원가입 처리 (필드 누락 상세 확인)"""
     try:
         if not supabase:
             return JsonResponse({"success": False, "message": "인증 서비스가 준비되지 않았습니다. 관리자에게 문의하세요."}, status=500)
@@ -121,10 +122,15 @@ def signup_api_view(request):
         email = data.get('email')
         password = data.get('password')
 
+        # 어떤 필드가 누락되었는지 구체적으로 파악
         if not username or not email or not password:
-            return JsonResponse({"success": False, "message": "모든 필드를 입력해 주세요 (username, email, password)."}, status=400)
+            missing = []
+            if not username: missing.append("username")
+            if not email: missing.append("email")
+            if not password: missing.append("password")
+            return JsonResponse({"success": False, "message": f"필수 필드가 누락되었습니다: {', '.join(missing)}"}, status=400)
 
-        # 💡 1. Supabase Auth로 가입 시도 (인증 메일 발송 트리거)
+        # 1. Supabase Auth로 가입 시도
         res = supabase.auth.sign_up({
             "email": email,
             "password": password,
@@ -135,19 +141,18 @@ def signup_api_view(request):
             }
         })
 
-        # 💡 2. 장고 DB에도 유저 생성 (이메일 인증 전이므로 활성화는 나중에)
+        # 2. 장고 DB 동기화
         if not User.objects.filter(email=email).exists():
             User.objects.create_user(
                 username=username, 
                 email=email, 
                 password=password,
-                is_active=False # 이메일 인증 전에는 비활성화 권장
+                is_active=False
             )
 
-        # 💡 3. 가입 성공 시 안내 (메일 확인 필요)
         return JsonResponse({
             "success": True, 
-            "message": f"회원가입 신청이 성공했습니다! {email} 메일함에서 인증 링크를 꼭 클릭해 주세요."
+            "message": f"회원가입 신청이 성공했습니다! {email} 메일함에서 인증 링크를 클릭해 주세요."
         })
 
     except Exception as e:
@@ -155,8 +160,6 @@ def signup_api_view(request):
         print(f"회원가입 오류 상세: {error_msg}")
         if "User already registered" in error_msg:
             friendly_msg = "이미 등록된 이메일 주소입니다."
-        elif "already exists" in error_msg:
-            friendly_msg = "이미 존재하는 사용자입니다."
         else:
             friendly_msg = f"가입 중 오류가 발생했습니다: {error_msg}"
         
