@@ -19,14 +19,16 @@ def pick_episode_view(request, station_id):
     mode = request.GET.get('mode', 'auto')
     user = request.user if request.user.is_authenticated else None
 
-    # 해당 역에 연결된 에피소드들 가져오기 (Webtoon을 거침)
-    episodes = Episode.objects.filter(webtoon__station_id=station_id)
+    # 해당 역에 연결된 에피소드들 가져오기 (Webtoon의 station_id를 정확히 참조)
+    from .models import Webtoon
+    webtoon_ids = Webtoon.objects.filter(station_id=station_id).values_list('webtoon_id', flat=True)
+    episodes = Episode.objects.filter(webtoon_id__in=webtoon_ids)
 
     # -----------------------------
     # 역 버튼 클릭: 미시청 우선
     # -----------------------------
     if mode == 'unseen':
-        if not user:
+        if not user or not user.is_authenticated:
             return Response(
                 {"success": False, "message": "로그인이 필요합니다."},
                 status=status.HTTP_401_UNAUTHORIZED
@@ -39,7 +41,7 @@ def pick_episode_view(request, station_id):
     # 선택 가능한 에피가 없으면 해당 역의 전체 에피로 fallback
     # -----------------------------
     if not episodes.exists():
-        episodes = Episode.objects.filter(webtoon__station_id=station_id)
+        episodes = Episode.objects.filter(webtoon_id__in=webtoon_ids)
 
     if not episodes.exists():
         return Response(

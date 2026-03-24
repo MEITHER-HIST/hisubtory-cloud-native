@@ -113,13 +113,18 @@ CSRF_TRUSTED_ORIGINS = [
     "http://hisubtory-alb-913594763.ap-northeast-2.elb.amazonaws.com",
 ]
 
-# 💡 서비스 간 세션 공유를 위한 도메인 설정
+# 💡 서비스 간 세션 공유를 위한 도메인 설정 개선
 SESSION_COOKIE_DOMAIN = ".hisubtory.site"
 SESSION_COOKIE_SECURE = True
-SESSION_COOKIE_SAMESITE = 'None'
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'
 CSRF_COOKIE_DOMAIN = ".hisubtory.site"
 CSRF_COOKIE_SECURE = True
-CSRF_COOKIE_SAMESITE = 'None'
+CSRF_COOKIE_HTTPONLY = False
+CSRF_COOKIE_SAMESITE = 'Lax'
+
+SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+SESSION_CACHE_ALIAS = "default"
 
 TEMPLATES = [
     {

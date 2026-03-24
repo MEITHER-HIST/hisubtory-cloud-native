@@ -113,15 +113,18 @@ CSRF_TRUSTED_ORIGINS = [
     "http://hisubtory-alb-913594763.ap-northeast-2.elb.amazonaws.com",
 ]
 
-# 💡 서비스 간 세션 공유를 위한 도메인 설정
+# 💡 서비스 간 세션 공유를 위한 도메인 설정 개선
 SESSION_COOKIE_DOMAIN = ".hisubtory.site"
 SESSION_COOKIE_SECURE = True
-SESSION_COOKIE_SAMESITE = 'None'
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax' # None에서 Lax로 변경하여 안정성 확보
 CSRF_COOKIE_DOMAIN = ".hisubtory.site"
 CSRF_COOKIE_SECURE = True
-CSRF_COOKIE_SAMESITE = 'None'
-# CSRF Exempt for APIs (세션 기반 인증 시 주의 필요하지만, 403 방지를 위해 고려)
-# CSRF_COOKIE_HTTPONLY = False 
+CSRF_COOKIE_HTTPONLY = False # 프론트엔드에서 읽을 수 있도록 허용
+CSRF_COOKIE_SAMESITE = 'Lax'
+
+SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+SESSION_CACHE_ALIAS = "default"
 
 TEMPLATES = [
     {
