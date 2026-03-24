@@ -14,16 +14,13 @@ from .serializers import EpisodeSerializer
 @api_view(['GET'])
 def pick_episode_view(request, station_id):
     """
-    station_id 기준 에피소드 선택
-    ?mode=auto/unseen
-    - mode=unseen → 역 버튼 클릭, 로그인 유저만 가능
-    - mode=auto   → 랜덤 버튼 클릭, 로그인/비로그인 모두 가능
+    station_id 기준 에피소드 선택 (정확한 매칭 로직 적용)
     """
     mode = request.GET.get('mode', 'auto')
     user = request.user if request.user.is_authenticated else None
 
-    station = get_object_or_404(Station, id=station_id)
-    episodes = Episode.objects.filter(station=station)
+    # 해당 역에 연결된 에피소드들 가져오기 (Webtoon을 거침)
+    episodes = Episode.objects.filter(webtoon__station_id=station_id)
 
     # -----------------------------
     # 역 버튼 클릭: 미시청 우선
@@ -35,20 +32,18 @@ def pick_episode_view(request, station_id):
                 status=status.HTTP_401_UNAUTHORIZED
             )
         # 로그인 유저만 미시청 에피 선택
-        episodes = episodes.exclude(
-            id__in=UserViewedEpisode.objects.filter(user=user)
-            .values_list('episode_id', flat=True)
-        )
+        viewed_ids = UserViewedEpisode.objects.using('default').filter(user=user).values_list('episode_id', flat=True)
+        episodes = episodes.exclude(episode_id__in=viewed_ids)
 
     # -----------------------------
-    # 선택 가능한 에피가 없으면 전체 에피로 fallback
+    # 선택 가능한 에피가 없으면 해당 역의 전체 에피로 fallback
     # -----------------------------
     if not episodes.exists():
-        episodes = Episode.objects.filter(station=station)
+        episodes = Episode.objects.filter(webtoon__station_id=station_id)
 
     if not episodes.exists():
         return Response(
-            {"success": False, "message": "No episodes available"},
+            {"success": False, "message": "해당 역에 등록된 이야기가 없습니다."},
             status=status.HTTP_404_NOT_FOUND
         )
 

@@ -51,11 +51,14 @@ class SubwayLineView(APIView):
                     .values_list('episode_id', flat=True)
                 )
 
-            # 모든 에피소드 정보를 한 번에 가져와서 역별로 그룹화 (N+1 방지)
-            all_episodes = Episode.objects.all().values('id', 'episode_id', 'station_id')
+            # 모든 에피소드 정보를 가져올 때 Webtoon을 거쳐 station_id를 가져옵니다.
+            all_episodes = Episode.objects.select_related('webtoon').values(
+                'episode_id', 'webtoon__station_id'
+            )
+            
             station_to_episodes = {}
             for ep in all_episodes:
-                sid = ep['station_id']
+                sid = ep['webtoon__station_id']
                 if sid not in station_to_episodes:
                     station_to_episodes[sid] = []
                 station_to_episodes[sid].append(ep['episode_id'])
@@ -65,7 +68,7 @@ class SubwayLineView(APIView):
                 stations_data = []
                 for s in line.stations.all():
                     station_eps = station_to_episodes.get(s.id, [])
-                    # 시청 기록(viewed_episode_ids)과 해당 역의 에피소드들 간에 교집합이 있는지 확인
+                    # 해당 역에 속한 에피소드들 중 사용자가 본 것이 하나라도 있는지 확인
                     is_visited = any(eid in viewed_episode_ids for eid in station_eps)
                     
                     stations_data.append({
