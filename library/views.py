@@ -9,37 +9,34 @@ import boto3
 from botocore.client import Config
 from typing import Any, Dict
 
-def get_presigned_url(path, expires_in=600):
-    """S3 경로를 받아 보안 주소(Presigned URL)를 생성하는 공통 함수"""
+def get_s3_client():
+    """S3 클라이언트를 한 번만 생성하기 위한 유틸리티"""
+    region = getattr(settings, "AWS_S3_REGION_NAME", "ap-northeast-2")
+    return boto3.client("s3", 
+                      region_name=region,
+                      aws_access_key_id=getattr(settings, "AWS_ACCESS_KEY_ID", ""),
+                      aws_secret_access_key=getattr(settings, "AWS_SECRET_ACCESS_KEY", ""),
+                      endpoint_url=f"https://s3.{region}.amazonaws.com",
+                      config=Config(signature_version="s3v4"))
+
+def get_presigned_url(s3_client, path, expires_in=600):
+    """S3 경로를 받아 보안 주소(Presigned URL)를 생성하는 공통 함수 (클라이언트 재사용)"""
     if not path: return ""
     path_str = str(path)
     if path_str.startswith('http'): return path_str
     
-    # media/ 접두사 중복 방지 로직 제거 (이미 DB에 전체 경로가 있거나 root 기준임)
-    clean_path = path_str
-    
     try:
-        region = getattr(settings, "AWS_S3_REGION_NAME", "ap-northeast-2")
         bucket = getattr(settings, "AWS_STORAGE_BUCKET_NAME", "hisubtory-media-bucket-v2")
-        
-        s3 = boto3.client("s3", 
-                          region_name=region,
-                          aws_access_key_id=getattr(settings, "AWS_ACCESS_KEY_ID", ""),
-                          aws_secret_access_key=getattr(settings, "AWS_SECRET_ACCESS_KEY", ""),
-                          endpoint_url=f"https://s3.{region}.amazonaws.com",
-                          config=Config(signature_version="s3v4"))
-        
-        return s3.generate_presigned_url(ClientMethod="get_object",
-            Params={"Bucket": bucket, "Key": clean_path},
+        return s3_client.generate_presigned_url(ClientMethod="get_object",
+            Params={"Bucket": bucket, "Key": path_str},
             ExpiresIn=expires_in)
     except Exception as e:
         print(f"[ERROR] Presigned URL generation failed: {str(e)}")
-        # 최종 실패 시 S3 직접 링크 시도
         bucket = getattr(settings, "AWS_STORAGE_BUCKET_NAME", "hisubtory-media-bucket-v2")
         region = getattr(settings, "AWS_S3_REGION_NAME", "ap-northeast-2")
-        return f"https://{bucket}.s3.{region}.amazonaws.com/{clean_path}"
+        return f"https://{bucket}.s3.{region}.amazonaws.com/{path_str}"
 
-def _make_item_from_episode(episode: Any) -> Dict[str, Any]:
+def _make_item_from_episode(s3_client, episode: Any) -> Dict[str, Any]:
     webtoon = getattr(episode, "webtoon", None)
     station = getattr(webtoon, "station", None) if webtoon else None
     
@@ -55,52 +52,51 @@ def _make_item_from_episode(episode: Any) -> Dict[str, Any]:
         "id": str(episode.episode_id),
         "title": getattr(episode, "subtitle", ""),
         "stationName": getattr(station, "station_name", "알 수 없는 역") if station else "알 수 없는 역",
-        "imageUrl": get_presigned_url(image_path),
+        "imageUrl": get_presigned_url(s3_client, image_path),
     }
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_user_history_api(request):
-    """최근 본 기록과 북마크 목록을 반환 (ID 직접 필터링 방식)"""
+    """최근 본 기록과 북마크 목록을 반환 (성능 최적화 버전)"""
     user = request.user
-    user_id = user.id # 세션에서 추출한 유저 ID 사용
-    print(f"[DEBUG] get_user_history_api called. UserID: {user_id}, Username: {user.username}")
+    user_id = user.id
+    print(f"[DEBUG] get_user_history_api called. UserID: {user_id}")
 
     try:
-        # 1) 최근 본 이야기 (Supabase 조회) - 중복 제거 로직 추가
-        # episode_id별로 가장 최신 기록만 남깁니다.
-        viewed_qs = UserViewedEpisode.objects.using('default').filter(user_id=user_id).order_by('episode_id', '-viewed_at').distinct('episode_id')
-        # 그 후 다시 시간순으로 정렬하여 10개를 가져옵니다.
+        s3_client = get_s3_client() # 한 번만 생성
+        
+        # 1) 최근 본 이야기
         viewed_episode_ids = list(UserViewedEpisode.objects.using('default')
                                   .filter(user_id=user_id)
+                                  .order_by('-viewed_at') # 최신순
                                   .values_list('episode_id', flat=True)
                                   .distinct()[:10])
         
-        # 전체 고유 시청 개수 계산
         total_viewed_count = UserViewedEpisode.objects.using('default').filter(user_id=user_id).values('episode_id').distinct().count()
         
         recent_data = []
         if viewed_episode_ids:
-            episodes = Episode.objects.using('mysql').filter(episode_id__in=viewed_episode_ids).select_related("webtoon__station")
-            ep_dict = {ep.episode_id: ep for ep in episodes}
+            ep_dict = {ep.episode_id: ep for ep in Episode.objects.using('mysql').filter(episode_id__in=viewed_episode_ids).select_related("webtoon__station")}
             for eid in viewed_episode_ids:
                 if eid in ep_dict:
-                    recent_data.append(_make_item_from_episode(ep_dict[eid]))
+                    recent_data.append(_make_item_from_episode(s3_client, ep_dict[eid]))
 
-        # 2) 북마크한 이야기 (Supabase 조회)
-        bookmark_qs = Bookmark.objects.using('default').filter(user_id=user_id)
-        bookmark_episode_ids = list(bookmark_qs.values_list('episode_id', flat=True).distinct())
+        # 2) 북마크한 이야기
+        bookmark_episode_ids = list(Bookmark.objects.using('default')
+                                    .filter(user_id=user_id)
+                                    .order_by('-created_at')
+                                    .values_list('episode_id', flat=True)
+                                    .distinct())
         
-        # 전체 북마크 개수 계산
         total_saved_count = len(bookmark_episode_ids)
         
         saved_data = []
         if bookmark_episode_ids:
-            episodes = Episode.objects.using('mysql').filter(episode_id__in=bookmark_episode_ids).select_related("webtoon__station")
-            ep_dict = {ep.episode_id: ep for ep in episodes}
+            ep_dict = {ep.episode_id: ep for ep in Episode.objects.using('mysql').filter(episode_id__in=bookmark_episode_ids).select_related("webtoon__station")}
             for eid in bookmark_episode_ids:
                 if eid in ep_dict:
-                    saved_data.append(_make_item_from_episode(ep_dict[eid]))
+                    saved_data.append(_make_item_from_episode(s3_client, ep_dict[eid]))
 
         return Response(
             {

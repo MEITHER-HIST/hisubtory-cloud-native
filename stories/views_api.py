@@ -61,7 +61,14 @@ def pick_episode_view(request, station_id):
     # 로그인 유저 본 기록 저장
     # -----------------------------
     if user:
-        UserViewedEpisode.objects.get_or_create(user=user, episode=episode)
+        # Supabase(default)에 저장. 필드명은 episode_id입니다.
+        # 중복 방지를 위해 get_or_create 대신 update_or_create로 최신 시청 시간 갱신
+        from django.utils import timezone
+        UserViewedEpisode.objects.using('default').update_or_create(
+            user=user, 
+            episode_id=episode.episode_id,
+            defaults={'viewed_at': timezone.now()}
+        )
 
     serializer = EpisodeSerializer(episode)
     return Response({"success": True, "episode": serializer.data})
@@ -77,7 +84,12 @@ def view_episode(request, episode_id):
     if not user.is_authenticated:
         return Response({"success": False, "message": "Login required"}, status=status.HTTP_401_UNAUTHORIZED)
 
-    UserViewedEpisode.objects.get_or_create(user=user, episode=episode)
+    from django.utils import timezone
+    UserViewedEpisode.objects.using('default').update_or_create(
+        user=user, 
+        episode_id=episode.episode_id,
+        defaults={'viewed_at': timezone.now()}
+    )
     serializer = EpisodeSerializer(episode)
     return Response({"success": True, "episode": serializer.data})
 
@@ -92,12 +104,14 @@ def save_episode(request, episode_id):
     if not user.is_authenticated:
         return Response({"success": False, "message": "Login required"}, status=status.HTTP_401_UNAUTHORIZED)
 
-    bookmark, created = Bookmark.objects.get_or_create(user=user, episode=episode)
-    if not created:
+    bookmark_qs = Bookmark.objects.using('default').filter(user=user, episode_id=episode.episode_id)
+    if bookmark_qs.exists():
         # 이미 즐겨찾기 되어 있으면 제거
-        bookmark.delete()
+        bookmark_qs.delete()
         action = "removed"
     else:
+        # 북마크 생성
+        Bookmark.objects.using('default').create(user=user, episode_id=episode.episode_id)
         action = "added"
 
     serializer = EpisodeSerializer(episode)

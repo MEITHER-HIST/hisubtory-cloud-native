@@ -87,13 +87,28 @@ STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / "staticfiles"
 AUTH_USER_MODEL = 'accounts.User'
 
+# ✅ 세션 및 보안 설정 통합
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
+    "https://hisubtory.site",
+    "http://hisubtory.site",
     "http://hisubtory-alb-913594763.ap-northeast-2.elb.amazonaws.com",
 ]
-CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS
+CSRF_TRUSTED_ORIGINS = [
+    "https://hisubtory.site",
+    "http://hisubtory.site",
+    "http://hisubtory-alb-913594763.ap-northeast-2.elb.amazonaws.com",
+]
+
+# 💡 서비스 간 세션 공유를 위한 도메인 설정
+SESSION_COOKIE_DOMAIN = ".hisubtory.site"
+SESSION_COOKIE_SECURE = True
+SESSION_COOKIE_SAMESITE = 'None'
+CSRF_COOKIE_DOMAIN = ".hisubtory.site"
+CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_SAMESITE = 'None'
 
 TEMPLATES = [
     {

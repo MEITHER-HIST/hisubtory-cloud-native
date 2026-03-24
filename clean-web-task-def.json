@@ -2,19 +2,35 @@
     "containerDefinitions": [
         {
             "name": "app",
-            "image": "180618475875.dkr.ecr.ap-northeast-2.amazonaws.com/hisubtory-web",
+            "image": "180618475875.dkr.ecr.ap-northeast-2.amazonaws.com/hisubtory-web:b09f7c8d5fa78ada9d67b3d97f4aa2082065bb87",
             "cpu": 0,
             "portMappings": [
-                { "containerPort": 80, "hostPort": 80, "protocol": "tcp" }
+                {
+                    "containerPort": 80,
+                    "hostPort": 80,
+                    "protocol": "tcp"
+                }
             ],
             "essential": true,
             "environment": [
-                { "name": "DB_HOST", "value": "hisubtory-db.cviagkyaooln.ap-northeast-2.rds.amazonaws.com" },
-                { "name": "SESSION_ENGINE", "value": "django.contrib.sessions.backends.cache" },
-                { "name": "REDIS_URL", "value": "rediss://hisubtory-redis.gquniu.0001.apn2.cache.amazonaws.com:6379/0" }
+                {
+                    "name": "DB_HOST",
+                    "value": "hisubtory-db.cviagkyaooln.ap-northeast-2.rds.amazonaws.com"
+                },
+                {
+                    "name": "SESSION_ENGINE",
+                    "value": "django.contrib.sessions.backends.cache"
+                },
+                {
+                    "name": "REDIS_URL",
+                    "value": "rediss://hisubtory-redis.gquniu.0001.apn2.cache.amazonaws.com:6379/0"
+                }
             ],
             "secrets": [
-                { "name": "SECRET_KEY", "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:180618475875:secret:hisubtory/secrets-SECRET_KEY-8Ne6za" }
+                {
+                    "name": "SECRET_KEY",
+                    "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:180618475875:secret:hisubtory/secrets-SECRET_KEY-8Ne6za"
+                }
             ],
             "logConfiguration": {
                 "logDriver": "awslogs",
@@ -24,19 +40,15 @@
                     "awslogs-stream-prefix": "ecs"
                 }
             }
-        },
-        {
-            "name": "node-exporter",
-            "image": "prom/node-exporter:latest",
-            "portMappings": [{ "containerPort": 9100, "hostPort": 9100, "protocol": "tcp" }],
-            "essential": true
         }
     ],
     "family": "hisubtory-web-task",
     "taskRoleArn": "arn:aws:iam::180618475875:role/hisubtory-ecs-task-role",
     "executionRoleArn": "arn:aws:iam::180618475875:role/hisubtory-ecs-task-execution-role",
     "networkMode": "awsvpc",
-    "requiresCompatibilities": ["FARGATE"],
+    "requiresCompatibilities": [
+        "FARGATE"
+    ],
     "cpu": "256",
     "memory": "512"
 }

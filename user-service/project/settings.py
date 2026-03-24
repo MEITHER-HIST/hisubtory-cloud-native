@@ -87,18 +87,41 @@ STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / "staticfiles"
 AUTH_USER_MODEL = 'accounts.User'
 
+# ✅ REST Framework Configuration
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny', # 기본은 허용, 뷰에서 IsAuthenticated로 제한
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+    ],
+}
+
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
-    "http://hisub-alb-1329951961.ap-northeast-2.elb.amazonaws.com",
-    "https://hisub-alb-1329951961.ap-northeast-2.elb.amazonaws.com",
+    "https://hisubtory.site",
+    "http://hisubtory.site",
     "http://hisubtory-alb-913594763.ap-northeast-2.elb.amazonaws.com",
     "https://hisubtory-alb-913594763.ap-northeast-2.elb.amazonaws.com",
-    "http://hisubtory-alb-258264007.ap-northeast-2.elb.amazonaws.com",
-    "https://hisubtory-alb-258264007.ap-northeast-2.elb.amazonaws.com",
 ]
-CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS
+CSRF_TRUSTED_ORIGINS = [
+    "https://hisubtory.site",
+    "http://hisubtory.site",
+    "http://hisubtory-alb-913594763.ap-northeast-2.elb.amazonaws.com",
+]
+
+# 💡 서비스 간 세션 공유를 위한 도메인 설정
+SESSION_COOKIE_DOMAIN = ".hisubtory.site"
+SESSION_COOKIE_SECURE = True
+SESSION_COOKIE_SAMESITE = 'None'
+CSRF_COOKIE_DOMAIN = ".hisubtory.site"
+CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_SAMESITE = 'None'
+# CSRF Exempt for APIs (세션 기반 인증 시 주의 필요하지만, 403 방지를 위해 고려)
+# CSRF_COOKIE_HTTPONLY = False 
 
 TEMPLATES = [
     {
