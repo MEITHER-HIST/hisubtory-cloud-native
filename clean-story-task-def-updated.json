@@ -43,7 +43,7 @@
         },
         {
             "name": "node-exporter",
-            "image": "prom/node-exporter:latest",
+            "image": "public.ecr.aws/prometheus/node-exporter:latest",
             "portMappings": [{ "containerPort": 9100, "hostPort": 9100, "protocol": "tcp" }],
             "essential": true
         }
