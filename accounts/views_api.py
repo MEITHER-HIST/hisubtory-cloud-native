@@ -30,6 +30,15 @@ def csrf_api_view(request):
     """CSRF 토큰을 쿠키에 설정하기 위한 뷰"""
     return JsonResponse({"success": True, "detail": "CSRF cookie set"})
 
+def get_request_data(request):
+    """JSON 또는 Form Data에서 데이터를 추출하는 헬퍼 함수"""
+    if request.content_type == 'application/json':
+        try:
+            return json.loads(request.body)
+        except json.JSONDecodeError:
+            return {}
+    return request.POST
+
 @csrf_exempt
 @require_POST
 def login_api_view(request):
@@ -38,7 +47,7 @@ def login_api_view(request):
         if not supabase:
             return JsonResponse({"success": False, "message": "인증 서비스가 준비되지 않았습니다. 관리자에게 문의하세요."}, status=500)
 
-        data = json.loads(request.body)
+        data = get_request_data(request)
         email = data.get('email')
         password = data.get('password')
 
@@ -73,7 +82,7 @@ def login_api_view(request):
     except Exception as e:
         # 에러 메시지 상세 분석 및 한글화
         error_msg = str(e)
-        print(f"로그인 오류: {error_msg}")
+        print(f"로그인 오류 상세: {error_msg}")
         status_code = 401
         
         if "Invalid login credentials" in error_msg:
@@ -93,13 +102,13 @@ def signup_api_view(request):
         if not supabase:
             return JsonResponse({"success": False, "message": "인증 서비스가 준비되지 않았습니다. 관리자에게 문의하세요."}, status=500)
 
-        data = json.loads(request.body)
+        data = get_request_data(request)
         username = data.get('username')
         email = data.get('email')
         password = data.get('password')
 
         if not username or not email or not password:
-            return JsonResponse({"success": False, "message": "모든 필드를 입력해 주세요."}, status=400)
+            return JsonResponse({"success": False, "message": "모든 필드를 입력해 주세요 (username, email, password)."}, status=400)
 
         # 💡 1. Supabase Auth로 가입 시도 (인증 메일 발송 트리거)
         res = supabase.auth.sign_up({
@@ -129,7 +138,7 @@ def signup_api_view(request):
 
     except Exception as e:
         error_msg = str(e)
-        print(f"회원가입 오류: {error_msg}")
+        print(f"회원가입 오류 상세: {error_msg}")
         if "User already registered" in error_msg:
             friendly_msg = "이미 등록된 이메일 주소입니다."
         elif "already exists" in error_msg:
@@ -138,6 +147,7 @@ def signup_api_view(request):
             friendly_msg = f"가입 중 오류가 발생했습니다: {error_msg}"
         
         return JsonResponse({"success": False, "message": friendly_msg}, status=400)
+
 
 @require_GET
 def me_api_view(request):

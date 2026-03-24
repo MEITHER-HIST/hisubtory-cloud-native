@@ -110,6 +110,16 @@ resource "aws_instance" "bastion" {
                     - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
                   ports:
                     - "9100:9100"
+                cadvisor:
+                  image: gcr.io/cadvisor/cadvisor:latest
+                  container_name: cadvisor
+                  ports:
+                    - "8080:8080"
+                  volumes:
+                    - /:/rootfs:ro
+                    - /var/run:/var/run:rw
+                    - /sys:/sys:ro
+                    - /var/lib/docker/:/var/lib/docker:ro
                 portainer:
                   image: portainer/portainer-ce:latest
                   container_name: portainer
@@ -150,6 +160,8 @@ scrape_configs:
         target_label: __address__
       - source_labels: [__meta_ecs_task_definition_family]
         target_label: task_family
+      - source_labels: [__meta_ecs_container_name]
+        target_label: container_name
 
   - job_name: 'node-exporter'
     ecs_sd_configs:
@@ -165,6 +177,10 @@ scrape_configs:
         target_label: __address__
       - source_labels: [__meta_ecs_task_definition_family]
         target_label: task_family
+
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['cadvisor:8080']
 
   - job_name: 'bastion-node-exporter'
     static_configs:

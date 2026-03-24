@@ -46,10 +46,6 @@
                     "value": "postgres.jlvhwihvmivvihffhxse"
                 },
                 {
-                    "name": "SB_DB_PASSWORD",
-                    "value": "${SB_DB_PASSWORD}"
-                },
-                {
                     "name": "REDIS_PORT",
                     "value": "6379"
                 },
@@ -66,20 +62,8 @@
                     "value": "5432"
                 },
                 {
-                    "name": "SUPABASE_KEY",
-                    "value": "${SUPABASE_KEY}"
-                },
-                {
                     "name": "AWS_STORAGE_BUCKET_NAME",
                     "value": "hisubtory-media-bucket-v2"
-                },
-                {
-                    "name": "DB_PASSWORD",
-                    "value": "${DB_PASSWORD}"
-                },
-                {
-                    "name": "SECRET_KEY",
-                    "value": "${SECRET_KEY}"
                 },
                 {
                     "name": "SESSION_ENGINE",
@@ -95,11 +79,29 @@
                 },
                 {
                     "name": "EMAIL_HOST_USER",
-                    "value": "${EMAIL_HOST_USER}"
+                    "value": "joinmin0114@gmail.com"
+                }
+            ],
+            "secrets": [
+                {
+                    "name": "SB_DB_PASSWORD",
+                    "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:180618475875:secret:hisubtory/secrets-SB_DB_PASSWORD"
+                },
+                {
+                    "name": "SUPABASE_KEY",
+                    "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:180618475875:secret:hisubtory/secrets-SUPABASE_KEY"
+                },
+                {
+                    "name": "DB_PASSWORD",
+                    "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:180618475875:secret:hisubtory/secrets-DB_PASSWORD"
+                },
+                {
+                    "name": "SECRET_KEY",
+                    "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:180618475875:secret:hisubtory/secrets-SECRET_KEY"
                 },
                 {
                     "name": "EMAIL_HOST_PASSWORD",
-                    "value": "${EMAIL_HOST_PASSWORD}"
+                    "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:180618475875:secret:hisubtory/secrets-EMAIL_HOST_PASSWORD"
                 }
             ],
             "mountPoints": [],
