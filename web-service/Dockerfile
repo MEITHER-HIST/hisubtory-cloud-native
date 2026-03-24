@@ -1,17 +1,21 @@
 # Stage 1: Build
-FROM node:20-alpine AS build
+FROM node:24-alpine AS build
 
 # 빌드 시 메모리 제한 확장 (Vite 빌드 안정성 확보)
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
 WORKDIR /app
 
-# 종속성 파일 복사 및 설치 (확실한 빌드 도구 설치를 위해 devDependencies 포함)
+# 종속성 파일 복사
 COPY package*.json ./
-RUN npm install --include=dev
+
+# 💡 CI 환경에 최적화된 깨끗한 설치 (package-lock.json 기준)
+RUN npm ci --include=dev
 
 # 소스 복사 및 빌드
 COPY . .
+
+# 💡 빌드 실행 (TypeScript 에러 발생 시 로그를 확인하기 위해 verbose 모드 활용 가능)
 RUN npm run build
 
 # Stage 2: Serve
