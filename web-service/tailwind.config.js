@@ -6,7 +6,13 @@ export default {
   ],
   theme: {
     extend: {
-      // 💡 현재 App.tsx 등에서 사용하는 스타일링 호환을 위해 설정
+      // 💡 깨진 디자인 복구를 위한 커스텀 설정
+      colors: {
+        line3: '#EF7C1C',
+      },
+      borderRadius: {
+        '3xl': '1.5rem',
+      }
     },
   },
   plugins: [],
