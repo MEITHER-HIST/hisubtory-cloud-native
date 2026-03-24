@@ -118,12 +118,10 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 USE_X_FORWARDED_HOST = True
 USE_X_FORWARDED_PORT = True
 
-# 💡 서비스 간 세션 공유를 위한 도메인 설정 개선
-SESSION_COOKIE_DOMAIN = ".hisubtory.site"
+# 💡 서비스 간 세션 공유 설정 (도메인 명시 제거하여 충돌 방지)
 SESSION_COOKIE_SECURE = True
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = 'Lax'
-CSRF_COOKIE_DOMAIN = ".hisubtory.site"
 CSRF_COOKIE_SECURE = True
 CSRF_COOKIE_HTTPONLY = False
 CSRF_COOKIE_SAMESITE = 'Lax'
