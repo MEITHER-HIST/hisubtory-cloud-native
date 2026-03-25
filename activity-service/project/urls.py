@@ -9,16 +9,16 @@ def health(request):
     return HttpResponse("ok", content_type="text/plain")
 
 urlpatterns = [
-    # 1. API 전용 경로
+    # 1. API 및 기능 경로
     path("api/pages/", include("pages.urls_api")),
     path("api/library/", include("library.urls")),
     path("library/", include("library.urls")),
+    path("", include("pages.urls_api")),
     
     # 2. 시스템 및 모니터링
     path("metrics", exports.ExportToDjangoView, name="prometheus-metrics"),
     path("metrics/", exports.ExportToDjangoView),
     path("health/", health),
-    path("", health),
     path("admin/", admin.site.urls),
 ]
 
