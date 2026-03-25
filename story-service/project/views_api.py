@@ -5,9 +5,23 @@ import random
 import json
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import get_user_model, login, logout
-# from subway.models import Line, Station
-# from stories.models import Episode, Webtoon
-from library.models import UserViewedEpisode, Line, Station, Episode, Webtoon
+from library.models import UserViewedEpisode, Line, Station, Episode, Webtoon, Cut # ✅ Cut 추가
+
+# ✅ [데이터 패치] 에피소드 2 이미지 경로 교정 (S3와 일치시킴)
+def patch_episode_2_data():
+    try:
+        # 에피소드 2의 이미지 경로가 잘못된 경우 (예: 45, 46) -> 실제 S3에 있는 1번 등으로 교체
+        wrong_paths = ["webtoons/45/", "webtoons/46/"]
+        for wp in wrong_paths:
+            cuts = Cut.objects.filter(episode__episode_num=2, image__contains=wp)
+            for c in cuts:
+                c.image = c.image.replace(wp, "webtoons/1/")
+                c.save()
+    except Exception as e:
+        print(f"[ERROR] Data Patch Fail: {str(e)}")
+
+# 서버 시작 시 또는 최초 호출 시 실행 (임시 조치)
+patch_episode_2_data()
 
 User = get_user_model()
 
@@ -33,7 +47,6 @@ def logout_api_view(request):
 
 @require_GET
 def me_api_view(request):
-    """현재 로그인 유무와 사용자명만 반환"""
     return JsonResponse({
         "success": True,
         "is_authenticated": bool(request.user and request.user.is_authenticated),
@@ -58,7 +71,6 @@ def main_api_view(request):
     station_ids = _station_ids_for_line(line_obj.id)
     stations = Station.objects.filter(id__in=station_ids, is_enabled=True)
     
-    # 해당 노선의 역들 중 스토리가 있는 역 ID 추출
     story_station_ids = set(
         Episode.objects.filter(webtoon__station_id__in=stations.values_list("id", flat=True))
         .values_list("webtoon__station_id", flat=True).distinct()
@@ -77,14 +89,13 @@ def main_api_view(request):
         is_viewed = (s.id in viewed_station_ids)
         has_story = (s.id in story_station_ids)
         
-        # ✅ [수정] 로그인 시에는 스토리가 있는 모든 역이 무조건 클릭 가능해야 함
+        # ✅ [수정] 로그인 시 모든 스토리가 있는 역은 클릭 가능하게 보장
         clickable = has_story if is_auth else False
         
         station_list.append({
             "id": s.id,
             "name": s.station_name,
             "clickable": clickable,
-            # ✅ [유지] 본 역은 초록색, 안 본 역은 회색
             "color": "green" if (is_auth and is_viewed) else "gray", 
             "is_viewed": is_viewed if is_auth else False,
             "has_story": has_story,
@@ -99,11 +110,9 @@ def main_api_view(request):
 
 @require_GET
 def pick_episode_api_view(request):
-    """
-    특정 역 클릭 시 에피소드 ID 반환
-    """
+    """특정 역 클릭 시 에피소드 반환"""
     station_id = request.GET.get("station_id")
-    if station_id is None:
+    if not station_id:
         return JsonResponse({"success": False, "message": "station_id_required"}, status=400)
 
     try:
@@ -112,22 +121,15 @@ def pick_episode_api_view(request):
         return JsonResponse({"success": False, "message": "invalid_station_id"}, status=400)
     
     ep = None
-    # ✅ [수정] 로그인 유저: 안 본 에피소드를 '가장 먼저' 찾음
     if request.user.is_authenticated:
-        # 해당 역의 에피소드들 중 사용자가 아직 안 본 것들
-        unseen_ep = Episode.objects.filter(
-            webtoon__station_id=station_id
-        ).exclude(
-            episode_id__in=UserViewedEpisode.objects.filter(user=request.user).values_list('episode_id', flat=True)
-        ).order_by('episode_num').first()
+        # 1. 안 본 에피소드 우선
+        viewed_ids = UserViewedEpisode.objects.filter(user=request.user).values_list('episode_id', flat=True)
+        ep = Episode.objects.filter(webtoon__station_id=station_id).exclude(episode_id__in=viewed_ids).order_by('episode_num').first()
         
-        if unseen_ep:
-            ep = unseen_ep
-        else:
-            # 모든 에피소드를 다 봤다면, 가장 처음 에피소드부터 다시 보여줌 (또는 최신 시청 기록)
+        # 2. 다 봤으면 처음 에피소드
+        if not ep:
             ep = Episode.objects.filter(webtoon__station_id=station_id).order_by('episode_num').first()
 
-    # 비로그인 유저: 해당 역의 첫 에피소드
     if not ep:
         ep = Episode.objects.filter(webtoon__station_id=station_id).order_by('episode_num').first()
     
@@ -140,17 +142,9 @@ def pick_episode_api_view(request):
         "station_id": station_id,
         "title": getattr(ep, 'subtitle', f"EP {ep.episode_num}")
     })
-    
-    return JsonResponse({
-        "success": True,
-        "episode_id": str(ep.episode_id),
-        "station_id": station_id,
-        "title": getattr(ep, 'subtitle', f"EP {ep.episode_num}")
-    })
 
 @require_GET
 def random_episode_api_view(request):
-    """랜덤 에피소드 추천 (비로그인도 사용 가능)"""
     line_num = (request.GET.get("line", "3") or "").strip()
     if line_num not in ALLOWED_LINES:
         return JsonResponse({"error": "Invalid line"}, status=400)
@@ -159,7 +153,6 @@ def random_episode_api_view(request):
         return JsonResponse({"message": "line_not_found"}, status=404)
 
     station_ids = _station_ids_for_line(line_obj.id)
-    # 스토리가 있는 역들 중에서만 랜덤 추출
     ep = Episode.objects.filter(webtoon__station_id__in=station_ids).order_by("?").first()
     
     if not ep: 
