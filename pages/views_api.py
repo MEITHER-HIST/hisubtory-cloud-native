@@ -8,6 +8,13 @@ import random
 
 @require_GET
 def main_api_view(request):
+    
+    ALLOWED_LINES = {"3"}
+    line_num = (request.GET.get("line", "3") or "").strip()
+
+    if line_num not in ALLOWED_LINES:
+        return JsonResponse({"success": False, "message": "invalid_line"}, status=400)
+    
     user = request.user if request.user.is_authenticated else None
     print(f"[DEBUG] main_api_view called. User: {user}")
     

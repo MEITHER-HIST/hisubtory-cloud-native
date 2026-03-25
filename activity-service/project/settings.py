@@ -114,10 +114,7 @@ CSRF_TRUSTED_ORIGINS = [
     "http://hisubtory.site",
     "http://hisubtory-alb-913594763.ap-northeast-2.elb.amazonaws.com",
 ]
-<<<<<<< HEAD
-=======
 CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS
->>>>>>> fac1e6cb9a9054fe5447db4f8157b12fbb4ed1e5
 
 TEMPLATES = [
     {
@@ -146,8 +143,4 @@ AWS_DEFAULT_ACL = None
 
 # ✅ Use CloudFront Domain
 AWS_S3_CUSTOM_DOMAIN = os.getenv('AWS_S3_CUSTOM_DOMAIN', 'd27nsin45nib0r.cloudfront.net')
-<<<<<<< HEAD
 MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/'
-=======
-MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/'
->>>>>>> fac1e6cb9a9054fe5447db4f8157b12fbb4ed1e5
