@@ -82,21 +82,33 @@ def pick_episode_view(request, station_id):
 
 
 # -----------------------------
-# 특정 에피 본 기록 저장 (선택적)
+# 특정 에피 본 기록 저장
 # -----------------------------
 @api_view(['POST'])
 def view_episode(request, episode_id):
-    episode = get_object_or_404(Episode, id=episode_id)
+    """
+    사용자가 특정 에피소드를 시청했을 때 기록을 Supabase에 저장하는 API
+    """
+    # 에피소드 ID로 에피소드 존재 여부 확인 (PK인 episode_id 기준)
+    episode = get_object_or_404(Episode, episode_id=episode_id)
     user = request.user
+    
     if not user.is_authenticated:
+        print(f"DEBUG: view_episode - User not authenticated (ID: {episode_id})")
         return Response({"success": False, "message": "Login required"}, status=status.HTTP_401_UNAUTHORIZED)
 
-    from django.utils import timezone
-    UserViewedEpisode.objects.using('default').update_or_create(
-        user=user, 
-        episode_id=episode.episode_id,
-        defaults={'viewed_at': timezone.now()}
-    )
+    try:
+        from django.utils import timezone
+        UserViewedEpisode.objects.using('default').update_or_create(
+            user=user, 
+            episode_id=episode.episode_id,
+            defaults={'viewed_at': timezone.now()}
+        )
+        print(f"DEBUG: view_episode - Record saved for user {user.username}, episode {episode.episode_id}")
+    except Exception as e:
+        print(f"ERROR: view_episode - Failed to save record: {str(e)}")
+        return Response({"success": False, "message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
     serializer = EpisodeSerializer(episode)
     return Response({"success": True, "episode": serializer.data})
 
@@ -106,20 +118,32 @@ def view_episode(request, episode_id):
 # -----------------------------
 @api_view(['PUT'])
 def save_episode(request, episode_id):
-    episode = get_object_or_404(Episode, id=episode_id)
+    """
+    특정 에피소드를 즐겨찾기에 추가하거나 제거 (토글 방식)
+    """
+    # PK인 episode_id 기준 조회
+    episode = get_object_or_404(Episode, episode_id=episode_id)
     user = request.user
+    
     if not user.is_authenticated:
+        print(f"DEBUG: save_episode - User not authenticated (ID: {episode_id})")
         return Response({"success": False, "message": "Login required"}, status=status.HTTP_401_UNAUTHORIZED)
 
-    bookmark_qs = Bookmark.objects.using('default').filter(user=user, episode_id=episode.episode_id)
-    if bookmark_qs.exists():
-        # 이미 즐겨찾기 되어 있으면 제거
-        bookmark_qs.delete()
-        action = "removed"
-    else:
-        # 북마크 생성
-        Bookmark.objects.using('default').create(user=user, episode_id=episode.episode_id)
-        action = "added"
+    try:
+        bookmark_qs = Bookmark.objects.using('default').filter(user=user, episode_id=episode.episode_id)
+        if bookmark_qs.exists():
+            # 이미 즐겨찾기 되어 있으면 제거
+            bookmark_qs.delete()
+            action = "removed"
+            print(f"DEBUG: save_episode - Bookmark removed for user {user.username}")
+        else:
+            # 북마크 생성
+            Bookmark.objects.using('default').create(user=user, episode_id=episode.episode_id)
+            action = "added"
+            print(f"DEBUG: save_episode - Bookmark added for user {user.username}")
+    except Exception as e:
+        print(f"ERROR: save_episode - Bookmark operation failed: {str(e)}")
+        return Response({"success": False, "message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     serializer = EpisodeSerializer(episode)
     return Response({"success": True, "action": action, "episode": serializer.data})

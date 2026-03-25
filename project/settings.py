@@ -154,10 +154,12 @@ if DEBUG:
     SESSION_COOKIE_SECURE = False
     CSRF_COOKIE_SECURE = False
     SECURE_SSL_REDIRECT = False
+    SESSION_COOKIE_SAMESITE = 'Lax'
 else:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SAMESITE = 'None'  # 서로 다른 ALB 간 쿠키 공유를 위해 필수
 
 CSRF_TRUSTED_ORIGINS = [
     "http://hisub-alb-1329951961.ap-northeast-2.elb.amazonaws.com",
@@ -166,6 +168,8 @@ CSRF_TRUSTED_ORIGINS = [
     "https://hisubtory-alb-913594763.ap-northeast-2.elb.amazonaws.com",
     "http://hisubtory-alb-258264007.ap-northeast-2.elb.amazonaws.com",
     "https://hisubtory-alb-258264007.ap-northeast-2.elb.amazonaws.com",
+    "https://hisubtory.com",
+    "http://hisubtory.com",
     "http://localhost:5173",
     "http://127.0.0.1:5173",
     "http://localhost:8000",
@@ -178,6 +182,8 @@ CSRF_TRUSTED_ORIGINS = [
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
+    "https://hisubtory.com",
+    "http://hisubtory.com",
     "http://hisub-alb-1329951961.ap-northeast-2.elb.amazonaws.com",
     "https://hisub-alb-1329951961.ap-northeast-2.elb.amazonaws.com",
     "http://hisubtory-alb-913594763.ap-northeast-2.elb.amazonaws.com",
@@ -188,9 +194,9 @@ CORS_ALLOWED_ORIGINS = [
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = list(default_headers) + ["x-csrftoken"]
 
-SESSION_COOKIE_SAMESITE = 'Lax'
+# SESSION_COOKIE_SAMESITE는 위에서 조건부로 설정됨
 SESSION_COOKIE_HTTPONLY = True
-CSRF_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SAMESITE = 'None' if not DEBUG else 'Lax'
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": ("rest_framework.authentication.SessionAuthentication",),

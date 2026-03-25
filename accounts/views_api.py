@@ -176,14 +176,30 @@ def signup_api_view(request):
 
 @require_GET
 def me_api_view(request):
-    """현재 로그인 사용자 정보 확인"""
+    """현재 로그인 사용자 정보 및 시청 기록 확인"""
     if request.user.is_authenticated:
+        user = request.user
+        
+        # 사용자가 시청한 에피소드 ID 목록 가져오기 (Supabase 사용)
+        from library.models import UserViewedEpisode
+        viewed_ids = list(UserViewedEpisode.objects.using('default').filter(
+            user=user
+        ).values_list('episode_id', flat=True))
+        
+        # 사용자가 북마크한 에피소드 ID 목록 가져오기
+        from library.models import Bookmark
+        bookmark_ids = list(Bookmark.objects.using('default').filter(
+            user=user
+        ).values_list('episode_id', flat=True))
+
         return JsonResponse({
             "success": True, 
             "is_authenticated": True, 
-            "username": request.user.username,
-            "email": request.user.email,
-            "id": request.user.id
+            "username": user.username,
+            "email": user.email,
+            "id": user.id,
+            "viewed_episode_ids": viewed_ids,
+            "bookmark_ids": bookmark_ids
         })
     return JsonResponse({"success": False, "is_authenticated": False}, status=401)
 
