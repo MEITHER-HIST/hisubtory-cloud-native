@@ -1,6 +1,5 @@
 from django.contrib import admin
 from django.urls import path, include
-<<<<<<< HEAD
 from django.conf import settings
 from django.conf.urls.static import static
 from django.http import HttpResponse
@@ -10,36 +9,18 @@ def health(request):
     return HttpResponse("ok", content_type="text/plain")
 
 urlpatterns = [
-    # 1. API 전용 경로 (최상단 배치)
+    # 1. API 전용 경로
     path("api/pages/", include("pages.urls_api")),
-    path("api/bookmarks/", include("library.urls")),
     path("api/library/", include("library.urls")),
-
+    path("library/", include("library.urls")),
+    
     # 2. 시스템 및 모니터링
     path("metrics", exports.ExportToDjangoView, name="prometheus-metrics"),
     path("metrics/", exports.ExportToDjangoView),
     path("health/", health),
     path("", health),
-
-    # 3. HTML/Legacy 경로 (기존 템플릿 페이지)
-    # path("accounts/", include("accounts.urls")),
-    # path("stories/", include("stories.urls")),
-    path("library/", include("library.urls")),
-    path("", include("pages.urls")),
+    path("admin/", admin.site.urls),
 ]
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-=======
-from django.http import HttpResponse
-
-urlpatterns = [
-    path('health/', lambda r: HttpResponse('ok')),
-    path('admin/', admin.site.urls),
-    # 💡 루트와 api/pages/ 둘 다 매핑하여 유연하게 대응
-    path("api/library/", include("library.urls")),
-    path("library/", include("library.urls")),
-    path("", include("pages.urls_api")),
-    path("api/pages/", include("pages.urls_api")),
-]
->>>>>>> origin/feat/do
