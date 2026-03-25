@@ -2,7 +2,7 @@
     "containerDefinitions": [
         {
             "name": "app",
-            "image": "180618475875.dkr.ecr.ap-northeast-2.amazonaws.com/hisubtory-story:3e6105e9fa55d00d2312e3dcd2ef039037aa5955",
+            "image": "180618475875.dkr.ecr.ap-northeast-2.amazonaws.com/hisubtory-story:2bbbcd92e776610b750c4de0c802e6ad0de98954",
             "cpu": 0,
             "portMappings": [
                 { "containerPort": 80, "hostPort": 80, "protocol": "tcp" }
