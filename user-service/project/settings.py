@@ -118,20 +118,55 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 USE_X_FORWARDED_HOST = True
 USE_X_FORWARDED_PORT = True
 
-# 💡 서비스 간 세션 공유 설정 (도메인 명시 제거하여 충돌 방지)
-SESSION_COOKIE_SECURE = True
+# 💡 서비스 간 세션 공유 설정 (도메인 명시)
+if not DEBUG:
+    SESSION_COOKIE_DOMAIN = os.getenv("SESSION_COOKIE_DOMAIN", ".hisubtory.site")
+    CSRF_COOKIE_DOMAIN = SESSION_COOKIE_DOMAIN
+    SESSION_COOKIE_SAMESITE = 'None'
+    CSRF_COOKIE_SAMESITE = 'None'
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+else:
+    SESSION_COOKIE_SAMESITE = 'Lax'
+    CSRF_COOKIE_SAMESITE = 'Lax'
+    SESSION_COOKIE_SECURE = False
+    CSRF_COOKIE_SECURE = False
+
 SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SAMESITE = 'Lax'
-CSRF_COOKIE_SECURE = True
 CSRF_COOKIE_HTTPONLY = False
-CSRF_COOKIE_SAMESITE = 'Lax'
 
-# 세션 도메인 설정을 제거하여 호스트 기반 쿠키 사용 (Shadowing 방지)
-# SESSION_COOKIE_DOMAIN = ".hisubtory.site" 
-# CSRF_COOKIE_DOMAIN = ".hisubtory.site"
-
+# Redis 캐시 설정 (루트와 동일하게 SSL 적용)
+REDIS_URL = os.getenv("REDIS_URL", f"rediss://{REDIS_HOST}:{REDIS_PORT}/0")
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": REDIS_URL,
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            "ssl_cert_reqs": None,
+        }
+    }
+}
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "default"
+
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "https://hisubtory.site",
+    "https://*.hisubtory.site",
+    "http://hisubtory-alb-913594763.ap-northeast-2.elb.amazonaws.com",
+    "https://hisubtory-alb-913594763.ap-northeast-2.elb.amazonaws.com",
+    "http://hisubtory-alb-258264007.ap-northeast-2.elb.amazonaws.com",
+    "https://hisubtory-alb-258264007.ap-northeast-2.elb.amazonaws.com",
+]
+CSRF_TRUSTED_ORIGINS = [
+    "https://hisubtory.site",
+    "https://*.hisubtory.site",
+    "http://hisubtory-alb-913594763.ap-northeast-2.elb.amazonaws.com",
+    "https://hisubtory-alb-913594763.ap-northeast-2.elb.amazonaws.com",
+]
 
 TEMPLATES = [
     {
