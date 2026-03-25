@@ -22,16 +22,11 @@ def get_presigned_url(path, expires_in=3600):
                           endpoint_url=f"https://s3.{region}.amazonaws.com",
                           config=Config(signature_version="s3v4"))
         
-        # ✅ [수정] 에피소드 2의 이미지가 1과 같은 형식으로 출력되도록 보장
-        # 만약 에피소드 2 경로가 특정 패턴(예: webtoons/45/)을 따르고 있다면, 
-        # 이를 에피소드 1이 성공했던 패턴과 대조하여 변환 시도
-        
         return s3.generate_presigned_url(ClientMethod="get_object",
             Params={"Bucket": bucket, "Key": path_str},
             ExpiresIn=expires_in)
     except Exception as e:
-        print(f"[ERROR] S3 URL Generation fail for {path_str}: {str(e)}")
-        # 실패 시 S3 직접 링크 시도
+        print(f"[ERROR] S3 URL Generation fail: {str(e)}")
         bucket = getattr(settings, "AWS_STORAGE_BUCKET_NAME", "hisubtory-media-bucket-v2")
         region = getattr(settings, "AWS_S3_REGION_NAME", "ap-northeast-2")
         return f"https://{bucket}.s3.{region}.amazonaws.com/{path_str}"
@@ -51,11 +46,24 @@ class EpisodeSerializer(serializers.ModelSerializer):
     webtoon_title = serializers.CharField(source='webtoon.title', read_only=True)
     is_viewed = serializers.BooleanField(default=False)
     cuts = CutSerializer(many=True, read_only=True)
+    
+    # ✅ [추가] 웹툰의 썸네일 URL 정보 포함
+    thumbnail_url = serializers.SerializerMethodField()
     source_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Episode
-        fields = ['episode_id', 'webtoon_id', 'episode_num', 'episode_title', 'webtoon_title', 'station_name', 'subtitle', 'source_url', 'is_viewed', 'cuts']
+        fields = [
+            'episode_id', 'webtoon_id', 'episode_num', 'episode_title', 
+            'webtoon_title', 'station_name', 'subtitle', 'source_url', 
+            'thumbnail_url', 'is_viewed', 'cuts'
+        ]
+
+    def get_thumbnail_url(self, obj):
+        # 웹툰 테이블의 썸네일 경로를 보안 URL로 변환
+        if obj.webtoon and obj.webtoon.thumbnail:
+            return get_presigned_url(obj.webtoon.thumbnail)
+        return None
 
     def get_source_url(self, obj):
         return get_presigned_url(obj.source_url)
