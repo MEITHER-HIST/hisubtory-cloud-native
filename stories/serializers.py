@@ -16,7 +16,7 @@ def get_presigned_url(path, expires_in=3600):
     try:
         region = getattr(settings, "AWS_S3_REGION_NAME", "ap-northeast-2")
         bucket = getattr(settings, "AWS_STORAGE_BUCKET_NAME", "hisubtory-media-bucket-v2")
-...
+        
         s3 = boto3.client("s3", 
                           region_name=region,
                           aws_access_key_id=getattr(settings, "AWS_ACCESS_KEY_ID", ""),
