@@ -150,6 +150,10 @@ STORAGES = {
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'accounts.User'
 
+# 서브도메인 간 쿠키 공유를 위한 도메인 설정 (충돌 방지를 위해 명시적 설정 제거 또는 None)
+SESSION_COOKIE_DOMAIN = None 
+CSRF_COOKIE_DOMAIN = None
+
 if DEBUG:
     SESSION_COOKIE_SECURE = False
     CSRF_COOKIE_SECURE = False
@@ -159,11 +163,9 @@ else:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SECURE_SSL_REDIRECT = True
-    SESSION_COOKIE_SAMESITE = 'None'  # 서로 다른 ALB 간 쿠키 공유를 위해 필수
+    SESSION_COOKIE_SAMESITE = 'Lax'  # 표준 Lax 설정으로 복구
 
-# 서브도메인 간 쿠키 공유를 위한 도메인 설정
-SESSION_COOKIE_DOMAIN = os.getenv("SESSION_COOKIE_DOMAIN", ".hisubtory.site")
-CSRF_COOKIE_DOMAIN = SESSION_COOKIE_DOMAIN
+CSRF_COOKIE_SAMESITE = 'Lax'
 
 CSRF_TRUSTED_ORIGINS = [
     "https://hisubtory.site",

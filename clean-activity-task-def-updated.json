@@ -23,14 +23,14 @@
                 { "name": "SB_DB_PORT", "value": "5432" },
                 { "name": "AWS_STORAGE_BUCKET_NAME", "value": "hisubtory-media-bucket-v2" },
                 { "name": "SESSION_ENGINE", "value": "django.contrib.sessions.backends.cache" },
-                { "name": "REDIS_URL", "value": "rediss://hisubtory-redis.gquniu.0001.apn2.cache.amazonaws.com:6379/0" },
+                { "name": "REDIS_URL", "value": "redis://hisubtory-redis.gquniu.0001.apn2.cache.amazonaws.com:6379/0" },
                 {
                     "name": "DEBUG",
                     "value": "True"
                 },
                 {
                     "name": "SESSION_COOKIE_DOMAIN",
-                    "value": ".hisubtory.site"
+                    "value": ""
                 }
                 ],
 
