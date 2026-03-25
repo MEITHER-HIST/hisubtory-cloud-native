@@ -7,13 +7,16 @@ from .models import Webtoon, Episode, Cut
 def get_presigned_url(path, expires_in=3600):
     """S3 경로를 받아 보안 주소(Presigned URL)를 생성하는 공통 함수"""
     if not path: return None
-    path_str = str(path)
+
+    # ✅ [수정] 경로 앞뒤 공백 제거 및 시작 부분의 슬래시(/) 제거
+    path_str = str(path).strip().lstrip('/')
+
     if path_str.startswith('http'): return path_str
-    
+
     try:
         region = getattr(settings, "AWS_S3_REGION_NAME", "ap-northeast-2")
         bucket = getattr(settings, "AWS_STORAGE_BUCKET_NAME", "hisubtory-media-bucket-v2")
-        
+...
         s3 = boto3.client("s3", 
                           region_name=region,
                           aws_access_key_id=getattr(settings, "AWS_ACCESS_KEY_ID", ""),
