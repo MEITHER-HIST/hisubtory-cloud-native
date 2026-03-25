@@ -77,16 +77,14 @@ def main_api_view(request):
         is_viewed = (s.id in viewed_station_ids)
         has_story = (s.id in story_station_ids)
         
-        # ✅ [수정] 로그인 여부에 따른 클릭 가능 여부
-        # 로그인 시: 스토리가 있는 모든 역 클릭 가능 (has_story)
-        # 비로그인 시: 클릭 불가 (사용자 요청: 무조건 랜덤 버튼만 활성)
+        # ✅ [수정] 로그인 시에는 스토리가 있는 모든 역이 무조건 클릭 가능해야 함
         clickable = has_story if is_auth else False
         
         station_list.append({
             "id": s.id,
             "name": s.station_name,
             "clickable": clickable,
-            # ✅ [유지] 로그인 시 본 이야기만 초록색(green), 나머지는 회색(gray)
+            # ✅ [유지] 본 역은 초록색, 안 본 역은 회색
             "color": "green" if (is_auth and is_viewed) else "gray", 
             "is_viewed": is_viewed if is_auth else False,
             "has_story": has_story,
@@ -96,7 +94,7 @@ def main_api_view(request):
         "success": True,
         "stations": station_list,
         "selected_line": line_obj.line_name,
-        "show_random_button": True, # ✅ [수정] 항상 랜덤 버튼 활성화 (사용자 요청)
+        "show_random_button": True, 
     })
 
 @require_GET
@@ -114,35 +112,34 @@ def pick_episode_api_view(request):
         return JsonResponse({"success": False, "message": "invalid_station_id"}, status=400)
     
     ep = None
-    # ✅ [수정] 로그인 유저인 경우: 안 본 에피소드 우선 -> 없으면 본 것 중 최신
+    # ✅ [수정] 로그인 유저: 안 본 에피소드를 '가장 먼저' 찾음
     if request.user.is_authenticated:
-        # 해당 역의 전체 에피소드 ID 목록
-        all_ep_ids = Episode.objects.filter(webtoon__station_id=station_id).values_list('episode_id', flat=True)
-        # 본 에피소드 ID 목록
-        viewed_ep_ids = UserViewedEpisode.objects.filter(user=request.user).values_list('episode_id', flat=True)
-        
-        # 안 본 에피소드 중 첫 번째
+        # 해당 역의 에피소드들 중 사용자가 아직 안 본 것들
         unseen_ep = Episode.objects.filter(
-            webtoon__station_id=station_id,
-            episode_id__in=all_ep_ids
-        ).exclude(episode_id__in=viewed_ep_ids).order_by('episode_num').first()
+            webtoon__station_id=station_id
+        ).exclude(
+            episode_id__in=UserViewedEpisode.objects.filter(user=request.user).values_list('episode_id', flat=True)
+        ).order_by('episode_num').first()
         
         if unseen_ep:
             ep = unseen_ep
         else:
-            # 다 봤다면 가장 최근에 본 것
-            last_viewed = UserViewedEpisode.objects.filter(
-                user=request.user, episode__webtoon__station_id=station_id
-            ).select_related('episode').order_by('-viewed_at').first()
-            if last_viewed:
-                ep = last_viewed.episode
+            # 모든 에피소드를 다 봤다면, 가장 처음 에피소드부터 다시 보여줌 (또는 최신 시청 기록)
+            ep = Episode.objects.filter(webtoon__station_id=station_id).order_by('episode_num').first()
 
-    # 비로그인 유저이거나 본 기록이 없는 경우: 해당 역의 첫 에피소드
+    # 비로그인 유저: 해당 역의 첫 에피소드
     if not ep:
         ep = Episode.objects.filter(webtoon__station_id=station_id).order_by('episode_num').first()
     
     if not ep:
         return JsonResponse({"success": False, "message": "no_episode"}, status=404)
+    
+    return JsonResponse({
+        "success": True,
+        "episode_id": str(ep.episode_id),
+        "station_id": station_id,
+        "title": getattr(ep, 'subtitle', f"EP {ep.episode_num}")
+    })
     
     return JsonResponse({
         "success": True,

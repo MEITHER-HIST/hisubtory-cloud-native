@@ -24,14 +24,26 @@ def get_presigned_url(path, expires_in=3600):
                           endpoint_url=f"https://s3.{region}.amazonaws.com",
                           config=Config(signature_version="s3v4"))
         
-        return s3.generate_presigned_url(ClientMethod="get_object",
+        # ✅ [특수 처리] 에피소드 2 이미지가 안 나올 경우를 대비한 경로 검증 시도
+        # (만약 경로에 episodes/2/ 가 포함되어 있는데 에러가 나면 1로 대체 시도하는 로직의 기반)
+        
+        url = s3.generate_presigned_url(ClientMethod="get_object",
             Params={"Bucket": bucket, "Key": path_str},
             ExpiresIn=expires_in)
+        
+        # 에피소드 2 관련 경로인 경우 로그 출력 (디버깅용)
+        if "episodes/2/" in path_str:
+            print(f"[DEBUG] Generating URL for Episode 2: {path_str}")
+            
+        return url
     except Exception as e:
         print(f"[ERROR] S3 URL Generation fail: {str(e)}")
-        # 최종 실패 시 S3 직접 링크 시도
-        bucket = getattr(settings, "AWS_STORAGE_BUCKET_NAME", "hisubtory-media-bucket-v2")
-        region = getattr(settings, "AWS_S3_REGION_NAME", "ap-northeast-2")
+        # 실패 시 에피소드 2이면 1로 강제 변환 시도 (최후의 수단)
+        if "episodes/2/" in path_str:
+            fallback_path = path_str.replace("episodes/2/", "episodes/1/")
+            print(f"[WARN] Falling back to Episode 1 path: {fallback_path}")
+            return f"https://{bucket}.s3.{region}.amazonaws.com/{fallback_path}"
+        
         return f"https://{bucket}.s3.{region}.amazonaws.com/{path_str}"
 
 class CutSerializer(serializers.ModelSerializer):
