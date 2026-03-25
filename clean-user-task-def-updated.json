@@ -2,7 +2,7 @@
     "containerDefinitions": [
         {
             "name": "app",
-            "image": "180618475875.dkr.ecr.ap-northeast-2.amazonaws.com/hisubtory-user:latest",
+            "image": "180618475875.dkr.ecr.ap-northeast-2.amazonaws.com/hisubtory-user:3c9ad7bd4d10a17922690314e7f602b440fa38bc",
             "cpu": 0,
             "portMappings": [
                 {
@@ -26,10 +26,6 @@
                     "value": "admin"
                 },
                 {
-                    "name": "AWS_SECRET_ACCESS_KEY",
-                    "value": "${AWS_SECRET_ACCESS_KEY}"
-                },
-                {
                     "name": "DB_NAME",
                     "value": "hisubtory_db"
                 },
@@ -50,16 +46,8 @@
                     "value": "postgres.jlvhwihvmivvihffhxse"
                 },
                 {
-                    "name": "SB_DB_PASSWORD",
-                    "value": "${SB_DB_PASSWORD}"
-                },
-                {
                     "name": "REDIS_PORT",
                     "value": "6379"
-                },
-                {
-                    "name": "AWS_ACCESS_KEY_ID",
-                    "value": "${AWS_ACCESS_KEY_ID}"
                 },
                 {
                     "name": "SB_DB_NAME",
@@ -74,20 +62,8 @@
                     "value": "5432"
                 },
                 {
-                    "name": "SUPABASE_KEY",
-                    "value": "${SUPABASE_KEY}"
-                },
-                {
                     "name": "AWS_STORAGE_BUCKET_NAME",
                     "value": "hisubtory-media-bucket-v2"
-                },
-                {
-                    "name": "DB_PASSWORD",
-                    "value": "${DB_PASSWORD}"
-                },
-                {
-                    "name": "SECRET_KEY",
-                    "value": "${SECRET_KEY}"
                 },
                 {
                     "name": "SESSION_ENGINE",
@@ -100,10 +76,34 @@
                 {
                     "name": "DEBUG",
                     "value": "True"
+                },
+                {
+                    "name": "EMAIL_HOST_USER",
+                    "value": "joinmin0114@gmail.com"
                 }
             ],
-            "mountPoints": [],
-            "volumesFrom": [],
+            "secrets": [
+                {
+                    "name": "SB_DB_PASSWORD",
+                    "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:180618475875:secret:hisubtory/secrets-SB_DB_PASSWORD-y4Tqkd"
+                },
+                {
+                    "name": "SUPABASE_KEY",
+                    "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:180618475875:secret:hisubtory/secrets-SUPABASE_KEY-ckQFmQ"
+                },
+                {
+                    "name": "DB_PASSWORD",
+                    "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:180618475875:secret:hisubtory/secrets-DB_PASSWORD-hvnQll"
+                },
+                {
+                    "name": "SECRET_KEY",
+                    "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:180618475875:secret:hisubtory/secrets-SECRET_KEY-8Ne6za"
+                },
+                {
+                    "name": "EMAIL_HOST_PASSWORD",
+                    "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:180618475875:secret:hisubtory/secrets-EMAIL_HOST_PASSWORD-l5Sp9k"
+                }
+            ],
             "logConfiguration": {
                 "logDriver": "awslogs",
                 "options": {
@@ -111,16 +111,13 @@
                     "awslogs-region": "ap-northeast-2",
                     "awslogs-stream-prefix": "ecs"
                 }
-            },
-            "systemControls": []
+            }
         }
     ],
     "family": "hisubtory-user-task",
     "taskRoleArn": "arn:aws:iam::180618475875:role/hisubtory-ecs-task-role",
     "executionRoleArn": "arn:aws:iam::180618475875:role/hisubtory-ecs-task-execution-role",
     "networkMode": "awsvpc",
-    "volumes": [],
-    "placementConstraints": [],
     "requiresCompatibilities": [
         "FARGATE"
     ],

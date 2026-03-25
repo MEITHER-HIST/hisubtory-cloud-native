@@ -18,10 +18,10 @@ scrape_configs:
       - source_labels: [__meta_ecs_container_name]
         regex: 'app'
         action: keep
-      # 컨테이너 IP:8000으로 메트릭 수집 시도
+      # 컨테이너 IP:80으로 메트릭 수집 시도 (Gunicorn이 80에서 실행 중)
       - source_labels: [__address__]
         regex: '(.*):(.*)'
-        replacement: '${1}:8000'
+        replacement: '${1}:80'
         target_label: __address__
       - source_labels: [__meta_ecs_task_definition_family]
         target_label: task_family

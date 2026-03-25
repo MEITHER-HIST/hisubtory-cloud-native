@@ -110,6 +110,16 @@ resource "aws_instance" "bastion" {
                     - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
                   ports:
                     - "9100:9100"
+                cadvisor:
+                  image: gcr.io/cadvisor/cadvisor:latest
+                  container_name: cadvisor
+                  ports:
+                    - "8080:8080"
+                  volumes:
+                    - /:/rootfs:ro
+                    - /var/run:/var/run:rw
+                    - /sys:/sys:ro
+                    - /var/lib/docker/:/var/lib/docker:ro
                 portainer:
                   image: portainer/portainer-ce:latest
                   container_name: portainer
@@ -146,10 +156,12 @@ scrape_configs:
         action: keep
       - source_labels: [__address__]
         regex: '(.*):(.*)'
-        replacement: '$${1}:8000'
+        replacement: '${1}:80'
         target_label: __address__
       - source_labels: [__meta_ecs_task_definition_family]
         target_label: task_family
+      - source_labels: [__meta_ecs_container_name]
+        target_label: container_name
 
   - job_name: 'node-exporter'
     ecs_sd_configs:
@@ -161,10 +173,14 @@ scrape_configs:
         action: keep
       - source_labels: [__address__]
         regex: '(.*):(.*)'
-        replacement: '$${1}:9100'
+        replacement: '${1}:9100'
         target_label: __address__
       - source_labels: [__meta_ecs_task_definition_family]
         target_label: task_family
+
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['cadvisor:8080']
 
   - job_name: 'bastion-node-exporter'
     static_configs:
@@ -207,6 +223,7 @@ resource "aws_eip" "bastion_eip" {
   }
 }
 
+# ECS 모든 리소스에 대한 읽기 권한 부여 (Service Discovery 필수)
 resource "aws_iam_role_policy" "bastion_ecs_policy" {
   name = "bastion-ecs-read-policy"
   role = aws_iam_role.bastion_role.id
@@ -217,15 +234,11 @@ resource "aws_iam_role_policy" "bastion_ecs_policy" {
       {
         Effect = "Allow"
         Action = [
-          "ecs:ListTasks",
-          "ecs:ListClusters",
-          "ecs:DescribeTasks",
-          "ecs:DescribeTaskDefinition",
-          "ecs:DescribeClusters",
-          "ec2:DescribeInstances",
-          "ec2:DescribeNetworkInterfaces",
-          "ecs:ListContainerInstances",
-          "ecs:DescribeContainerInstances"
+          "ecs:List*",
+          "ecs:Describe*",
+          "ec2:Describe*",
+          "cloudwatch:Get*",
+          "cloudwatch:List*"
         ]
         Resource = "*"
       }

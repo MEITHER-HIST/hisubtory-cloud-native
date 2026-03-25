@@ -56,22 +56,10 @@ jobs:
           container-name: ${{ env.CONTAINER_NAME }}
           image: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
 
-      - name: Inject Secrets into Task Definition
-        env:
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          SB_DB_PASSWORD: ${{ secrets.SB_DB_PASSWORD }}
-          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          SECRET_KEY: ${{ secrets.SECRET_KEY }}
-        # 💡 envsubst 뒤에 변수명을 명시하여 비밀번호 깨짐 방지
-        run: |
-          envsubst '$AWS_SECRET_ACCESS_KEY,$AWS_ACCESS_KEY_ID,$SB_DB_PASSWORD,$SUPABASE_KEY,$DB_PASSWORD,$SECRET_KEY' < ${{ steps.task-def.outputs.task-definition }} > processed-task-def.json
-
       - name: Deploy Amazon ECS task definition
         uses: aws-actions/amazon-ecs-deploy-task-definition@v2
         with:
-          task-definition: processed-task-def.json
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
           service: ${{ env.ECS_SERVICE }}
           cluster: ${{ env.ECS_CLUSTER }}
           wait-for-service-stability: false

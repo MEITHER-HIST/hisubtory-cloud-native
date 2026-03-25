@@ -18,7 +18,6 @@ class UserViewedEpisode(models.Model):
 
     class Meta:
         db_table = "library_userviewedepisode"
-        unique_together = ('user', 'episode_id')
         managed = True
         app_label = 'library'
 
@@ -40,7 +39,6 @@ class Bookmark(models.Model):
 
     class Meta:
         db_table = "library_bookmark"
-        unique_together = ('user', 'episode_id')
         managed = True
         app_label = 'library'
 
