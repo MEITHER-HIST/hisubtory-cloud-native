@@ -135,15 +135,15 @@ else:
 SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_HTTPONLY = False
 
-# Redis 캐시 설정 (루트와 동일하게 SSL 적용)
-REDIS_URL = os.getenv("REDIS_URL", f"rediss://{REDIS_HOST}:{REDIS_PORT}/0")
+# Redis 캐시 설정 (SSL 관련 이슈로 redis:// 사용)
+REDIS_URL = os.getenv("REDIS_URL", f"redis://{REDIS_HOST}:{REDIS_PORT}/0")
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
         "LOCATION": REDIS_URL,
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
-            "ssl_cert_reqs": None,
+            # "ssl_cert_reqs": None,
         }
     }
 }

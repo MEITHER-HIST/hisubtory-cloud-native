@@ -205,6 +205,7 @@ REST_FRAMEWORK = {
 REDIS_HOST = os.getenv("REDIS_HOST", "redis")
 REDIS_PORT = os.getenv("REDIS_PORT", "6379")
 REDIS_DB   = os.getenv("REDIS_DB", "0")
+# SSL 관련 이슈로 rediss:// 대신 redis:// 사용 (VPC 내부 통신)
 REDIS_URL = os.getenv("REDIS_URL", f"redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}")
 
 CACHES = {
@@ -213,7 +214,7 @@ CACHES = {
         "LOCATION": REDIS_URL,
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
-            "ssl_cert_reqs": None,
+            # "ssl_cert_reqs": None, # redis:// 사용 시 불필요
         },
     }
 }

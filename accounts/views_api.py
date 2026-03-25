@@ -90,22 +90,41 @@ def login_api_view(request):
         supabase_user = res.user
         print(f"DEBUG: Supabase 로그인 성공 (Email: {supabase_user.email})")
         
-        # 2. 장고 DB 동기화
-        user, created = User.objects.get_or_create(
-            email=supabase_user.email,
-            defaults={
-                'username': supabase_user.user_metadata.get('username', email.split('@')[0]),
-                'is_active': True
-            }
-        )
+        # 2. 장고 DB 동기화 (username 중복 처리 강화)
+        user = User.objects.filter(email=supabase_user.email).first()
+        if not user:
+            # 이메일 기반 기본 username 생성
+            base_username = supabase_user.user_metadata.get('username', email.split('@')[0])
+            username = base_username
+            
+            # username 중복 체크 및 회피
+            counter = 1
+            while User.objects.filter(username=username).exists():
+                username = f"{base_username}_{counter}"
+                counter += 1
+            
+            user = User.objects.create_user(
+                email=supabase_user.email,
+                username=username,
+                is_active=True
+            )
+            print(f"DEBUG: 장고 DB 새 유저 생성 완료 (Username: {username})")
         
         if not user.is_active:
             print(f"DEBUG: 비활성 유저 로그인 시도 (ID: {user.id})")
             return JsonResponse({"success": False, "message": "계정이 비활성화되어 있습니다."}, status=403)
         
-        # 3. 장고 세션 로그인
-        login(request, user)
-        print(f"DEBUG: 장고 세션 로그인 완료 (User: {user.username})")
+        # 3. 장고 세션 로그인 (Redis 연결 오류 예외 처리)
+        try:
+            login(request, user)
+            print(f"DEBUG: 장고 세션 로그인 완료 (User: {user.username})")
+        except Exception as session_e:
+            print(f"ERROR: 세션 생성 실패 (Redis 확인 필요): {str(session_e)}")
+            return JsonResponse({
+                "success": False, 
+                "message": "서버 세션 생성에 실패했습니다. (Redis 연결 오류)",
+                "debug": str(session_e)
+            }, status=500)
         
         return JsonResponse({
             "success": True, 
