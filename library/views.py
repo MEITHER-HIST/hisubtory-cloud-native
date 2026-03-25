@@ -58,61 +58,45 @@ def _make_item_from_episode(s3_client, episode: Any) -> Dict[str, Any]:
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_user_history_api(request):
-    """최근 본 기록과 북마크 목록을 반환 (성능 최적화 및 에러 처리 강화)"""
+    """최근 본 기록과 북마크 목록을 반환 (성능 최적화 버전)"""
     user = request.user
     user_id = user.id
-    print(f"[DEBUG] get_user_history_api called. User: {user.username} (ID: {user_id})")
+    print(f"[DEBUG] get_user_history_api called. UserID: {user_id}")
 
     try:
         s3_client = get_s3_client() # 한 번만 생성
         
-        # 1) 최근 본 이야기 (Supabase 조회)
-        try:
-            viewed_episode_ids = list(UserViewedEpisode.objects.using('default')
-                                      .filter(user_id=user_id)
-                                      .order_by('-viewed_at')
-                                      .values_list('episode_id', flat=True)
-                                      .distinct()[:10])
-            print(f"[DEBUG] Found {len(viewed_episode_ids)} viewed episodes for user {user.username}")
-        except Exception as e:
-            print(f"[ERROR] Failed to fetch viewed episodes from Supabase: {str(e)}")
-            viewed_episode_ids = []
-
+        # 1) 최근 본 이야기
+        viewed_episode_ids = list(UserViewedEpisode.objects.using('default')
+                                  .filter(user_id=user_id)
+                                  .order_by('-viewed_at') # 최신순
+                                  .values_list('episode_id', flat=True)
+                                  .distinct()[:10])
+        
         total_viewed_count = UserViewedEpisode.objects.using('default').filter(user_id=user_id).values('episode_id').distinct().count()
         
         recent_data = []
         if viewed_episode_ids:
-            try:
-                ep_dict = {ep.episode_id: ep for ep in Episode.objects.using('mysql').filter(episode_id__in=viewed_episode_ids).select_related("webtoon__station")}
-                for eid in viewed_episode_ids:
-                    if eid in ep_dict:
-                        recent_data.append(_make_item_from_episode(s3_client, ep_dict[eid]))
-            except Exception as e:
-                print(f"[ERROR] Failed to fetch episode details from MySQL: {str(e)}")
+            ep_dict = {ep.episode_id: ep for ep in Episode.objects.using('mysql').filter(episode_id__in=viewed_episode_ids).select_related("webtoon__station")}
+            for eid in viewed_episode_ids:
+                if eid in ep_dict:
+                    recent_data.append(_make_item_from_episode(s3_client, ep_dict[eid]))
 
-        # 2) 북마크한 이야기 (Supabase 조회)
-        try:
-            bookmark_episode_ids = list(Bookmark.objects.using('default')
-                                        .filter(user_id=user_id)
-                                        .order_by('-created_at')
-                                        .values_list('episode_id', flat=True)
-                                        .distinct())
-            print(f"[DEBUG] Found {len(bookmark_episode_ids)} bookmarks for user {user.username}")
-        except Exception as e:
-            print(f"[ERROR] Failed to fetch bookmarks from Supabase: {str(e)}")
-            bookmark_episode_ids = []
-            
+        # 2) 북마크한 이야기
+        bookmark_episode_ids = list(Bookmark.objects.using('default')
+                                    .filter(user_id=user_id)
+                                    .order_by('-created_at')
+                                    .values_list('episode_id', flat=True)
+                                    .distinct())
+        
         total_saved_count = len(bookmark_episode_ids)
         
         saved_data = []
         if bookmark_episode_ids:
-            try:
-                ep_dict = {ep.episode_id: ep for ep in Episode.objects.using('mysql').filter(episode_id__in=bookmark_episode_ids).select_related("webtoon__station")}
-                for eid in bookmark_episode_ids:
-                    if eid in ep_dict:
-                        saved_data.append(_make_item_from_episode(s3_client, ep_dict[eid]))
-            except Exception as e:
-                print(f"[ERROR] Failed to fetch bookmarked episode details from MySQL: {str(e)}")
+            ep_dict = {ep.episode_id: ep for ep in Episode.objects.using('mysql').filter(episode_id__in=bookmark_episode_ids).select_related("webtoon__station")}
+            for eid in bookmark_episode_ids:
+                if eid in ep_dict:
+                    saved_data.append(_make_item_from_episode(s3_client, ep_dict[eid]))
 
         return Response(
             {
@@ -126,9 +110,9 @@ def get_user_history_api(request):
         )
     except Exception as e:
         import traceback
-        print(f"[ERROR] MyPage Global Exception: {str(e)}")
+        print(f"[ERROR] MyPage logic failed: {str(e)}")
         print(traceback.format_exc())
         return Response(
-            {"success": False, "message": f"데이터 로딩 중 오류가 발생했습니다: {str(e)}"},
+            {"success": False, "message": str(e)},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )

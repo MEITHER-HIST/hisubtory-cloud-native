@@ -32,18 +32,13 @@ def main_api_view(request):
     
     if user:
         try:
-            # 3. PostgreSQL(default)에서 시청 기록 가져오기 (user_id 직접 사용)
-            viewed_episode_ids = list(UserViewedEpisode.objects.using('default').filter(user_id=user.id).values_list('episode_id', flat=True))
-            print(f"[DEBUG] viewed_episode_ids for user {user.id}: {viewed_episode_ids}")
-            
+            # 3. PostgreSQL(default)에서 시청 기록 가져오기
+            viewed_episode_ids = list(UserViewedEpisode.objects.using('default').filter(user=user).values_list('episode_id', flat=True))
             if viewed_episode_ids:
-                # 4. MySQL에서 시청한 역 정보 확인 (station_id 목록 추출)
-                viewed_station_ids = set(Episode.objects.using('mysql')
-                                         .filter(episode_id__in=viewed_episode_ids)
-                                         .values_list('webtoon__station_id', flat=True))
-                print(f"[DEBUG] viewed_station_ids: {viewed_station_ids}")
+                # 4. MySQL에서 시청한 역 정보 확인
+                viewed_station_ids = set(Episode.objects.using('mysql').filter(episode_id__in=viewed_episode_ids).values_list('webtoon__station_id', flat=True))
         except Exception as e:
-            print(f"[ERROR] Failed to fetch viewed history for user {user.id}: {str(e)}")
+            print(f"[ERROR] Failed to fetch viewed history: {str(e)}")
 
     station_list = []
     for s in stations:
