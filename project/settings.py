@@ -161,29 +161,28 @@ else:
     SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SAMESITE = 'None'  # 서로 다른 ALB 간 쿠키 공유를 위해 필수
 
+# 서브도메인 간 쿠키 공유를 위한 도메인 설정
+SESSION_COOKIE_DOMAIN = os.getenv("SESSION_COOKIE_DOMAIN", ".hisubtory.site")
+CSRF_COOKIE_DOMAIN = SESSION_COOKIE_DOMAIN
+
 CSRF_TRUSTED_ORIGINS = [
+    "https://hisubtory.site",
+    "https://*.hisubtory.site",
     "http://hisub-alb-1329951961.ap-northeast-2.elb.amazonaws.com",
     "https://hisub-alb-1329951961.ap-northeast-2.elb.amazonaws.com",
     "http://hisubtory-alb-913594763.ap-northeast-2.elb.amazonaws.com",
     "https://hisubtory-alb-913594763.ap-northeast-2.elb.amazonaws.com",
     "http://hisubtory-alb-258264007.ap-northeast-2.elb.amazonaws.com",
     "https://hisubtory-alb-258264007.ap-northeast-2.elb.amazonaws.com",
-    "https://hisubtory.com",
-    "http://hisubtory.com",
     "http://localhost:5173",
     "http://127.0.0.1:5173",
-    "http://localhost:8000",
-    "http://127.0.0.1:8000",
-    "http://127.0.0.1",
-    "http://10.0.0.58",
-    "http://10.0.0.134",
 ]
 
 CORS_ALLOWED_ORIGINS = [
+    "https://hisubtory.site",
+    "https://*.hisubtory.site",
     "http://localhost:5173",
     "http://127.0.0.1:5173",
-    "https://hisubtory.com",
-    "http://hisubtory.com",
     "http://hisub-alb-1329951961.ap-northeast-2.elb.amazonaws.com",
     "https://hisub-alb-1329951961.ap-northeast-2.elb.amazonaws.com",
     "http://hisubtory-alb-913594763.ap-northeast-2.elb.amazonaws.com",

@@ -78,6 +78,10 @@
                     "value": "True"
                 },
                 {
+                    "name": "SESSION_COOKIE_DOMAIN",
+                    "value": ".hisubtory.site"
+                },
+                {
                     "name": "EMAIL_HOST_USER",
                     "value": "joinmin0114@gmail.com"
                 }

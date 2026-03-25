@@ -24,6 +24,10 @@
                 {
                     "name": "REDIS_URL",
                     "value": "rediss://hisubtory-redis.gquniu.0001.apn2.cache.amazonaws.com:6379/0"
+                },
+                {
+                    "name": "SESSION_COOKIE_DOMAIN",
+                    "value": ".hisubtory.site"
                 }
             ],
             "secrets": [

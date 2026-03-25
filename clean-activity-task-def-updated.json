@@ -24,8 +24,16 @@
                 { "name": "AWS_STORAGE_BUCKET_NAME", "value": "hisubtory-media-bucket-v2" },
                 { "name": "SESSION_ENGINE", "value": "django.contrib.sessions.backends.cache" },
                 { "name": "REDIS_URL", "value": "rediss://hisubtory-redis.gquniu.0001.apn2.cache.amazonaws.com:6379/0" },
-                { "name": "DEBUG", "value": "True" }
-            ],
+                {
+                    "name": "DEBUG",
+                    "value": "True"
+                },
+                {
+                    "name": "SESSION_COOKIE_DOMAIN",
+                    "value": ".hisubtory.site"
+                }
+                ],
+
             "secrets": [
                 { "name": "SB_DB_PASSWORD", "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:180618475875:secret:hisubtory/secrets-SB_DB_PASSWORD-y4Tqkd" },
                 { "name": "SUPABASE_KEY", "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:180618475875:secret:hisubtory/secrets-SUPABASE_KEY-ckQFmQ" },
