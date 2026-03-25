@@ -79,6 +79,19 @@ CACHES = {
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "default"
 
+# ✅ 보안 및 프록시 설정 (ALB 환경 필수 - 세션 유실 방지)
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
+USE_X_FORWARDED_PORT = True
+
+# 💡 서비스 간 세션 공유 설정
+SESSION_COOKIE_SECURE = True
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_HTTPONLY = False
+CSRF_COOKIE_SAMESITE = 'Lax'
+
 LANGUAGE_CODE = 'ko-kr'
 TIME_ZONE = 'Asia/Seoul'
 USE_I18N = True
@@ -91,9 +104,20 @@ CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
+    "https://hisubtory.site",
+    "http://hisubtory.site",
+    "http://hisubtory-alb-913594763.ap-northeast-2.elb.amazonaws.com",
+    "https://hisubtory-alb-913594763.ap-northeast-2.elb.amazonaws.com",
+]
+CSRF_TRUSTED_ORIGINS = [
+    "https://hisubtory.site",
+    "http://hisubtory.site",
     "http://hisubtory-alb-913594763.ap-northeast-2.elb.amazonaws.com",
 ]
+<<<<<<< HEAD
+=======
 CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS
+>>>>>>> fac1e6cb9a9054fe5447db4f8157b12fbb4ed1e5
 
 TEMPLATES = [
     {
@@ -114,7 +138,7 @@ TEMPLATES = [
 # AWS S3 & CloudFront Settings
 AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
-AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME', 'hisubtory-media-bucket')
+AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME', 'hisubtory-media-bucket-v2')
 AWS_S3_REGION_NAME = os.getenv('AWS_S3_REGION_NAME', 'ap-northeast-2')
 AWS_S3_SIGNATURE_VERSION = 's3v4'
 AWS_S3_FILE_OVERWRITE = False
@@ -122,4 +146,8 @@ AWS_DEFAULT_ACL = None
 
 # ✅ Use CloudFront Domain
 AWS_S3_CUSTOM_DOMAIN = os.getenv('AWS_S3_CUSTOM_DOMAIN', 'd27nsin45nib0r.cloudfront.net')
+<<<<<<< HEAD
 MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/'
+=======
+MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/'
+>>>>>>> fac1e6cb9a9054fe5447db4f8157b12fbb4ed1e5

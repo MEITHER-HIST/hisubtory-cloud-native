@@ -1,18 +1,28 @@
 # Stage 1: Build
-FROM node:20-alpine AS build
+FROM node:22-alpine AS build
+
+# 빌드 시 메모리 제한 확장
+ENV NODE_OPTIONS="--max-old-space-size=4096"
+ENV VITE_API_URL="/api"
+ENV CI=false
+
 WORKDIR /app
-# 종속성 파일 복사 및 설치
-COPY package*.json ./
-RUN npm install
-# 소스 복사 및 빌드
+
+# 💡 프로젝트 전체 복사
 COPY . .
-RUN npm run build
+
+# 💡 작업 디렉토리를 web-service 폴더 내부로 고정
+WORKDIR /app/web-service
+
+# 💡 의존성 설치 및 빌드
+RUN npm install --legacy-peer-deps
+RUN npx vite build --emptyOutDir
 
 # Stage 2: Serve
 FROM nginx:stable-alpine
-# Vite 빌드 결과물(build)을 Nginx 경로로 복사
-COPY --from=build /app/build /usr/share/nginx/html
+# Vite 기본 빌드 폴더인 dist를 Nginx 경로로 복사
+COPY --from=build /app/web-service/dist /usr/share/nginx/html
 # Nginx 설정 파일 복사
-COPY nginx/default.conf /etc/nginx/conf.d/default.conf
+COPY web-service/nginx/default.conf /etc/nginx/conf.d/default.conf
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]

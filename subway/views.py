@@ -37,20 +37,60 @@ class StationStoryView(APIView):
 class SubwayLineView(APIView):
     def get(self, request):
         try:
-            lines = Line.objects.all()
-            # 데이터가 없으면 빈 리스트 반환 (500 에러 방지)
-            data = [
-                {
+            from library.models import UserViewedEpisode
+            from stories.models import Episode, Webtoon
+            
+            lines = Line.objects.prefetch_related('stations').all()
+            user = request.user
+            viewed_episode_ids = set()
+            
+            if user.is_authenticated:
+                viewed_episode_ids = set(
+                    UserViewedEpisode.objects.using('default')
+                    .filter(user=user)
+                    .values_list('episode_id', flat=True)
+                )
+
+            # 1. 모든 웹툰(Webtoon)과 그에 연결된 역 ID 정보를 가져옵니다.
+            webtoons = Webtoon.objects.values('webtoon_id', 'station_id')
+            webtoon_to_station = {w['webtoon_id']: w['station_id'] for w in webtoons}
+            
+            # 2. 모든 에피소드(Episode)를 가져와서 역별로 분류합니다.
+            all_episodes = Episode.objects.values('episode_id', 'webtoon_id')
+            station_to_episodes = {}
+            for ep in all_episodes:
+                wid = ep['webtoon_id']
+                sid = webtoon_to_station.get(wid)
+                if sid:
+                    if sid not in station_to_episodes:
+                        station_to_episodes[sid] = []
+                    station_to_episodes[sid].append(ep['episode_id'])
+
+            data = []
+            for line in lines:
+                stations_data = []
+                for s in line.stations.all():
+                    # 해당 역(s.id)에 등록된 에피소드 ID 리스트
+                    station_eps = station_to_episodes.get(s.id, [])
+                    # 사용자가 본 에피소드 중 이 역의 에피소드가 있는지 확인
+                    is_visited = any(eid in viewed_episode_ids for eid in station_eps)
+                    
+                    stations_data.append({
+                        "id": s.id,
+                        "station_name": s.station_name,
+                        "station_code": s.station_code,
+                        "is_visited": is_visited
+                    })
+                
+                data.append({
                     "line_name": line.line_name,
                     "line_color": line.line_color,
-                    "stations": [
-                        {"id": s.id, "station_name": s.station_name, "station_code": s.station_code}
-                        for s in line.stations.all()
-                    ]
-                }
-                for line in lines
-            ]
+                    "stations": stations_data
+                })
             return Response(data)
         except Exception as e:
             logger.error(f"Error in SubwayLineView: {e}")
-            return Response([], status=200) # 장애 발생 시 빈 리스트 반환
+            import traceback
+            logger.error(traceback.format_exc())
+            return Response([], status=200)
+

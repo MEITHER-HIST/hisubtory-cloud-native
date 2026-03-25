@@ -30,114 +30,149 @@ def csrf_api_view(request):
     """CSRF 토큰을 쿠키에 설정하기 위한 뷰"""
     return JsonResponse({"success": True, "detail": "CSRF cookie set"})
 
+def get_request_data(request):
+    """JSON 또는 Form Data에서 데이터를 추출하는 헬퍼 함수 (표준 준수 및 로깅 강화)"""
+    data = {}
+    
+    # 1. Form Data 처리 (application/x-www-form-urlencoded)
+    # Django는 이 형식일 때 request.POST에 데이터를 자동으로 채웁니다.
+    if request.POST:
+        data = {k: v for k, v in request.POST.items()}
+        print(f"DEBUG: Form Data 파싱 성공 (Keys: {list(data.keys())})")
+    
+    # 2. JSON 데이터 처리
+    elif request.content_type == 'application/json' or not data:
+        try:
+            if request.body:
+                data = json.loads(request.body)
+                print(f"DEBUG: JSON Data 파싱 성공 (Keys: {list(data.keys())})")
+        except (json.JSONDecodeError, UnicodeDecodeError) as e:
+            print(f"DEBUG: JSON 파싱 실패 또는 바디 없음: {str(e)}")
+            
+    # 3. 폴백: URLSearchParams 파싱 (body가 바이트인 경우)
+    if not data and request.body:
+        try:
+            from urllib.parse import parse_qs
+            body_str = request.body.decode('utf-8')
+            if body_str:
+                parsed = parse_qs(body_str)
+                data = {k: v[0] for k, v in parsed.items()}
+                print(f"DEBUG: Fallback 파싱 성공 (Keys: {list(data.keys())})")
+        except:
+            pass
+            
+    return data
+
 @csrf_exempt
 @require_POST
 def login_api_view(request):
-    """로그인 처리 (Supabase Auth 사용 권장)"""
+    """로그인 처리 (상세 로깅 포함)"""
     try:
+        print(f"DEBUG: 로그인 요청 수신 (Content-Type: {request.content_type})")
         if not supabase:
-            return JsonResponse({"success": False, "message": "인증 서비스가 준비되지 않았습니다. 관리자에게 문의하세요."}, status=500)
+            return JsonResponse({"success": False, "message": "인증 서비스가 준비되지 않았습니다."}, status=500)
 
-        data = json.loads(request.body)
-        email = data.get('email')
-        password = data.get('password')
+        data = get_request_data(request)
+        # 💡 프론트엔드에 따라 'email' 또는 'username'을 ID로 사용 가능하므로 유연하게 처리
+        email = data.get('email') or data.get('username')
+        password = data.get('password') or data.get('password1')
 
         if not email or not password:
-            return JsonResponse({"success": False, "message": "이메일과 비밀번호를 모두 입력해 주세요."}, status=400)
+            print(f"DEBUG: 로그인 필수 필드 누락 (수신된 키: {list(data.keys())})")
+            return JsonResponse({"success": False, "message": "이메일(또는 아이디)과 비밀번호를 입력해주세요."}, status=400)
 
-        # 💡 Supabase Auth로 로그인 시도
+        # 1. Supabase Auth로 로그인 시도
         res = supabase.auth.sign_in_with_password({
             "email": email,
             "password": password
         })
         
-        # 💡 장고 DB와 동기화 (세션 유지를 위해 필수)
         supabase_user = res.user
+        print(f"DEBUG: Supabase 로그인 성공 (Email: {supabase_user.email})")
+        
+        # 2. 장고 DB 동기화
         user, created = User.objects.get_or_create(
             email=supabase_user.email,
-            defaults={'username': supabase_user.user_metadata.get('username', email.split('@')[0])}
+            defaults={
+                'username': supabase_user.user_metadata.get('username', email.split('@')[0]),
+                'is_active': True
+            }
         )
         
-        # 장고 세션 로그인 수행
+        if not user.is_active:
+            print(f"DEBUG: 비활성 유저 로그인 시도 (ID: {user.id})")
+            return JsonResponse({"success": False, "message": "계정이 비활성화되어 있습니다."}, status=403)
+        
+        # 3. 장고 세션 로그인
         login(request, user)
+        print(f"DEBUG: 장고 세션 로그인 완료 (User: {user.username})")
         
         return JsonResponse({
             "success": True, 
             "message": f"{user.username}님, 반갑습니다!",
-            "user": {
-                "id": str(user.id),
-                "email": user.email,
-                "username": user.username
-            }
+            "user": {"id": str(user.id), "email": user.email, "username": user.username}
         })
     except Exception as e:
-        # 에러 메시지 상세 분석 및 한글화
         error_msg = str(e)
-        print(f"로그인 오류: {error_msg}")
-        status_code = 401
+        print(f"ERROR: 로그인 실패 상세: {error_msg}")
         
+        friendly_msg = "로그인 중 오류가 발생했습니다."
         if "Invalid login credentials" in error_msg:
             friendly_msg = "이메일 또는 비밀번호가 올바르지 않습니다."
         elif "Email not confirmed" in error_msg:
-            friendly_msg = "아직 이메일 인증이 완료되지 않았습니다. 메일함을 확인해 주세요."
-        else:
-            friendly_msg = f"로그인 중 오류가 발생했습니다: {error_msg}"
+            friendly_msg = "이메일 인증이 완료되지 않았습니다."
             
-        return JsonResponse({"success": False, "message": friendly_msg}, status=status_code)
+        return JsonResponse({"success": False, "message": friendly_msg, "debug": error_msg}, status=401)
 
 @csrf_exempt
 @require_POST
 def signup_api_view(request):
-    """Supabase Auth SDK를 이용한 회원가입 (인증 메일 발송 포함)"""
+    """회원가입 처리 (프론트엔드 필드명 password1, password2 대응)"""
     try:
+        print(f"DEBUG: 회원가입 요청 수신 (Content-Type: {request.content_type})")
         if not supabase:
-            return JsonResponse({"success": False, "message": "인증 서비스가 준비되지 않았습니다. 관리자에게 문의하세요."}, status=500)
+            return JsonResponse({"success": False, "message": "인증 서비스가 준비되지 않았습니다."}, status=500)
 
-        data = json.loads(request.body)
+        data = get_request_data(request)
         username = data.get('username')
         email = data.get('email')
-        password = data.get('password')
+        
+        # 💡 프론트엔드 필드명(password1) 대응
+        password = data.get('password') or data.get('password1')
+        password_confirm = data.get('password_confirm') or data.get('password2')
 
         if not username or not email or not password:
-            return JsonResponse({"success": False, "message": "모든 필드를 입력해 주세요."}, status=400)
+            print(f"DEBUG: 회원가입 필수 필드 누락 (수신된 키: {list(data.keys())})")
+            return JsonResponse({"success": False, "message": "모든 필드를 입력해 주세요 (아이디, 이메일, 비밀번호)."}, status=400)
 
-        # 💡 1. Supabase Auth로 가입 시도 (인증 메일 발송 트리거)
-        res = supabase.auth.sign_up({
-            "email": email,
-            "password": password,
-            "options": {
-                "data": {
-                    "username": username
-                }
-            }
-        })
+        # 💡 비밀번호 일치 확인
+        if password and password_confirm and password != password_confirm:
+            return JsonResponse({"success": False, "message": "비밀번호가 일치하지 않습니다."}, status=400)
 
-        # 💡 2. 장고 DB에도 유저 생성 (이메일 인증 전이므로 활성화는 나중에)
+        # 1. Supabase Auth로 가입 시도
+        try:
+            res = supabase.auth.sign_up({
+                "email": email,
+                "password": password,
+                "options": {"data": {"username": username}}
+            })
+            print(f"DEBUG: Supabase 회원가입 시도 성공 (Email: {email})")
+        except Exception as auth_e:
+            print(f"ERROR: Supabase 가입 실패: {str(auth_e)}")
+            return JsonResponse({"success": False, "message": f"인증 서비스 오류: {str(auth_e)}"}, status=503)
+
+        # 2. 장고 DB 동기화
         if not User.objects.filter(email=email).exists():
-            User.objects.create_user(
-                username=username, 
-                email=email, 
-                password=password,
-                is_active=False # 이메일 인증 전에는 비활성화 권장
-            )
+            User.objects.create_user(username=username, email=email, password=password, is_active=True)
+            print(f"DEBUG: 장고 DB 유저 생성 완료 (Email: {email})")
 
-        # 💡 3. 가입 성공 시 안내 (메일 확인 필요)
-        return JsonResponse({
-            "success": True, 
-            "message": f"회원가입 신청이 성공했습니다! {email} 메일함에서 인증 링크를 꼭 클릭해 주세요."
-        })
+        return JsonResponse({"success": True, "message": "회원가입 성공! 메일함을 확인해 주세요."})
 
     except Exception as e:
         error_msg = str(e)
-        print(f"회원가입 오류: {error_msg}")
-        if "User already registered" in error_msg:
-            friendly_msg = "이미 등록된 이메일 주소입니다."
-        elif "already exists" in error_msg:
-            friendly_msg = "이미 존재하는 사용자입니다."
-        else:
-            friendly_msg = f"가입 중 오류가 발생했습니다: {error_msg}"
-        
-        return JsonResponse({"success": False, "message": friendly_msg}, status=400)
+        print(f"ERROR: 회원가입 최종 실패: {error_msg}")
+        return JsonResponse({"success": False, "message": f"가입 중 오류 발생: {error_msg}"}, status=400)
+
 
 @require_GET
 def me_api_view(request):

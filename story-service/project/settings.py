@@ -87,13 +87,47 @@ STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / "staticfiles"
 AUTH_USER_MODEL = 'accounts.User'
 
+# ✅ REST Framework Configuration
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny', # 기본은 허용, 뷰에서 IsAuthenticated로 제한
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+    ],
+}
+
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
+    "https://hisubtory.site",
+    "http://hisubtory.site",
+    "http://hisubtory-alb-913594763.ap-northeast-2.elb.amazonaws.com",
+    "https://hisubtory-alb-913594763.ap-northeast-2.elb.amazonaws.com",
+]
+CSRF_TRUSTED_ORIGINS = [
+    "https://hisubtory.site",
+    "http://hisubtory.site",
     "http://hisubtory-alb-913594763.ap-northeast-2.elb.amazonaws.com",
 ]
-CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS
+
+# ✅ 보안 및 프록시 설정 (ALB 환경 필수)
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
+USE_X_FORWARDED_PORT = True
+
+# 💡 서비스 간 세션 공유 설정 (도메인 명시 제거하여 충돌 방지)
+SESSION_COOKIE_SECURE = True
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_HTTPONLY = False
+CSRF_COOKIE_SAMESITE = 'Lax'
+
+SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+SESSION_CACHE_ALIAS = "default"
 
 TEMPLATES = [
     {

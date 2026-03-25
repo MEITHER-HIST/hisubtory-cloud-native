@@ -87,18 +87,51 @@ STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / "staticfiles"
 AUTH_USER_MODEL = 'accounts.User'
 
+# ✅ REST Framework Configuration
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny', # 기본은 허용, 뷰에서 IsAuthenticated로 제한
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+    ],
+}
+
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
-    "http://hisub-alb-1329951961.ap-northeast-2.elb.amazonaws.com",
-    "https://hisub-alb-1329951961.ap-northeast-2.elb.amazonaws.com",
+    "https://hisubtory.site",
+    "http://hisubtory.site",
     "http://hisubtory-alb-913594763.ap-northeast-2.elb.amazonaws.com",
     "https://hisubtory-alb-913594763.ap-northeast-2.elb.amazonaws.com",
-    "http://hisubtory-alb-258264007.ap-northeast-2.elb.amazonaws.com",
-    "https://hisubtory-alb-258264007.ap-northeast-2.elb.amazonaws.com",
 ]
-CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS
+CSRF_TRUSTED_ORIGINS = [
+    "https://hisubtory.site",
+    "http://hisubtory.site",
+    "http://hisubtory-alb-913594763.ap-northeast-2.elb.amazonaws.com",
+]
+
+# ✅ 보안 및 프록시 설정 (ALB 환경 필수)
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
+USE_X_FORWARDED_PORT = True
+
+# 💡 서비스 간 세션 공유 설정 (도메인 명시 제거하여 충돌 방지)
+SESSION_COOKIE_SECURE = True
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_HTTPONLY = False
+CSRF_COOKIE_SAMESITE = 'Lax'
+
+# 세션 도메인 설정을 제거하여 호스트 기반 쿠키 사용 (Shadowing 방지)
+# SESSION_COOKIE_DOMAIN = ".hisubtory.site" 
+# CSRF_COOKIE_DOMAIN = ".hisubtory.site"
+
+SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+SESSION_CACHE_ALIAS = "default"
 
 TEMPLATES = [
     {
@@ -128,3 +161,12 @@ AWS_DEFAULT_ACL = None
 # ✅ Use CloudFront Domain
 AWS_S3_CUSTOM_DOMAIN = os.getenv('AWS_S3_CUSTOM_DOMAIN', 'd27nsin45nib0r.cloudfront.net')
 MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/'
+
+# ✅ Email Settings (SMTP)
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True') == 'True'
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', 'joinmin0114@gmail.com')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD') # GitHub Secrets에서 주입
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER

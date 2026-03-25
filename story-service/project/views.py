@@ -91,10 +91,13 @@ class StationStoryView(APIView):
         decoded_name = unquote(str(sid))
         
         try:
+            # 💡 select_related를 사용하여 webtoon과 station 정보를 한 번에 가져옴
+            episodes = Episode.objects.select_related('webtoon', 'webtoon__station')
+            
             if decoded_name.isdigit():
-                episodes = Episode.objects.filter(webtoon__station_id=int(decoded_name))
+                episodes = episodes.filter(webtoon__station_id=int(decoded_name))
             else:
-                episodes = Episode.objects.filter(webtoon__station__station_name__contains=decoded_name)
+                episodes = episodes.filter(webtoon__station__station_name__contains=decoded_name)
             
             if exclude_id and str(exclude_id).isdigit():
                 episodes = episodes.exclude(episode_id=int(exclude_id))
@@ -104,16 +107,20 @@ class StationStoryView(APIView):
             if not episode:
                 return Response({"success": False, "message": "새로운 에피소드를 준비 중이에요!"})
             
+            # 💡 안전하게 필드 추출 (None 체크)
+            webtoon_id = episode.webtoon.webtoon_id if episode.webtoon else None
+            
             return Response({
                 "success": True,
                 "episode_id": episode.episode_id,
                 "episode_num": episode.episode_num,
-                "subtitle": episode.subtitle,
-                "webtoon_id": episode.webtoon.webtoon_id
+                "subtitle": episode.subtitle or "제목 없음",
+                "webtoon_id": webtoon_id
             })
 
         except Exception as e:
-            return Response({"success": False, "error": str(e)}, status=500)
+            print(f"StationStoryView Error: {str(e)}")
+            return Response({"success": False, "error": f"데이터 로딩 중 오류가 발생했습니다: {str(e)}"}, status=500)
 
 # ✅ 3. 북마크 토글 API
 @api_view(['POST'])

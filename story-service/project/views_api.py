@@ -45,9 +45,12 @@ def _station_ids_for_line(line_id: int) -> list[int]:
         cursor.execute("SELECT station_id FROM subway_station_lines WHERE line_id=%s", [line_id])
         return [row[0] for row in cursor.fetchall()]
 
+ALLOWED_LINES = {"3"}
 @require_GET
 def main_api_view(request):
-    line_num = request.GET.get("line", "3")
+    line_num = (request.GET.get("line", "3") or "").strip()
+    if line_num not in ALLOWED_LINES:
+        return JsonResponse({"error": "Invalid line"}, status=400)
     line_obj = Line.objects.filter(line_name=f"{line_num}호선").first()
     if not line_obj:
         return JsonResponse({"success": False, "message": "line_not_found"}, status=404)
@@ -102,9 +105,13 @@ def pick_episode_api_view(request):
     특정 역 클릭 시 에피소드 ID 반환
     """
     station_id = request.GET.get("station_id")
-    if not station_id:
+    if station_id is None:
         return JsonResponse({"success": False, "message": "station_id_required"}, status=400)
 
+    try:
+        station_id = int(station_id)
+    except (TypeError, ValueError):
+        return JsonResponse({"success": False, "message": "invalid_station_id"}, status=400)
     ep = None
     # 1. 로그인 유저인 경우: 가장 최근에 본 에피소드 우선
     if request.user.is_authenticated:
@@ -131,7 +138,9 @@ def pick_episode_api_view(request):
 @require_GET
 def random_episode_api_view(request):
     """랜덤 에피소드 추천 (비로그인도 사용 가능)"""
-    line_num = request.GET.get("line", "3")
+    line_num = (request.GET.get("line", "3") or "").strip()
+    if line_num not in ALLOWED_LINES:
+        return JsonResponse({"error": "Invalid line"}, status=400)
     line_obj = Line.objects.filter(line_name=f"{line_num}호선").first()
     if not line_obj:
         return JsonResponse({"message": "line_not_found"}, status=404)
