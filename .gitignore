@@ -22,6 +22,8 @@ node_modules/
 __pycache__/
 *.pyc
 venv/
+.venv
+.venv/
 processed-*.json
 *.pem
 *.sql
