@@ -55,6 +55,7 @@
             "portMappings": [{ "containerPort": 9100, "hostPort": 9100, "protocol": "tcp" }],
             "essential": true
         }
+
     ],
     "family": "hisubtory-story-task",
     "taskRoleArn": "arn:aws:iam::180618475875:role/hisubtory-ecs-task-role",
