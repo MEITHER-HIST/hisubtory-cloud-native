@@ -77,16 +77,13 @@ def main_api_view(request):
         is_viewed = (s.id in viewed_station_ids)
         has_story = (s.id in story_station_ids)
         
-        # ✅ [수정] 프론트엔드 기획 변경 반영
-        # 로그인 시: 스토리가 있으면 클릭 가능 (has_story)
-        # 비로그인 시: 무조건 클릭 불가 (clickable = False) -> 오직 랜덤 버튼으로만 유도
-        clickable = has_story if is_auth else False
+        # ✅ [수정된 로직] 로그인 상태이고 스토리가 있다면 무조건 클릭 가능
+        clickable = (is_auth and has_story)
         
         station_list.append({
             "id": s.id,
             "name": s.station_name,
             "clickable": clickable,
-            # ✅ [수정] 비로그인 시에는 항상 gray로 표시되도록 is_viewed 무시
             "color": "green" if (is_auth and is_viewed) else "gray", 
             "is_viewed": is_viewed if is_auth else False,
             "has_story": has_story,
