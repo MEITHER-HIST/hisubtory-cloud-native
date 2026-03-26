@@ -64,19 +64,27 @@ def pick_episode_api_view(request):
     
     try:
         station_id = int(station_id)
+        station_obj = Station.objects.filter(id=station_id).first()
+        if not station_obj:
+            return JsonResponse({"success": False, "message": "station_not_found"}, status=404)
     except:
-        return JsonResponse({"success": False}, status=400)
+        return JsonResponse({"success": False, "message": "invalid_id"}, status=400)
 
     ep = None
     if request.user.is_authenticated:
-        # 본 기록이 있는 에피소드 중 가장 최근 것
+        # ✅ 역 ID에 맞는 에피소드 중 본 기록이 있는 것
         last_viewed = UserViewedEpisode.objects.filter(
             user=request.user, episode__webtoon__station_id=station_id
         ).select_related('episode').order_by('-viewed_at').first()
         if last_viewed:
             ep = last_viewed.episode
 
+    # ✅ [중요] 만약 역 ID로 찾은 에피소드가 엉뚱하다면(데이터 오염), 역 이름으로 한 번 더 검색
+    if not ep or (ep.webtoon.station.station_name != station_obj.station_name):
+        ep = Episode.objects.filter(webtoon__station__station_name=station_obj.station_name).order_by('episode_num').first()
+    
     if not ep:
+        # 최후의 수단: 역 ID로 필터링
         ep = Episode.objects.filter(webtoon__station_id=station_id).order_by('episode_num').first()
     
     if not ep:
