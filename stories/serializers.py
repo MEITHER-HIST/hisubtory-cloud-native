@@ -9,8 +9,8 @@ def get_presigned_url(path, expires_in=3600):
     """S3 경로를 받아 보안 주소(Presigned URL)를 생성하는 공통 함수"""
     if not path: return None
     
-    # ✅ [긴급 수정] 모든 줄바꿈(%0D%0A) 및 제어 문자 제거
-    path_str = str(path).replace('\r', '').replace('\n', '').strip().lstrip('/')
+    # ✅ [최종 강화] 모든 줄바꿈, 공백, 제어 문자를 정규식으로 제거
+    path_str = re.sub(r'[\r\n\t\s]+', '', str(path)).strip().lstrip('/')
     
     if path_str.startswith('http'): return path_str
     

@@ -10,36 +10,51 @@ python manage.py migrate --noinput || echo "⚠️ Migration failed, but startin
 echo "Ensuring Admin Superuser exists..."
 python create_admin_user.py || echo "⚠️ Admin superuser check failed..."
 
-echo "Fixing Episode 2 Data & Thumbnails on RDS..."
+echo "Fixing RDS Data Integrity (Thumbnails, Mapping, and Control Characters)..."
 python -c "
 import os
 import django
+import re
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'project.settings')
 django.setup()
-from stories.models import Episode, Webtoon, Station
+from stories.models import Episode, Webtoon, Station, Cut
 try:
-    # 1. 에피소드 2번 웹툰 ID 동기화 (썸네일 해결)
-    episodes_to_fix = Episode.objects.filter(episode_num=2)
-    for ep in episodes_to_fix:
+    # 1. 모든 테이블의 경로 데이터에서 줄바꿈(\r, \n) 제거 (썸네일 404 해결)
+    print('Cleaning control characters from paths...')
+    for w in Webtoon.objects.all():
+        if w.thumbnail:
+            new_val = w.thumbnail.replace('\r', '').replace('\n', '').strip()
+            if w.thumbnail != new_val:
+                w.thumbnail = new_val; w.save()
+    for e in Episode.objects.all():
+        if e.source_url:
+            new_val = e.source_url.replace('\r', '').replace('\n', '').strip()
+            if e.source_url != new_val:
+                e.source_url = new_val; e.save()
+    for c in Cut.objects.all():
+        if c.image:
+            new_val = c.image.replace('\r', '').replace('\n', '').strip()
+            if c.image != new_val:
+                c.image = new_val; c.save()
+
+    # 2. 에피소드 2번 웹툰 ID 동기화 (에피소드 2 썸네일 해결)
+    print('Syncing Episode 2 webtoon IDs...')
+    for ep in Episode.objects.filter(episode_num=2):
         ep1 = Episode.objects.filter(episode_num=1, webtoon__station_id=ep.webtoon.station_id).first()
         if ep1 and ep.webtoon_id != ep1.webtoon_id:
-            ep.webtoon_id = ep1.webtoon_id
-            ep.save()
+            ep.webtoon_id = ep1.webtoon_id; ep.save()
     
-    # 2. 역 이름 기준으로 Webtoon의 station_id 자동 보정 (일원역-주엽역 문제 해결)
-    webtoons = Webtoon.objects.select_related('station').all()
-    for w in webtoons:
-        # 제목에서 역 이름을 추출 (예: '일원역의 역사' -> '일원')
-        import re
+    # 3. 역 이름 기준으로 Webtoon의 station_id 전수 교정 (일원역-주엽역 등 매칭 해결)
+    print('Re-mapping webtoons to correct stations by name...')
+    for w in Webtoon.objects.all():
         match = re.search(r'(.+?)역', w.title)
         if match:
-            s_name = match.group(1)
+            s_name = match.group(1).strip()
             correct_s = Station.objects.filter(station_name__contains=s_name).first()
             if correct_s and w.station_id != correct_s.id:
-                print(f'Syncing Webtoon {w.webtoon_id}: {w.station.station_name} -> {correct_s.station_name}')
-                w.station_id = correct_s.id
-                w.save()
-    print('✅ RDS data & Station mapping sync complete.')
+                print(f'Correcting {w.title}: ID {w.station_id} -> {correct_s.id} ({correct_s.station_name})')
+                w.station_id = correct_s.id; w.save()
+    print('✅ RDS Data Integrity Fix Complete.')
 except Exception as e:
     print(f'❌ Data fix error: {str(e)}')
 " || echo "⚠️ Data fix failed..."

@@ -105,13 +105,10 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:5173",
     "https://hisubtory.site",
     "http://hisubtory.site",
-    "http://hisubtory-alb-913594763.ap-northeast-2.elb.amazonaws.com",
-    "https://hisubtory-alb-913594763.ap-northeast-2.elb.amazonaws.com",
 ]
 CSRF_TRUSTED_ORIGINS = [
     "https://hisubtory.site",
     "http://hisubtory.site",
-    "http://hisubtory-alb-913594763.ap-northeast-2.elb.amazonaws.com",
 ]
 
 # ✅ 보안 및 프록시 설정 (ALB 환경 필수)
