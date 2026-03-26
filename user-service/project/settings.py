@@ -47,6 +47,7 @@ MIDDLEWARE = [
 ROOT_URLCONF = 'project.urls'
 WSGI_APPLICATION = 'project.wsgi.application'
 
+# ✅ [2024-03-26] 전체 서비스 공통 로직 동기화 패치 적용
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
