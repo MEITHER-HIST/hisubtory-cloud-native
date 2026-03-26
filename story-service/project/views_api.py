@@ -31,9 +31,8 @@ def main_api_view(request):
         is_viewed = (s.id in viewed_station_ids)
         has_story = (s.id in story_station_ids)
         
-        # ✅ [최종 수정] 보지 않은 역은 선택 불가 (무조건 랜덤 버튼으로 유도)
-        # 로그인 상태이고 + 이미 본 역이며 + 스토리가 있는 경우에만 클릭 가능
-        clickable = (is_auth and is_viewed and has_story)
+        # ✅ [수정된 로직] 로그인 상태이고 스토리가 있다면 무조건 클릭 가능
+        clickable = (is_auth and has_story)
         
         station_list.append({
             "id": s.id,
@@ -53,7 +52,7 @@ def main_api_view(request):
 
 @require_GET
 def pick_episode_api_view(request):
-    """특정 역 클릭 시 해당 역의 에피소드 반환 (이미 본 역 클릭 시 호출됨)"""
+    """이미 본 역 클릭 시 호출되어 에피소드 반환"""
     station_id = request.GET.get("station_id")
     if not station_id: return JsonResponse({"success": False}, status=400)
     
@@ -62,9 +61,9 @@ def pick_episode_api_view(request):
     except:
         return JsonResponse({"success": False}, status=400)
 
-    # 해당 역의 가장 최근 본 에피소드 또는 첫 번째 에피소드 반환
     ep = None
     if request.user.is_authenticated:
+        # 본 기록이 있는 에피소드 중 가장 최근 것
         last_viewed = UserViewedEpisode.objects.filter(
             user=request.user, episode__webtoon__station_id=station_id
         ).select_related('episode').order_by('-viewed_at').first()
@@ -104,7 +103,7 @@ def logout_api_view(request):
 
 @require_GET
 def random_episode_api_view(request):
-    """랜덤 에피소드 추천 (비로그인/로그인 공용)"""
+    """랜덤 에피소드 추천"""
     ep = Episode.objects.order_by('?').first()
     if not ep: return JsonResponse({"success": False}, status=404)
     return JsonResponse({
