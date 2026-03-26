@@ -14,11 +14,12 @@ def main_api_view(request):
     line_num = (request.GET.get("line", "3") or "3").strip()
     line_obj = Line.objects.filter(line_name=f"{line_num}호선").first()
     if not line_obj:
-        return JsonResponse({"success": False}, status=404)
+        return JsonResponse({"success": False, "message": "line_not_found"}, status=404)
 
     station_ids = _station_ids_for_line(line_obj.id)
     stations = Station.objects.filter(id__in=station_ids, is_enabled=True)
     
+    # 해당 노선의 역들 중 스토리가 있는 역 ID 추출
     story_station_ids = set(Episode.objects.filter(webtoon__station_id__in=stations.values_list("id", flat=True)).values_list("webtoon__station_id", flat=True).distinct())
 
     is_auth = request.user.is_authenticated
@@ -31,14 +32,19 @@ def main_api_view(request):
         is_viewed = (s.id in viewed_station_ids)
         has_story = (s.id in story_station_ids)
         
-        # ✅ [수정된 로직] 로그인 상태이고 스토리가 있다면 무조건 클릭 가능
+        # ✅ [확정 로직] 
+        # 1. 로그인 안했을 때: 무조건 클릭 불가 (clickable=False)
+        # 2. 로그인 했을 때: 스토리가 있는 역만 클릭 가능 (is_auth and has_story)
         clickable = (is_auth and has_story)
+        
+        # ✅ 색상: 로그인 상태에서 본 이야기만 초록색
+        color = "green" if (is_auth and is_viewed) else "gray"
         
         station_list.append({
             "id": s.id,
             "name": s.station_name,
             "clickable": clickable,
-            "color": "green" if (is_auth and is_viewed) else "gray", 
+            "color": color, 
             "is_viewed": is_viewed if is_auth else False,
             "has_story": has_story,
         })

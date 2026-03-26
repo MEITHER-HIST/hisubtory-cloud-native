@@ -10,6 +10,26 @@ python manage.py migrate --noinput || echo "⚠️ Migration failed, but startin
 echo "Ensuring Admin Superuser exists..."
 python create_admin_user.py || echo "⚠️ Admin superuser check failed..."
 
+echo "Fixing Episode 2 Data & Thumbnails on RDS..."
+python -c "
+import os
+import django
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'project.settings')
+django.setup()
+from stories.models import Episode
+try:
+    episodes_to_fix = Episode.objects.filter(episode_num=2)
+    for ep in episodes_to_fix:
+        ep1 = Episode.objects.filter(episode_num=1, webtoon__station_id=ep.webtoon.station_id).first()
+        if ep1 and ep.webtoon_id != ep1.webtoon_id:
+            print(f'Syncing EP {ep.episode_id}: {ep.webtoon_id} -> {ep1.webtoon_id}')
+            ep.webtoon_id = ep1.webtoon_id
+            ep.save()
+    print('✅ Episode 2 data sync complete.')
+except Exception as e:
+    print(f'❌ Episode 2 fix error: {str(e)}')
+" || echo "⚠️ Data fix failed..."
+
 echo "Checking episode seed state..."
 python seed_episodes.py || echo "⚠️ Episode seeding check failed..."
 
