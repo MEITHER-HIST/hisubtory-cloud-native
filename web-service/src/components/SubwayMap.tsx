@@ -86,7 +86,9 @@ export function SubwayMap({ stationByName, onPickEpisode, isLoggedIn }: SubwayMa
           <p className="text-[11px] text-gray-500 whitespace-nowrap">
             {hoveredStation.dto?.color === "green" 
               ? "✅ 다시보기 가능" 
-              : (isLoggedIn ? "🔒 미방문 역" : "🔒 로그인 후 이용 가능")}
+              : (hoveredStation.dto?.clickable 
+                  ? (isLoggedIn ? "📖 이야기 읽기 가능" : "🔒 로그인 후 이용 가능")
+                  : "🔒 에피소드 준비 중")}
           </p>
         </div>
       )}

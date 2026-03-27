@@ -50,12 +50,14 @@ def main_api_view(request):
     station_list = []
     for s in stations:
         has_story = s.id in stations_with_episodes
+        is_viewed = s.id in viewed_station_ids
         station_list.append({
             "id": s.id,
             "name": s.station_name,
             "has_story": has_story,
             "clickable": has_story,
-            "is_viewed": s.id in viewed_station_ids
+            "is_viewed": is_viewed,
+            "color": "green" if is_viewed else "gray"
         })
         
     return JsonResponse({
