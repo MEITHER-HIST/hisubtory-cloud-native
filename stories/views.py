@@ -50,36 +50,38 @@ class EpisodeDetailAPIView(APIView):
 class StationStoryView(APIView):
     permission_classes = [AllowAny]
     def get(self, request, station_identifier=None, *args, **kwargs):
-        # 💡 station_id 필터링 강화
         sid = station_identifier or request.query_params.get('station_id')
         exclude_id = request.query_params.get('exclude')
 
-        if sid:
-            # 1. 해당 역에 직접 연결된 웹툰의 에피소드들 찾기
+        if not sid:
+            return Response({"success": False, "message": "station_id가 필요합니다."}, status=400)
+
+        # 💡 필터링 로직 강화: webtoon_id 또는 station_id 모두 고려
+        # 1. webtoon_id로 직접 필터링
+        episodes = Episode.objects.using('mysql').filter(webtoon_id=sid)
+        
+        # 2. 결과가 없으면 station_id로 필터링
+        if not episodes.exists():
             episodes = Episode.objects.using('mysql').filter(webtoon__station_id=sid)
-            
-            # 2. 만약 해당 역에 에피소드가 없으면 이름으로 다시 검색
-            if not episodes.exists() and not str(sid).isdigit():
-                episodes = Episode.objects.using('mysql').filter(webtoon__station__station_name__contains=sid)
-            
-            # 3. 제외할 ID가 있다면 제외
-            if exclude_id and str(exclude_id).isdigit():
-                episodes = episodes.exclude(episode_id=int(exclude_id))
-        else:
-            episodes = Episode.objects.using('mysql').all()
+        
+        # 3. 그래도 결과가 없으면 이름으로 필터링 (sid가 숫자가 아닌 경우 대비)
+        if not episodes.exists() and not str(sid).isdigit():
+            episodes = Episode.objects.using('mysql').filter(webtoon__station__station_name__contains=sid)
+        
+        # 4. 제외할 ID가 있다면 제외 (현재 보고 있는 에피소드 제외)
+        if exclude_id and str(exclude_id).isdigit():
+            episodes = episodes.exclude(episode_id=int(exclude_id))
 
         if not episodes.exists():
-            # Fallback: 아무거나 하나 (데이터가 없는 경우 방지)
-            episodes = Episode.objects.using('mysql').all()
-
-        if not episodes.exists():
-            return Response({"success": False, "message": "에피소드가 없습니다."}, status=404)
+            # [중요] Fallback 제거: 다른 역 이야기가 뜨지 않도록 함
+            return Response({"success": False, "message": "해당 역의 다른 이야기가 아직 없습니다."}, status=404)
 
         episode = random.choice(list(episodes))
         return Response({
             "success": True, 
             "episode_id": episode.episode_id,
-            "station_id": episode.webtoon.station_id,
+            "station_id": sid, # 요청받은 ID 유지
+            "webtoon_id": episode.webtoon_id,
             "subtitle": episode.subtitle
         })
 

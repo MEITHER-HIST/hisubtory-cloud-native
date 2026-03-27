@@ -39,17 +39,22 @@ def main_api_view(request):
     
     if user:
         try:
-            # 3. PostgreSQL(default)에서 시청 기록 가져오기
+            # 3. PostgreSQL(default)에서 시청 기록 가져오기 (Supabase)
             viewed_episode_ids = list(UserViewedEpisode.objects.using('default').filter(user=user).values_list('episode_id', flat=True))
             if viewed_episode_ids:
                 # 4. MySQL에서 시청한 역 정보 확인
-                viewed_station_ids = set(Episode.objects.using('mysql').filter(episode_id__in=viewed_episode_ids).values_list('webtoon__station_id', flat=True))
+                # 에피소드가 속한 웹툰의 webtoon_id와 station_id 모두를 시청한 역으로 간주하여 매칭 확률을 높임
+                v_stations = Episode.objects.using('mysql').filter(episode_id__in=viewed_episode_ids).values_list('webtoon_id', 'webtoon__station_id')
+                for wid, sid in v_stations:
+                    if wid: viewed_station_ids.add(wid)
+                    if sid: viewed_station_ids.add(sid)
         except Exception as e:
             print(f"[ERROR] Failed to fetch viewed history: {str(e)}")
 
     station_list = []
     for s in stations:
         has_story = s.id in stations_with_episodes
+        # 💡 초록색 버튼 여부: s.id가 시청한 역 ID 세트에 포함되어 있는지 확인
         is_viewed = s.id in viewed_station_ids
         station_list.append({
             "id": s.id,
