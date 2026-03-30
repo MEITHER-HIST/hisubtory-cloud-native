@@ -81,6 +81,12 @@ export function MainScreen({
   }, [stations]);
 
   const handleStationClick = async (stationId: number) => {
+    // ✅ 비로그인 시 로그인 유도
+    if (!user) {
+      onLoginClick();
+      return;
+    }
+    
     try {
       setIsLoading(true);
       const res = await fetch(`/api/pages/v1/episode/pick/?station_id=${stationId}`, { credentials: "include" });

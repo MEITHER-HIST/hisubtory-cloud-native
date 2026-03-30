@@ -32,20 +32,20 @@ def main_api_view(request):
         is_viewed = (s.id in viewed_station_ids)
         has_story = (s.id in story_station_ids)
         
-        # ✅ [확정 로직] 
-        # 1. 로그인 안했을 때: 무조건 클릭 불가 (clickable=False)
-        # 2. 로그인 했을 때: 스토리가 있는 역만 클릭 가능 (is_auth and has_story)
-        clickable = (is_auth and has_story)
+        # ✅ [수정] 
+        # 스토리가 있는 역은 로그인 여부와 관계없이 클릭 가능하게 변경
+        # (비로그인 상태에서 클릭 시 프론트엔드에서 로그인 모달을 띄우거나 안내 처리)
+        clickable = has_story
         
-        # ✅ 색상: 로그인 상태에서 본 이야기만 초록색
-        color = "green" if (is_auth and is_viewed) else "gray"
+        # ✅ 색상: 시청 기록이 있으면 초록색, 아니면 회색
+        color = "green" if is_viewed else "gray"
         
         station_list.append({
             "id": s.id,
             "name": s.station_name,
             "clickable": clickable,
             "color": color, 
-            "is_viewed": is_viewed if is_auth else False,
+            "is_viewed": is_viewed,
             "has_story": has_story,
         })
 
