@@ -13,7 +13,7 @@ class UserViewedEpisode(models.Model):
         related_name='viewed_episodes', 
         db_column='user_id' # DB의 컬럼명과 일치
     )
-    episode_id = models.BigIntegerField() # MySQL의 episode_id 참조 (물리적 제약 없이 로직으로 관리)
+    episode_id = models.BigIntegerField(null=True, blank=True) # MySQL의 episode_id 참조 (물리적 제약 없이 로직으로 관리)
     viewed_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -34,7 +34,7 @@ class Bookmark(models.Model):
         related_name='bookmarks', 
         db_column='user_id' # DB의 컬럼명과 일치
     )
-    episode_id = models.BigIntegerField() # MySQL의 episode_id 참조 (물리적 제약 없이 로직으로 관리)
+    episode_id = models.BigIntegerField(null=True, blank=True) # MySQL의 episode_id 참조 (물리적 제약 없이 로직으로 관리)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
