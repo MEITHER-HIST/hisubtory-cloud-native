@@ -151,8 +151,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'accounts.User'
 
 # 서브도메인 간 쿠키 공유를 위한 도메인 설정 (충돌 방지를 위해 명시적 설정 제거 또는 None)
-SESSION_COOKIE_DOMAIN = None 
-CSRF_COOKIE_DOMAIN = None
 
 if DEBUG:
     SESSION_COOKIE_SECURE = False
@@ -168,6 +166,7 @@ else:
 CSRF_COOKIE_SAMESITE = 'Lax'
 
 CSRF_TRUSTED_ORIGINS = [
+    "https://d27nsin45nib0r.cloudfront.net",
     "https://hisubtory.site",
     "https://*.hisubtory.site",
     "http://hisub-alb-1329951961.ap-northeast-2.elb.amazonaws.com",

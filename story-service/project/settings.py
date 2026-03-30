@@ -108,6 +108,7 @@ CORS_ALLOWED_ORIGINS = [
     "https://hisubtory-alb-913594763.ap-northeast-2.elb.amazonaws.com",
 ]
 CSRF_TRUSTED_ORIGINS = [
+    "https://d27nsin45nib0r.cloudfront.net",
     "https://hisubtory.site",
     "http://hisubtory.site",
     "http://hisubtory-alb-913594763.ap-northeast-2.elb.amazonaws.com",
@@ -119,8 +120,6 @@ USE_X_FORWARDED_HOST = True
 USE_X_FORWARDED_PORT = True
 
 # 💡 서비스 간 세션 공유 설정 (도메인 기반)
-SESSION_COOKIE_DOMAIN = ".hisubtory.site"
-CSRF_COOKIE_DOMAIN = ".hisubtory.site"
 SESSION_COOKIE_SAMESITE = "Lax"
 CSRF_COOKIE_SAMESITE = "Lax"
 SESSION_COOKIE_SECURE = True
@@ -155,6 +154,7 @@ CORS_ALLOWED_ORIGINS = [
     "https://hisubtory-alb-258264007.ap-northeast-2.elb.amazonaws.com",
 ]
 CSRF_TRUSTED_ORIGINS = [
+    "https://d27nsin45nib0r.cloudfront.net",
     "https://hisubtory.site",
     "https://*.hisubtory.site",
     "http://hisubtory-alb-913594763.ap-northeast-2.elb.amazonaws.com",
