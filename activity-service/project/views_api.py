@@ -33,9 +33,10 @@ def main_api_view(request):
         is_viewed = (clean_name in viewed_station_names)
         has_story = (clean_name in story_station_names)
         
-        # ✅ [수정] 로그인한 사용자는 모든 역을 클릭 가능하게 (혹은 스토리가 있는 모든 역)
-        # 사용자의 요청대로 로그인 시 모든 역에 대해 선택 시 볼 수 있도록 clickable 조정
-        clickable = True if is_auth else has_story
+        # ✅ [최종 수정] 
+        # 1. 로그아웃 상태: 모든 역 클릭 불가능 (clickable = False)
+        # 2. 로그인 상태: 모든 역 클릭 가능 (clickable = True)
+        clickable = True if is_auth else False
         
         color = "green" if is_viewed else "gray"
         
