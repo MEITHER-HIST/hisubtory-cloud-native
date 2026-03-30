@@ -4,6 +4,7 @@ on:
   push:
     branches: [ dev, feat/do ]
     paths:
+      - "clean-story-task-def-updated.json"
       - 'story-service/**'
       - 'stories/**'
       - '.github/workflows/story-deploy.yml'

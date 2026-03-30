@@ -4,6 +4,7 @@ on:
   push:
     branches: [ dev, feat/do ]
     paths:
+      - "clean-activity-task-def-updated.json"
       - 'activity-service/**'
       - '.github/workflows/activity-deploy.yml'
 
