@@ -57,16 +57,6 @@ variable "django_secret_key" {
   default   = "django-insecure-ti-prtjm(d_p7ve!r(g&4&(=+*_vn*x+*3z^ge567i72tr-5)1"
 }
 
-variable "supabase_url" {
-  type    = string
-  default = "https://jlvhwihvmivvihffhxse.supabase.co"
-}
-
-variable "supabase_key" {
-  type      = string
-  sensitive = true
-}
-
 variable "sb_db_name" {
   type    = string
   default = "postgres"
@@ -80,6 +70,7 @@ variable "sb_db_user" {
 variable "sb_db_password" {
   type      = string
   sensitive = true
+  default   = "hisubtory1234" # 기존 db-postgres 비밀번호와 동일하게 설정
 }
 
 variable "sb_db_host" {
@@ -90,18 +81,4 @@ variable "sb_db_host" {
 variable "sb_db_port" {
   type    = string
   default = "5432"
-}
-
-variable "aws_access_key" {
-  type    = string
-}
-
-variable "aws_secret_key" {
-  type      = string
-  sensitive = true
-}
-
-variable "django_secret_key" {
-  type      = string
-  sensitive = true
 }

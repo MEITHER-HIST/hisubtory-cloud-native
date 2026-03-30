@@ -25,8 +25,16 @@ module "alb" {
 }
 
 module "s3" {
-  source       = "./modules/s3"
-  project_name = var.project_name
+  source         = "./modules/s3"
+  project_name   = var.project_name
+  cloudfront_arn = module.cloudfront.cloudfront_arn
+}
+
+module "cloudfront" {
+  source                = "./modules/cloudfront"
+  project_name          = var.project_name
+  alb_dns_name          = module.alb.alb_dns_name
+  s3_bucket_domain_name = module.s3.bucket_domain_name
 }
 
 module "ecs" {
