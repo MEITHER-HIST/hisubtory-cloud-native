@@ -196,3 +196,4 @@ EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True') == 'True'
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', 'joinmin0114@gmail.com')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD') # GitHub Secrets에서 주입
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+# Deployment Sync: 2026. 03. 31. (화) 01:28:23 KST

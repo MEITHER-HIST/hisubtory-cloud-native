@@ -189,3 +189,4 @@ AWS_DEFAULT_ACL = None
 # ✅ Use CloudFront Domain
 AWS_S3_CUSTOM_DOMAIN = os.getenv('AWS_S3_CUSTOM_DOMAIN', 'd27nsin45nib0r.cloudfront.net')
 MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/'
+# Deployment Sync: 2026. 03. 31. (화) 01:28:23 KST

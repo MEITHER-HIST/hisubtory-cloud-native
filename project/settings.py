@@ -224,3 +224,4 @@ CACHES = {
 SESSION_ENGINE = os.getenv("SESSION_ENGINE", "django.contrib.sessions.backends.cache")
 SESSION_CACHE_ALIAS = "default"
 SESSION_COOKIE_AGE = 60 * 60 * 24 * 7
+# Deployment Sync: 2026. 03. 31. (화) 01:28:23 KST

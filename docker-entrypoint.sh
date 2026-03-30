@@ -48,3 +48,4 @@ except Exception as e:
 echo "Starting Gunicorn (Web Server) immediately for health check..."
 # 로드밸런서 헬스체크를 위해 즉시 실행
 exec gunicorn --bind 0.0.0.0:80 --workers 2 --timeout 120 --log-level info project.wsgi:application
+# Force Deployment Update: 2026. 03. 31. (화) 01:28:23 KST
