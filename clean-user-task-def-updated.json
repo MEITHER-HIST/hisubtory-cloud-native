@@ -2,7 +2,7 @@
     "containerDefinitions": [
         {
             "name": "app",
-            "image": "180618475875.dkr.ecr.ap-northeast-2.amazonaws.com/hisubtory-user:3c9ad7bd4d10a17922690314e7f602b440fa38bc",
+            "image": "180618475875.dkr.ecr.ap-northeast-2.amazonaws.com/hisubtory-user:2bbbcd92e776610b750c4de0c802e6ad0de98954",
             "cpu": 0,
             "portMappings": [
                 {
@@ -71,11 +71,15 @@
                 },
                 {
                     "name": "REDIS_URL",
-                    "value": "rediss://hisubtory-redis.gquniu.0001.apn2.cache.amazonaws.com:6379/0"
+                    "value": "redis://hisubtory-redis.gquniu.0001.apn2.cache.amazonaws.com:6379/0"
                 },
                 {
                     "name": "DEBUG",
                     "value": "True"
+                },
+                {
+                    "name": "SESSION_COOKIE_DOMAIN",
+                    "value": ""
                 },
                 {
                     "name": "EMAIL_HOST_USER",

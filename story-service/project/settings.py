@@ -12,6 +12,7 @@ pymysql.install_as_MySQLdb()
 SECRET_KEY = os.getenv('SECRET_KEY') or 'django-insecure-ti-prtjm(d_p7ve!r(g&4&(=+*_vn*x+*3z^ge567i72tr-5)1'
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 ALLOWED_HOSTS = ['*']
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 INSTALLED_APPS = [
     'django_prometheus',
@@ -108,26 +109,57 @@ CORS_ALLOWED_ORIGINS = [
     "https://hisubtory-alb-913594763.ap-northeast-2.elb.amazonaws.com",
 ]
 CSRF_TRUSTED_ORIGINS = [
+    "https://d27nsin45nib0r.cloudfront.net",
     "https://hisubtory.site",
     "http://hisubtory.site",
     "http://hisubtory-alb-913594763.ap-northeast-2.elb.amazonaws.com",
 ]
 
 # ✅ 보안 및 프록시 설정 (ALB 환경 필수)
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 USE_X_FORWARDED_HOST = True
 USE_X_FORWARDED_PORT = True
 
-# 💡 서비스 간 세션 공유 설정 (도메인 명시 제거하여 충돌 방지)
+# 💡 서비스 간 세션 공유 설정 (도메인 기반)
+SESSION_COOKIE_SAMESITE = "Lax"
+CSRF_COOKIE_SAMESITE = "Lax"
 SESSION_COOKIE_SECURE = True
-SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SAMESITE = 'Lax'
 CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_HTTPONLY = False
-CSRF_COOKIE_SAMESITE = 'Lax'
 
+# Redis 캐시 설정 (SSL 관련 이슈로 redis:// 사용)
+REDIS_URL = os.getenv("REDIS_URL", f"redis://{REDIS_HOST}:{REDIS_PORT}/0")
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": REDIS_URL,
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            # "ssl_cert_reqs": None,
+        }
+    }
+}
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "default"
+
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "https://hisubtory.site",
+    "https://*.hisubtory.site",
+    "http://hisubtory-alb-913594763.ap-northeast-2.elb.amazonaws.com",
+    "https://hisubtory-alb-913594763.ap-northeast-2.elb.amazonaws.com",
+    "http://hisubtory-alb-258264007.ap-northeast-2.elb.amazonaws.com",
+    "https://hisubtory-alb-258264007.ap-northeast-2.elb.amazonaws.com",
+]
+CSRF_TRUSTED_ORIGINS = [
+    "https://d27nsin45nib0r.cloudfront.net",
+    "https://hisubtory.site",
+    "https://*.hisubtory.site",
+    "http://hisubtory-alb-913594763.ap-northeast-2.elb.amazonaws.com",
+    "https://hisubtory-alb-913594763.ap-northeast-2.elb.amazonaws.com",
+]
 
 TEMPLATES = [
     {
@@ -157,3 +189,4 @@ AWS_DEFAULT_ACL = None
 # ✅ Use CloudFront Domain
 AWS_S3_CUSTOM_DOMAIN = os.getenv('AWS_S3_CUSTOM_DOMAIN', 'd27nsin45nib0r.cloudfront.net')
 MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/'
+# Deployment Sync: 2026. 03. 31. (화) 01:28:23 KST

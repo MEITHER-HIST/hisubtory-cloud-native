@@ -14,6 +14,8 @@ export type User = {
   username: string;
   email: string;
   name: string;
+  viewed_episode_ids?: number[];
+  bookmark_ids?: number[];
 };
 
 function getCookie(name: string) {
@@ -66,6 +68,8 @@ export default function App() {
             username: data.username,
             email: data.email ?? "",
             name: data.username,
+            viewed_episode_ids: data.viewed_episode_ids || [],
+            bookmark_ids: data.bookmark_ids || [],
           };
           setUser(u);
         } else {

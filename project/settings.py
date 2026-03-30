@@ -16,6 +16,7 @@ pymysql.install_as_MySQLdb()
 SECRET_KEY = 'django-insecure-ti-prtjm(d_p7ve!r(g&4&(=+*_vn*x+*3z^ge567i72tr-5)1'
 DEBUG = True
 ALLOWED_HOSTS = [
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
     "*",
     ".amazonaws.com",
     ".elb.amazonaws.com",
@@ -150,16 +151,25 @@ STORAGES = {
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'accounts.User'
 
+# 서브도메인 간 쿠키 공유를 위한 도메인 설정 (충돌 방지를 위해 명시적 설정 제거 또는 None)
+
 if DEBUG:
     SESSION_COOKIE_SECURE = False
     CSRF_COOKIE_SECURE = False
     SECURE_SSL_REDIRECT = False
+    SESSION_COOKIE_SAMESITE = 'Lax'
 else:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SAMESITE = 'Lax'  # 표준 Lax 설정으로 복구
+
+CSRF_COOKIE_SAMESITE = 'Lax'
 
 CSRF_TRUSTED_ORIGINS = [
+    "https://d27nsin45nib0r.cloudfront.net",
+    "https://hisubtory.site",
+    "https://*.hisubtory.site",
     "http://hisub-alb-1329951961.ap-northeast-2.elb.amazonaws.com",
     "https://hisub-alb-1329951961.ap-northeast-2.elb.amazonaws.com",
     "http://hisubtory-alb-913594763.ap-northeast-2.elb.amazonaws.com",
@@ -168,14 +178,11 @@ CSRF_TRUSTED_ORIGINS = [
     "https://hisubtory-alb-258264007.ap-northeast-2.elb.amazonaws.com",
     "http://localhost:5173",
     "http://127.0.0.1:5173",
-    "http://localhost:8000",
-    "http://127.0.0.1:8000",
-    "http://127.0.0.1",
-    "http://10.0.0.58",
-    "http://10.0.0.134",
 ]
 
 CORS_ALLOWED_ORIGINS = [
+    "https://hisubtory.site",
+    "https://*.hisubtory.site",
     "http://localhost:5173",
     "http://127.0.0.1:5173",
     "http://hisub-alb-1329951961.ap-northeast-2.elb.amazonaws.com",
@@ -188,9 +195,9 @@ CORS_ALLOWED_ORIGINS = [
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = list(default_headers) + ["x-csrftoken"]
 
-SESSION_COOKIE_SAMESITE = 'Lax'
+# SESSION_COOKIE_SAMESITE는 위에서 조건부로 설정됨
 SESSION_COOKIE_HTTPONLY = True
-CSRF_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SAMESITE = 'None' if not DEBUG else 'Lax'
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": ("rest_framework.authentication.SessionAuthentication",),
@@ -200,6 +207,7 @@ REST_FRAMEWORK = {
 REDIS_HOST = os.getenv("REDIS_HOST", "redis")
 REDIS_PORT = os.getenv("REDIS_PORT", "6379")
 REDIS_DB   = os.getenv("REDIS_DB", "0")
+# SSL 관련 이슈로 rediss:// 대신 redis:// 사용 (VPC 내부 통신)
 REDIS_URL = os.getenv("REDIS_URL", f"redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}")
 
 CACHES = {
@@ -208,7 +216,7 @@ CACHES = {
         "LOCATION": REDIS_URL,
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
-            "ssl_cert_reqs": None,
+            # "ssl_cert_reqs": None, # redis:// 사용 시 불필요
         },
     }
 }
@@ -216,3 +224,4 @@ CACHES = {
 SESSION_ENGINE = os.getenv("SESSION_ENGINE", "django.contrib.sessions.backends.cache")
 SESSION_CACHE_ALIAS = "default"
 SESSION_COOKIE_AGE = 60 * 60 * 24 * 7
+# Deployment Sync: 2026. 03. 31. (화) 01:28:23 KST

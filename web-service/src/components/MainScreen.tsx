@@ -58,13 +58,7 @@ export function MainScreen({
       const data = await res.json();
       
       if (data.success && data.stations) {
-        const mergedStations = data.stations.map((s: StationDTO) => ({
-          ...s,
-          is_viewed: user ? s.is_viewed : false,
-          color: (user && s.is_viewed) ? "green" : "gray",
-          clickable: user ? s.has_story : false
-        }));
-        setStations(mergedStations);
+        setStations(data.stations);
         setShowRandomButton(data.show_random_button);
       }
     } catch (e) {
@@ -87,6 +81,12 @@ export function MainScreen({
   }, [stations]);
 
   const handleStationClick = async (stationId: number) => {
+    // ✅ 비로그인 시 로그인 유도
+    if (!user) {
+      onLoginClick();
+      return;
+    }
+    
     try {
       setIsLoading(true);
       const res = await fetch(`/api/pages/v1/episode/pick/?station_id=${stationId}`, { credentials: "include" });

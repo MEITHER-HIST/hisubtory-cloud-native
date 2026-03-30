@@ -1,13 +1,17 @@
 from rest_framework import serializers
 from django.conf import settings
 import boto3
+import re
 from botocore.client import Config
 from .models import Webtoon, Episode, Cut
 
 def get_presigned_url(path, expires_in=3600):
     """S3 경로를 받아 보안 주소(Presigned URL)를 생성하는 공통 함수"""
     if not path: return None
-    path_str = str(path)
+    
+    # ✅ [최종 강화] 모든 줄바꿈, 공백, 제어 문자를 정규식으로 제거
+    path_str = re.sub(r'[\r\n\t\s]+', '', str(path)).strip().lstrip('/')
+    
     if path_str.startswith('http'): return path_str
     
     try:
@@ -25,8 +29,7 @@ def get_presigned_url(path, expires_in=3600):
             Params={"Bucket": bucket, "Key": path_str},
             ExpiresIn=expires_in)
     except Exception as e:
-        print(f"[ERROR] S3 URL Generation fail: {str(e)}")
-        # 최종 실패 시 S3 직접 링크 시도
+        print(f"[ERROR] S3 URL Generation fail for {path_str}: {str(e)}")
         bucket = getattr(settings, "AWS_STORAGE_BUCKET_NAME", "hisubtory-media-bucket-v2")
         region = getattr(settings, "AWS_S3_REGION_NAME", "ap-northeast-2")
         return f"https://{bucket}.s3.{region}.amazonaws.com/{path_str}"
@@ -46,17 +49,28 @@ class EpisodeSerializer(serializers.ModelSerializer):
     webtoon_title = serializers.CharField(source='webtoon.title', read_only=True)
     is_viewed = serializers.BooleanField(default=False)
     cuts = CutSerializer(many=True, read_only=True)
-    # source_url을 보안 주소로 변환하여 제공
+    
+    thumbnail_url = serializers.SerializerMethodField()
     source_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Episode
-        fields = ['episode_id', 'webtoon_id', 'episode_num', 'episode_title', 'webtoon_title', 'station_name', 'subtitle', 'source_url', 'is_viewed', 'cuts']
+        fields = [
+            'episode_id', 'webtoon_id', 'episode_num', 'episode_title', 
+            'webtoon_title', 'station_name', 'subtitle', 'source_url', 
+            'thumbnail_url', 'is_viewed', 'cuts'
+        ]
+
+    def get_thumbnail_url(self, obj):
+        # ✅ [수정] 웹툰 정보가 있을 경우 해당 웹툰의 썸네일을 반환
+        # 에피소드마다 별개의 웹툰 레코드를 가질 수 있으므로 확실히 체크
+        if obj.webtoon and obj.webtoon.thumbnail:
+            return get_presigned_url(obj.webtoon.thumbnail)
+        # 💡 [fallback] 만약 썸네일이 없다면 에피소드 1번의 웹툰 정보를 찾아서라도 반환 (선택 사항)
+        return None
 
     def get_source_url(self, obj):
         return get_presigned_url(obj.source_url)
-
-StorySerializer = EpisodeSerializer
 
 class WebtoonSerializer(serializers.ModelSerializer):
     thumbnail_url = serializers.SerializerMethodField()

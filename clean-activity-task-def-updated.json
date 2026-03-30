@@ -2,7 +2,7 @@
     "containerDefinitions": [
         {
             "name": "app",
-            "image": "180618475875.dkr.ecr.ap-northeast-2.amazonaws.com/hisubtory-activity:latest",
+            "image": "180618475875.dkr.ecr.ap-northeast-2.amazonaws.com/hisubtory-activity:2bbbcd92e776610b750c4de0c802e6ad0de98954",
             "cpu": 0,
             "portMappings": [
                 { "containerPort": 80, "hostPort": 80, "protocol": "tcp" }
@@ -23,9 +23,17 @@
                 { "name": "SB_DB_PORT", "value": "5432" },
                 { "name": "AWS_STORAGE_BUCKET_NAME", "value": "hisubtory-media-bucket-v2" },
                 { "name": "SESSION_ENGINE", "value": "django.contrib.sessions.backends.cache" },
-                { "name": "REDIS_URL", "value": "rediss://hisubtory-redis.gquniu.0001.apn2.cache.amazonaws.com:6379/0" },
-                { "name": "DEBUG", "value": "True" }
-            ],
+                { "name": "REDIS_URL", "value": "redis://hisubtory-redis.gquniu.0001.apn2.cache.amazonaws.com:6379/0" },
+                {
+                    "name": "DEBUG",
+                    "value": "True"
+                },
+                {
+                    "name": "SESSION_COOKIE_DOMAIN",
+                    "value": ""
+                }
+                ],
+
             "secrets": [
                 { "name": "SB_DB_PASSWORD", "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:180618475875:secret:hisubtory/secrets-SB_DB_PASSWORD-y4Tqkd" },
                 { "name": "SUPABASE_KEY", "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:180618475875:secret:hisubtory/secrets-SUPABASE_KEY-ckQFmQ" },
@@ -43,7 +51,7 @@
         },
         {
             "name": "node-exporter",
-            "image": "public.ecr.aws/prometheus/node-exporter:latest",
+            "image": "prom/node-exporter:latest",
             "portMappings": [{ "containerPort": 9100, "hostPort": 9100, "protocol": "tcp" }],
             "essential": true
         }

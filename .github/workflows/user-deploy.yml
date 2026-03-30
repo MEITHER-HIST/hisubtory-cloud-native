@@ -4,6 +4,7 @@ on:
   push:
     branches: [ dev, feat/do ]
     paths:
+      - "clean-user-task-def-updated.json"
       - 'user-service/**'
       - 'accounts/**'
       - 'library/**'
