@@ -16,6 +16,7 @@ pymysql.install_as_MySQLdb()
 SECRET_KEY = 'django-insecure-ti-prtjm(d_p7ve!r(g&4&(=+*_vn*x+*3z^ge567i72tr-5)1'
 DEBUG = True
 ALLOWED_HOSTS = [
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
     "*",
     ".amazonaws.com",
     ".elb.amazonaws.com",

@@ -12,6 +12,7 @@ pymysql.install_as_MySQLdb()
 SECRET_KEY = os.getenv('SECRET_KEY') or 'django-insecure-ti-prtjm(d_p7ve!r(g&4&(=+*_vn*x+*3z^ge567i72tr-5)1'
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 ALLOWED_HOSTS = ['*']
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 INSTALLED_APPS = [
     'django_prometheus',
@@ -113,7 +114,6 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 
 # ✅ 보안 및 프록시 설정 (ALB 환경 필수)
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 USE_X_FORWARDED_HOST = True
 USE_X_FORWARDED_PORT = True
 
