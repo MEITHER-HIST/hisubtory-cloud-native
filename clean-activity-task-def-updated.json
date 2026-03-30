@@ -13,7 +13,7 @@
                 { "name": "DB_PORT", "value": "3306" },
                 { "name": "DB_USER", "value": "admin" },
                 { "name": "DB_NAME", "value": "hisubtory_db" },
-                { "name": "DB_HOST", "value": "hisubtory-db.cviagkyaooln.ap-northeast-2.rds.amazonaws.com" },
+                { "name": "DB_HOST", "value": "hisubtory-db.cviagkyaooln.ap-northeast-2.rds.amazonaws.com" }
                 { "name": "SUPABASE_URL", "value": "https://jlvhwihvmivvihffhxse.supabase.co" },
                 { "name": "SB_DB_HOST", "value": "aws-1-ap-northeast-2.pooler.supabase.com" },
                 { "name": "SB_DB_USER", "value": "postgres.jlvhwihvmivvihffhxse" },
